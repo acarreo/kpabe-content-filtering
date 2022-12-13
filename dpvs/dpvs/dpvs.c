@@ -93,15 +93,44 @@ bool dpvs_init(dpvs_t dpvs, uint8_t dim)
   return ret;
 }
 
+bool dpvs_gen(dpvs_t dpvs, uint8_t dim)
+{
+  bool ret = false;
+  mat_t mat, dual_mat;
+  bn_vect_t row, drow;
+
+  if (dpvs_init(dpvs, dim) && dpvs_gen_matrices(mat, dual_mat, dim))
+  {
+    if (bn_vect_init(row, dim) && bn_vect_init(drow, dim))
+    {
+      for (uint8_t i = 0; i < dim; i++)
+      {
+        dpvs_get_mat_row(row, mat, i);
+        dpvs_get_mat_row(drow, dual_mat, i);
+        for (uint8_t j = 0; j < dim; j++)
+        {
+          g1_mul_gen(dpvs->base[i]->coord[j], row->coord[j]);
+          g2_mul_gen(dpvs->dual_base[i]->coord[j], drow->coord[j]);
+        }
       }
-    } RLC_CATCH_ANY {
-      for (; i > 0; i--) bn_free(vect->coord[i-1]);
-      free(vect->coord);
-      return _error_mat_alloc_();
+      ret = true;
+    }
+    else {
+      fprintf(stderr, "[Errors] dpvs_gen: vectors initialization failled\n");
     }
   }
+  else {
+    fprintf(stderr, "[Errors] dpvs_gen: dpvs entries, initialization failled\n");
+  }
 
-  return true;
+  bn_vect_clear(row);
+  bn_vect_clear(drow);
+  mat_clear(mat);
+  mat_clear(dual_mat);
+
+  return ret;
+}
+
 }
 
 void get_vect_from_base(vect_t vect, const base_t base, uint8_t index)

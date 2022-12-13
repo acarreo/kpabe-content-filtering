@@ -49,6 +49,8 @@ bool dpvs_init_base_vect(g1_vect_t bvect, uint8_t dim);
 bool dpvs_init_dual_base_vect(g2_vect_t db_vect, uint8_t dim);
 bool dpvs_init(dpvs_t dpvs, uint8_t dim);
 
+bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
+
 
 void dpvs_clear_base_vect(g1_vect_t bvect);
 void dpvs_clear_dual_base_vect(g2_vect_t dbvect);
