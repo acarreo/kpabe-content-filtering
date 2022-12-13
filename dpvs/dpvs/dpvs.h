@@ -41,11 +41,8 @@ typedef mat_st  base_t[1];  /* Une base peut être vue comme une matrice */
 
 /* Initialize a base implies initialisation matrix */
 #define base_init       mat_init
+#define dpvs_gen_matrices   mat_rand_dual_mat
 
-/* generate radom PDOP (Pair of Dual Orthogonal Bases)
- * bool base_rand_pdop(base_t base, base_t dual_base);
- */
-#define base_rand_pdop  mat_rand_inv
 
 void get_vect_from_base(vect_t vect, const base_t base, uint8_t index);
 bool dpvs_init_base_vect(g1_vect_t bvect, uint8_t dim);
