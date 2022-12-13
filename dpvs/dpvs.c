@@ -168,6 +168,17 @@ void dpvs_inner_product(gt_t ip, const g1_vect_t vect, g2_vect_t dvect)
   gt_free(tmp);
 }
 
+void dpvs_g1_vect_copy (g1_vect_t dest, g1_vect_t src) {
+  if (dest->dim == src->dim)
+    for (uint8_t i = 0; i < src->dim; i++)
+      g1_copy(dest->coord[i], src->coord[i]);
+}
+
+void dpvs_g2_vect_copy (g2_vect_t dest, g2_vect_t src) {
+  if (dest->dim == src->dim)
+    for (uint8_t i = 0; i < src->dim; i++)
+      g2_copy(dest->coord[i], src->coord[i]);
+}
 
 /*****************************************************************************/
 void dpvs_clear_base_vect(g1_vect_t bvect)
