@@ -1,12 +1,34 @@
-#include "matrices.h"
+#include "matrix.h"
 
+bool mat_init(mat_t mat, uint8_t dim)
+{
+  bool ret = false;
+  mat->dim = dim;
 
-bn_t Fq;    /* Definition of modulus, it's declared in matrices.h */
+  int mat_size = dim * dim;
+  if ((ret = (dim != 0)))
+  {
+    if ((mat->entries = malloc(mat_size * sizeof(bn_t))) == NULL)
+      return _error_alloc_fail_();
 
+    int i = 0;
+    RLC_TRY {
+      for (; i < mat_size; i++)
+      {
+        bn_null(mat->entries[i]);
+        bn_new(mat->entries[i]);
+      }
+    } RLC_CATCH_ANY {
+      mat->dim = i;   /* clear the first i elements of mat properly */
+      mat_clear(mat);
+      return _error_alloc_fail_();
+    }
+  }
+
+  return ret;
 }
 
 bool bn_vect_init(bn_vect_t vect, uint8_t dim)
-bool mat_init(mat_t mat, uint8_t dim)
 {
   vect->dim = dim;
 
@@ -26,25 +48,6 @@ bool mat_init(mat_t mat, uint8_t dim)
       vect->dim = i;
       bn_vect_clear(vect);
       return _error_alloc_fail_();
-    mat->dim = dim;
-
-    int mat_size = dim * dim;
-    if (dim != 0)
-    {
-        if ((mat->entries = malloc(mat_size * sizeof(bn_t))) == NULL)
-            return _error_mat_alloc_();
-
-        int i = 0;
-        RLC_TRY {
-            for (; i < mat_size; i++)
-            {
-                bn_null(mat->entries[i]);
-                bn_new(mat->entries[i]);
-            }
-        } RLC_CATCH_ANY {
-            for (; i > 0; i--) bn_free(mat->entries[i-1]);
-            return _error_mat_alloc_();
-        }
     }
   }
 
@@ -203,14 +206,15 @@ void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
 
 void mat_clear(mat_t mat)
 {
-    if (!mat_is_empty(mat))
-    {
-        for (int i = 0; i < mat_dim(mat) * mat_dim(mat); i++)
-            bn_free(mat->entries[i]);
+  if (!mat_is_empty(mat))
+  {
+    for (int i = 0; i < mat_dim(mat) * mat_dim(mat); i++)
+      bn_free(mat->entries[i]);
 
-        free(mat->entries);
-        mat->entries = NULL;
-    }
+    free(mat->entries);
+    mat->entries = NULL;
+  }
+}
 
 void bn_vect_clear(bn_vect_t vect)
 {
