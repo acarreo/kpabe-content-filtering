@@ -206,4 +206,48 @@ void dpvs_clear(dpvs_t dpvs)
   }
 }
 
+/*****************************************************************************
+ * the bilinear group setting is (G1, G2, Gt, g1, g2, gt, e, q) where
+ * G1, G2, Gt are groups of prime order q, g1 and g2 element of G1, G2 resp.
+ * e : G1 x G2 --> Gt a pairing and gt = e(g1, g2).
+ * We choose g1 (resp. g2) a generator of G1 (resp. G2).
+ ****************************************************************************/
+void set_params(void)
+{
+  g1_t g1;
+  g2_t g2;
+
+  g1_null(g1);
+  g2_null(g2);
+  gt_null(params->gt);
+  bn_null(params->q);
+
+  RLC_TRY {
+    g1_new(g1);
+    g2_new(g2);
+    gt_new(params->gt);
+    bn_new(params->q);
+
+    g1_get_gen(g1);
+    g2_get_gen(g2);
+    pc_map(params->gt, g1, g2);
+    pc_get_ord(params->q);
+
+    bn_copy(Fq, params->q);
+  }
+  RLC_CATCH_ANY {
+    fprintf(stderr, "Problem with initialization of bilinear group params\n");
+    clear_params();
+  }
+  RLC_FINALLY {
+    g1_free(g1);
+    g2_free(g2);
+  }
+}
+
+void clear_params(void)
+{
+  gt_free(params->gt);
+  bn_free(params->q);
+  bn_free(Fq);
 }

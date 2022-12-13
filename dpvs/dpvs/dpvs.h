@@ -36,6 +36,7 @@ typedef struct
 
 typedef dpvs_st dpvs_t[1];
 
+extern group_setting_t params;
 
 /* Initialize a base implies initialisation matrix */
 #define dpvs_get_mat_row    mat_get_row
@@ -58,5 +59,7 @@ void dpvs_clear_base_vect(g1_vect_t bvect);
 void dpvs_clear_dual_base_vect(g2_vect_t dbvect);
 void dpvs_clear(dpvs_t dpvs);
 
+void set_params(void);
+void clear_params(void);
 
 #endif
