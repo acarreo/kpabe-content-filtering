@@ -151,15 +151,31 @@ void get_vect_from_base(vect_t vect, const base_t base, uint8_t index)
       bn_copy(vect->coord[j], GET(base, index, j));
 }
 
+void dpvs_inner_product(gt_t ip, const g1_vect_t vect, g2_vect_t dvect)
 void vect_clear(vect_t vect)
 {
+  gt_t tmp;
+
+  gt_null(tmp);
+
+  if (vect->dim == dvect->dim)
   if (vect->dim != 0)
   {
+    gt_new(tmp);
+    gt_set_unity(ip);
     for (uint8_t i = 0; i < vect->dim; i++) bn_free(vect->coord[i]);
 
+    for (uint8_t i = 0; i < vect->dim; i++)
+    {
+      pc_map(tmp, vect->coord[i], dvect->coord[i]);
+      gt_mul(ip, ip, tmp);
+    }
     free(vect->coord);
     vect->coord = NULL;
   }
+
+  gt_free(tmp);
+}
 
 
 /*****************************************************************************/

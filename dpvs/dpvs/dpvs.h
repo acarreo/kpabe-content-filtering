@@ -55,6 +55,7 @@ bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
 void dpvs_k_mul_vect(g1_vect_t dest, const g1_vect_t src, bn_t k);
 void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k);
 
+void dpvs_inner_product(gt_t ip, const g1_vect_t vect, g2_vect_t dvect);
 
 void dpvs_clear_base_vect(g1_vect_t bvect);
 void dpvs_clear_dual_base_vect(g2_vect_t dbvect);
