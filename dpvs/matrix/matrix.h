@@ -27,7 +27,14 @@ typedef struct
     uint8_t dim;
 } mat_st;
 
+typedef struct
+{
+  bn_t* coord;
+  uint8_t dim;
+} bn_vect_st;
+
 typedef mat_st mat_t[1];
+typedef bn_vect_st bn_vect_t[1];
 
 bool mat_init(mat_t mat, uint8_t dim);
 bool mat_cmp(const mat_t A, const mat_t B);
@@ -44,5 +51,8 @@ void mat_clear(mat_t mat);
 
 int mat_fprint(FILE * file, int format, const mat_t mat);
 int mat_fread(FILE* file, int format, mat_t mat);
+bool bn_vect_init(bn_vect_t vect, uint8_t dim);
+void bn_vect_clear(bn_vect_t vect);
+
 
 #endif

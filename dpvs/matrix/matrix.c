@@ -9,8 +9,27 @@ MAT_INLINE bool _error_mat_alloc_(void)
     return false;
 }
 
+bool bn_vect_init(bn_vect_t vect, uint8_t dim)
 bool mat_init(mat_t mat, uint8_t dim)
 {
+  vect->dim = dim;
+
+  if (dim != 0)
+  {
+    if ((vect->coord = malloc(dim * sizeof(bn_t))) == NULL)
+      return _error_alloc_fail_();
+
+    int i = 0;
+    RLC_TRY {
+      for (; i < dim; i++)
+      {
+        bn_null(vect->coord[i]);
+        bn_new(vect->coord[i]);
+      }
+    } RLC_CATCH_ANY {
+      vect->dim = i;
+      bn_vect_clear(vect);
+      return _error_alloc_fail_();
     mat->dim = dim;
 
     int mat_size = dim * dim;
@@ -31,8 +50,9 @@ bool mat_init(mat_t mat, uint8_t dim)
             return _error_mat_alloc_();
         }
     }
+  }
 
-    return true;
+  return true;
 }
 
 bool mat_cmp(const mat_t A, const mat_t B)
@@ -183,4 +203,14 @@ void mat_clear(mat_t mat)
         free(mat->entries);
         mat->entries = NULL;
     }
+
+void bn_vect_clear(bn_vect_t vect)
+{
+  if (vect->dim != 0)
+  {
+    for (uint8_t i = 0; i < vect->dim; i++) bn_free(vect->coord[i]);
+
+    free(vect->coord);
+    vect->coord = NULL;
+  }
 }
