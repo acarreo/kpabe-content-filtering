@@ -80,20 +80,19 @@ bool mat_is_zero(const mat_t mat)
 
 void mat_eye(mat_t mat, uint8_t dim)
 {
-    mat_clear(mat);
-    if (mat_init(mat, dim))
-    {
-        bn_t one;
+  if (mat_init(mat, dim))
+  {
+    bn_t one;
 
-        bn_null(one);
-        bn_new(one);
-        bn_set_dig(one, 1);
+    bn_null(one);
+    bn_new(one);
+    bn_set_dig(one, 1);
 
-        for (uint8_t i = 0; i < mat_dim(mat); i++)
-            bn_copy(MAT(mat, i, i), one);
+    for (uint8_t i = 0; i < mat_dim(mat); i++)
+      bn_copy(GET(mat, i, i), one);
 
-        bn_free(one);
-    }
+    bn_free(one);
+  }
 }
 
 void mat_transpose(mat_t dest, const mat_t src)
@@ -120,43 +119,43 @@ void mat_copy(mat_t dest, const mat_t src)
 
 void mat_rand(mat_t mat)
 {
-    for (int i = 0; i < mat_dim(mat) * mat_dim(mat); i++)
-        bn_rand_mod(mat->entries[i], Fq);
+  for (int i = 0; i < mat_dim(mat) * mat_dim(mat); i++)
+    bn_rand_mod(mat->entries[i], Fq);
 }
 
 void mat_product(mat_t dest, const mat_t A, const mat_t B)
 {
-    uint8_t dim = mat_dim(A);
+  uint8_t dim = mat_dim(A);
 
-    if (dim != 0 && dim == mat_dim(B))
-    {
-        bn_t tmp, sum;
+  if (dim != 0 && dim == mat_dim(B))
+  {
+    bn_t tmp, sum;
 
-        bn_null(tmp);
-        bn_null(sum);
+    bn_null(tmp);
+    bn_null(sum);
 
-        RLC_TRY {
-            bn_new(tmp);
-            bn_new(sum);
-            for (uint8_t i = 0; i < dim; i++)
-            {
-                for (uint8_t j = 0; j < dim; j++)
-                {
-                    bn_zero(sum);
-                    for (uint8_t k = 0; k < dim; k++) {
-                        bn_mod_mul(tmp, MAT(A, i, k), MAT(B, k, j), Fq);
-                        bn_mod_add(sum, sum, tmp, Fq);
-                    }
-                    bn_copy(MAT(dest, i, j), sum);
-                }
-            }
-        } RLC_CATCH_ANY {
-            fprintf(stderr, "Something goes wrong\n");
-        } RLC_FINALLY {
-            bn_free(tmp);
-            bn_free(sum);
+    RLC_TRY {
+      bn_new(tmp);
+      bn_new(sum);
+      for (uint8_t i = 0; i < dim; i++)
+      {
+        for (uint8_t j = 0; j < dim; j++)
+        {
+          bn_zero(sum);
+          for (uint8_t k = 0; k < dim; k++) {
+            bn_mod_mul(tmp, GET(A, i, k), GET(B, k, j), Fq);
+            bn_mod_add(sum, sum, tmp, Fq);
+          }
+          bn_copy(GET(dest, i, j), sum);
         }
+      }
+    } RLC_CATCH_ANY {
+      fprintf(stderr, "Something goes wrong\n");
+    } RLC_FINALLY {
+      bn_free(tmp);
+      bn_free(sum);
     }
+  }
 }
 
 void mat_rand_inv(mat_t A, mat_t inv_A)

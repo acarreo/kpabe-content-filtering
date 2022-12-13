@@ -73,7 +73,6 @@ bool LU_decompose(mat_t mat, uint8_t *P)
   bn_null(max_A);
   bn_null(max_tmp);
 
-
   RLC_TRY {
     bn_new(tmp);
     bn_new(max_A);
@@ -261,15 +260,15 @@ bool LU_invert_matrix(mat_t inv_A, const mat_t A)
 
 bool invert_matrix(mat_t dest, const mat_t src)
 {
-    if (mat_is_empty(src)) {
-        fprintf(stderr, "Empty matrix is not invertible\n");
-        return false;
-    }
+  if (mat_is_empty(src)) {
+    fprintf(stderr, "Empty matrix is not invertible\n");
+    return false;
+  }
 
-    if (mat_dim(src) == 1) {return invert_matrix_1x1(dest, src);}
-    if (mat_dim(src) == 2) {return invert_matrix_2x2(dest, src);}
+  if (mat_dim(src) == 1) {return invert_matrix_1x1(dest, src);}
+  if (mat_dim(src) == 2) {return invert_matrix_2x2(dest, src);}
 
-    /*************************************************************************/
-    /* If dim > 2, we use LU decomposition to compute inverse of src */
-    return LU_invert_matrix(dest, src);
+  /***************************************************************************/
+  /* If matrix dim is > 2, we use LU decomposition to compute inverse matrix */
+  return LU_invert_matrix(dest, src);
 }
