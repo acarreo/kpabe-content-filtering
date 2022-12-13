@@ -36,15 +36,12 @@ typedef struct
 
 typedef dpvs_st dpvs_t[1];
 
-typedef vect_st vect_t[1];
-typedef mat_st  base_t[1];  /* Une base peut être vue comme une matrice */
 
 /* Initialize a base implies initialisation matrix */
-#define base_init       mat_init
+#define dpvs_get_mat_row    mat_get_row
 #define dpvs_gen_matrices   mat_rand_dual_mat
 
 
-void get_vect_from_base(vect_t vect, const base_t base, uint8_t index);
 bool dpvs_init_base_vect(g1_vect_t bvect, uint8_t dim);
 bool dpvs_init_dual_base_vect(g2_vect_t db_vect, uint8_t dim);
 bool dpvs_init(dpvs_t dpvs, uint8_t dim);
