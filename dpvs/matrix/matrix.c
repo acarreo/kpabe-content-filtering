@@ -190,6 +190,55 @@ void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
   bn_free(tmp);
 }
 
+bool mat_is_dual_pair(const mat_t mat, const mat_t dual_mat)
+{
+  if (mat->dim != dual_mat->dim) return false;
+
+  bool is_dual_pair = true;
+  const uint8_t dim = mat->dim;
+
+  bn_vect_t vect[dim];
+  bn_vect_t dual_vect[dim];
+
+  bn_t ip, one;
+
+  bn_null(ip);
+  bn_null(one);
+
+  bn_new(ip);
+  bn_new(one);
+  bn_set_dig(one, 1);
+
+  for (uint8_t i = 0; i < dim; i++)
+  {
+    bn_vect_init(vect[i], dim);
+    bn_vect_init(dual_vect[i], dim);
+
+    mat_get_row(vect[i], mat, i);
+    mat_get_row(dual_vect[i], dual_mat, i);
+  }
+
+  for (uint8_t i = 0; i < dim; i++)
+  {
+    for (uint8_t j = 0; j < dim; j++) {
+      bn_inner_product(ip, vect[i], dual_vect[j]);
+
+      if (i == j)
+        is_dual_pair &= (bn_cmp(ip, one) == RLC_EQ);
+      else
+        is_dual_pair &= bn_is_zero(ip);
+    }
+  }
+
+  for (uint8_t i = 0; i < dim; i++) {
+    bn_vect_clear(vect[i]);
+    bn_vect_clear(dual_vect[i]);
+  }
+  bn_free(one);
+
+  return is_dual_pair;
+}
+
 int mat_fprint(FILE * file, int format, const mat_t mat)
 {
   char str[RLC_BN_BITS + 2];
