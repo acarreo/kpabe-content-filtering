@@ -42,6 +42,7 @@ void mat_rand(mat_t mat);
 void mat_product(mat_t dest, const mat_t A, const mat_t B);
 void mat_rand_inv(mat_t A, mat_t inv_A);
 bool mat_is_dual_pair(const mat_t mat, const mat_t dual_mat);
+bool mat_rand_dual_mat(mat_t mat, mat_t dual_mat, uint8_t dim);
 bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index);
 void mat_clear(mat_t mat);
 

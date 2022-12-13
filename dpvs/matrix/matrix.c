@@ -166,7 +166,6 @@ bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index)
 
   return true;
 }
-int mat_fprint(FILE * file, int format, const mat_t mat)
 
 void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
 {
@@ -237,6 +236,23 @@ bool mat_is_dual_pair(const mat_t mat, const mat_t dual_mat)
   bn_free(one);
 
   return is_dual_pair;
+}
+
+bool mat_rand_dual_mat(mat_t mat, mat_t dual_mat, uint8_t dim)
+{
+  bool ret = false;
+  mat_t tmp;
+
+  if (mat_init(mat, dim) && mat_init(dual_mat, dim) && mat_init(tmp, dim))
+  {
+    do {
+      mat_rand_inv(mat, tmp);
+      mat_transpose(dual_mat, tmp);
+      mat_clear(tmp);
+    } while (!(ret = mat_is_dual_pair(mat, dual_mat)));
+  }
+
+  return ret;
 }
 
 int mat_fprint(FILE * file, int format, const mat_t mat)
