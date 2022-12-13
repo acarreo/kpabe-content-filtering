@@ -97,24 +97,17 @@ void mat_eye(mat_t mat, uint8_t dim)
 
 void mat_transpose(mat_t dest, const mat_t src)
 {
-    if (!mat_is_empty(src))
-    {
-        mat_clear(dest);
-        mat_init(dest, mat_dim(src));
-
-        for (uint8_t i = 0; i < mat_dim(src); i++)
-            for (uint8_t j = 0; j < mat_dim(src); j++)
-                bn_copy(MAT(dest, i, j), MAT(src, j, i));
-    }
+  if (mat_dim(dest) == mat_dim(src))
+    for (uint8_t i = 0; i < mat_dim(src); i++)
+      for (uint8_t j = 0; j < mat_dim(src); j++)
+        bn_copy(GET(dest, i, j), GET(src, j, i));
 }
 
 void mat_copy(mat_t dest, const mat_t src)
 {
-    mat_clear(dest);
-
-    if (mat_init(dest, mat_dim(src)))
-        for (int i = 0; i < mat_dim(src) * mat_dim(src); i++)
-            bn_copy(dest->entries[i], src->entries[i]);
+  if (mat_dim(dest) == mat_dim(src))
+    for (int i = 0; i < mat_dim(src) * mat_dim(src); i++)
+      bn_copy(dest->entries[i], src->entries[i]);
 }
 
 void mat_rand(mat_t mat)
