@@ -160,8 +160,8 @@ void mat_product(mat_t dest, const mat_t A, const mat_t B)
 
 void mat_rand_inv(mat_t A, mat_t inv_A)
 {
-    mat_rand(A);
-    while (!mat_inv(inv_A, A)) mat_rand(A);
+  if (!mat_is_empty(A) && mat_dim(A) == mat_dim(inv_A))
+    do { mat_rand(A); } while (!mat_invert_matrix(inv_A, A));
 }
 
 bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index)
