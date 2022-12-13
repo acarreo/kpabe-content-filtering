@@ -4,7 +4,7 @@
 /********************* Inverse of matrices of dim <= 2 ***********************/
 static inline bool invert_matrix_1x1(mat_t dest, const mat_t src)
 {
-    bn_mod_inv(MAT(dest, 0, 0), MAT(src, 0, 0), Fq);
+    bn_mod_inv(GET(dest, 0, 0), GET(src, 0, 0), Fq);
     return true;
 }
 
@@ -23,22 +23,22 @@ bool invert_matrix_2x2(mat_t dest, const mat_t src)
         bn_new(b);
         bn_new(det);
 
-        bn_mod_mul(a, MAT(src, 0, 0), MAT(src, 1, 1), Fq);
-        bn_mod_mul(b, MAT(src, 0, 1), MAT(src, 1, 0), Fq);
+        bn_mod_mul(a, GET(src, 0, 0), GET(src, 1, 1), Fq);
+        bn_mod_mul(b, GET(src, 0, 1), GET(src, 1, 0), Fq);
         bn_mod_sub(det, a, b, Fq);
         
         if (!bn_is_zero(det))
         {
             bn_mod_inv(det, det, Fq);
 
-            bn_mod_mul(MAT(dest, 0, 0), MAT(src, 1, 1), det, Fq);
-            bn_mod_mul(MAT(dest, 1, 1), MAT(src, 0, 0), det, Fq);
+            bn_mod_mul(GET(dest, 0, 0), GET(src, 1, 1), det, Fq);
+            bn_mod_mul(GET(dest, 1, 1), GET(src, 0, 0), det, Fq);
 
             bn_neg(det, det);
             bn_mod(det, det, Fq);
 
-            bn_mod_mul(MAT(dest, 0, 1), MAT(src, 0, 1), det, Fq);
-            bn_mod_mul(MAT(dest, 1, 0), MAT(src, 1, 0), det, Fq);
+            bn_mod_mul(GET(dest, 0, 1), GET(src, 0, 1), det, Fq);
+            bn_mod_mul(GET(dest, 1, 0), GET(src, 1, 0), det, Fq);
 
             is_inversible = true;
         }
@@ -88,8 +88,8 @@ bool LU_decompose(mat_t mat, uint8_t *P)
     {
       bn_zero(max_A);
       for (j = 0; j < dim; j++) {
-        if (bn_cmp(MAT(mat, i, j), max_A) == RLC_GT) {
-          bn_copy(max_A, MAT(mat, i, j));
+        if (bn_cmp(GET(mat, i, j), max_A) == RLC_GT) {
+          bn_copy(max_A, GET(mat, i, j));
         }
       }
 
@@ -108,8 +108,8 @@ bool LU_decompose(mat_t mat, uint8_t *P)
       /* Calculate the Upper part of the matrix:  i < j :   */
       for (i = 0; i < j; i++) {
         for (k = 0; k < i; k++) {
-          bn_mod_mul(tmp, MAT(mat, i, k), MAT(mat, k, j), Fq);
-          bn_mod_sub(MAT(mat, i, j), MAT(mat, i, j), tmp, Fq);
+          bn_mod_mul(tmp, GET(mat, i, k), GET(mat, k, j), Fq);
+          bn_mod_sub(GET(mat, i, j), GET(mat, i, j), tmp, Fq);
         }
       }
 
@@ -119,11 +119,11 @@ bool LU_decompose(mat_t mat, uint8_t *P)
       for (i = j; i < dim; i++)
       {
         for (k = 0; k < j; k++) {
-          bn_mod_mul(tmp, MAT(mat, i, k), MAT(mat, k, j), Fq);
-          bn_mod_sub(MAT(mat, i, j), MAT(mat, i, j), tmp, Fq);
+          bn_mod_mul(tmp, GET(mat, i, k), GET(mat, k, j), Fq);
+          bn_mod_sub(GET(mat, i, j), GET(mat, i, j), tmp, Fq);
         }
 
-        bn_mod_mul(max_tmp, MAT(mat, i, j), row_norm[i], Fq);
+        bn_mod_mul(max_tmp, GET(mat, i, j), row_norm->coord[i], Fq);
 
         if (bn_cmp(max_tmp, max_A) == RLC_GT || bn_cmp(max_tmp, max_A) == RLC_EQ) {
           bn_copy(max_A, max_tmp);
@@ -137,9 +137,9 @@ bool LU_decompose(mat_t mat, uint8_t *P)
         else
         {
           for (k = 0; k < dim; k++) {
-            bn_copy(max_tmp, MAT(mat, j, k));
-            bn_copy(MAT(mat, j, k), MAT(mat, imax, k));
-            bn_copy(MAT(mat, imax, k), max_tmp);
+            bn_copy(max_tmp, GET(mat, j, k));
+            bn_copy(GET(mat, j, k), GET(mat, imax, k));
+            bn_copy(GET(mat, imax, k), max_tmp);
           }
 
           bn_copy(row_norm[imax], row_norm[j]);
@@ -148,16 +148,15 @@ bool LU_decompose(mat_t mat, uint8_t *P)
 
       P[j] = imax;
 
-      if (bn_is_zero(MAT(mat, j, j))) {
-        fprintf(stderr, "What the fuck is that !\n");
+      if (bn_is_zero(GET(mat, j, j))) {
         RLC_THROW(ERR_NO_VALID);
       }
 
       if (j != dim-1)
       {
-        bn_mod_inv(max_tmp, MAT(mat, j, j), Fq);
+        bn_mod_inv(max_tmp, GET(mat, j, j), Fq);
         for (i = j+1; i < dim; i++) {
-          bn_mod_mul(MAT(mat, i, j), MAT(mat, i, j), max_tmp, Fq);
+          bn_mod_mul(GET(mat, i, j), GET(mat, i, j), max_tmp, Fq);
         }
       }
     }
@@ -205,11 +204,11 @@ void LU_substitution(bn_t *B, const mat_t mat, const uint8_t *P)
 
     for (int i = dim-1; i >= 0; i--) {
       for (int j = i+1; j < dim; j++) {
-        bn_mod_mul(tmp, MAT(mat, i, j), B[j], Fq);
+        bn_mod_mul(tmp, GET(mat, i, j), B->coord[j], Fq);
         bn_mod_sub(B[i], B[i], tmp, Fq);
       }
 
-      bn_mod_inv(tmp, MAT(mat, i, i), Fq);
+      bn_mod_inv(tmp, GET(mat, i, i), Fq);
       bn_mod_mul(B[i], B[i], tmp, Fq);
     }
   }
