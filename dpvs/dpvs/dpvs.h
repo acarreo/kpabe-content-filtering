@@ -1,17 +1,34 @@
-#ifndef _BASE_
-#define _BASE_
+#ifndef _DPVS_
+#define _DPVS_
 
-#include <relic.h>
-#include <inttypes.h>
-#include <stdbool.h>
-
-#include "matrix.h"
+#include "../matrix/matrix.h"
 
 typedef struct
 {
-    bn_t* coord;
-    uint8_t dim;
-} vect_st;
+  gt_t gt;
+  bn_t q;
+} group_setting_st;
+
+typedef group_setting_st group_setting_t[1];
+
+typedef struct
+{
+  uint8_t dim;
+  g1_t* coord;
+} g1_vect_st;
+
+typedef g1_vect_st g1_vect_t[1];
+
+typedef struct
+{
+  uint8_t dim;
+  g2_t* coord;
+} g2_vect_st;
+
+typedef g2_vect_st g2_vect_t[1];
+
+typedef struct
+{
 
 typedef vect_st vect_t[1];
 typedef mat_st  base_t[1];  /* Une base peut être vue comme une matrice */
