@@ -167,26 +167,29 @@ void mat_rand_inv(mat_t A, mat_t inv_A)
 }
 
 int mat_fprint(FILE * file, int format, const mat_t mat)
+
+void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
 {
-    char str[RLC_BN_BITS + 2];
-    int strlen;
+  uint8_t dim = vect1->dim;
 
-    fprintf(file, "%u %u\n", mat_dim(mat), mat_dim(mat));
+  bn_t tmp;
 
-    if (!mat_is_empty(mat))
+  bn_null(tmp);
+
+  if (dim == vect2->dim)
+  {
+    bn_new(tmp);
+    bn_zero(ip);
+    for (uint8_t i = 0; i < dim; i++)
     {
-        if (format < 2 || format > 64) format = 16;
+      bn_mod_mul(tmp, vect1->coord[i], vect2->coord[i], Fq);
+      bn_mod_add(ip, ip, tmp, Fq);
+    }
+  }
 
-        for (uint8_t i = 0; i < mat_dim(mat); i++)
-        {
-            for (uint8_t j = 0; j < mat_dim(mat); j++)
-            {
-                strlen = bn_size_str(MAT(mat, i, j), format);
-                bn_write_str(str, strlen, MAT(mat, i, j), format);
-                fprintf(file, "%s ", str);
-            }
-            fprintf(file, "\n");
-        }
+  bn_free(tmp);
+}
+
     }
 
     /* TODO Calculer proprement le nombre des elements ecrits dans le flux file */
