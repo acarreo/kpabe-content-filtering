@@ -46,6 +46,9 @@ void mat_clear(mat_t mat);
 
 int mat_fprint(FILE * file, int format, const mat_t mat);
 int mat_fread(FILE* file, int format, mat_t mat);
+
+bool invert_matrix(mat_t dest, const mat_t src);
+
 bool bn_vect_init(bn_vect_t vect, uint8_t dim);
 void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2);
 void bn_vect_clear(bn_vect_t vect);
