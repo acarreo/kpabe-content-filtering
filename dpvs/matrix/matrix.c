@@ -56,26 +56,26 @@ bool bn_vect_init(bn_vect_t vect, uint8_t dim)
 
 bool mat_cmp(const mat_t A, const mat_t B)
 {
-    bool test_cmp = false;
+  bool test_cmp = false;
 
-    if (mat_dim(A) == mat_dim(B))
-    {
-        test_cmp = true;
-        for (int i = 0; i < mat_dim(A) * mat_dim(A) && test_cmp; i++)
-            test_cmp = (bn_cmp(A->entries[i], B->entries[i]) == RLC_EQ);
-    }
+  if (mat_dim(A) == mat_dim(B))
+  {
+    test_cmp = true;
+    for (int i = 0; i < mat_dim(A) * mat_dim(A); i++)
+      test_cmp &= (bn_cmp(A->entries[i], B->entries[i]) == RLC_EQ);
+  }
 
-    return test_cmp;
+  return test_cmp;
 }
 
 bool mat_is_zero(const mat_t mat)
 {
-    bool is_zero = true;
+  bool is_zero = true;
 
-    for (int i = 0; i < mat_dim(mat) * mat_dim(mat) && is_zero; i++)
-        is_zero = bn_is_zero(mat->entries[i]);
+  for (int i = 0; i < mat_dim(mat) * mat_dim(mat); i++)
+    is_zero &= bn_is_zero(mat->entries[i]);
 
-    return is_zero;
+  return is_zero;
 }
 
 void mat_eye(mat_t mat, uint8_t dim)
