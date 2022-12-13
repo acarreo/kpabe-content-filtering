@@ -51,6 +51,10 @@ bool dpvs_init(dpvs_t dpvs, uint8_t dim);
 
 bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
 
+/* Compute the scalar multiplication of a vector */
+void dpvs_k_mul_vect(g1_vect_t dest, const g1_vect_t src, bn_t k);
+void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k);
+
 
 void dpvs_clear_base_vect(g1_vect_t bvect);
 void dpvs_clear_dual_base_vect(g2_vect_t dbvect);

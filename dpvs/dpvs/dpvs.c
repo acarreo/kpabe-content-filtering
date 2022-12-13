@@ -131,10 +131,21 @@ bool dpvs_gen(dpvs_t dpvs, uint8_t dim)
   return ret;
 }
 
+void dpvs_k_mul_vect(g1_vect_t dest, const g1_vect_t src, bn_t k)
+{
+  if (dest->dim == src->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++)
+      g1_mul(dest->coord[i], src->coord[i], k);
+  }
 }
 
+void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k)
 void get_vect_from_base(vect_t vect, const base_t base, uint8_t index)
 {
+  if (dest->dim == src->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++)
+      g2_mul(dest->coord[i], src->coord[i], k);
+  }
   if (index < base->dim)
     for (uint8_t j = 0; j < base->dim; j++)
       bn_copy(vect->coord[j], GET(base, index, j));
