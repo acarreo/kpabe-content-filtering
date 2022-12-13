@@ -190,10 +190,31 @@ void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
   bn_free(tmp);
 }
 
-    }
+int mat_fprint(FILE * file, int format, const mat_t mat)
+{
+  char str[RLC_BN_BITS + 2];
+  int strlen;
 
-    /* TODO Calculer proprement le nombre des elements ecrits dans le flux file */
-    return 2 + mat_dim(mat);
+  fprintf(file, "%u %u\n", mat_dim(mat), mat_dim(mat));
+
+  if (!mat_is_empty(mat))
+  {
+    if (format < 2 || format > 64) format = 16;
+
+    for (uint8_t i = 0; i < mat_dim(mat); i++)
+    {
+      for (uint8_t j = 0; j < mat_dim(mat); j++)
+      {
+        strlen = bn_size_str(GET(mat, i, j), format);
+        bn_write_str(str, strlen, GET(mat, i, j), format);
+        fprintf(file, "%s ", str);
+      }
+      fprintf(file, "\n");
+    }
+  }
+
+  /* TODO Calculer proprement le nombre des elements ecrits dans le flux file */
+  return 2 + mat_dim(mat);
 }
 
 void mat_clear(mat_t mat)
