@@ -17,11 +17,10 @@
 
 extern bn_t Fq; /* Declaration of the modulus */
 
-
 typedef struct
 {
-    bn_t * entries;
-    uint8_t dim;
+  bn_t * entries;
+  uint8_t dim;
 } mat_st;
 
 typedef struct
@@ -42,7 +41,6 @@ void mat_copy(mat_t dest, const mat_t src);
 void mat_rand(mat_t mat);
 void mat_product(mat_t dest, const mat_t A, const mat_t B);
 void mat_rand_inv(mat_t A, mat_t inv_A);
-
 bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index);
 void mat_clear(mat_t mat);
 
@@ -52,5 +50,10 @@ bool bn_vect_init(bn_vect_t vect, uint8_t dim);
 void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2);
 void bn_vect_clear(bn_vect_t vect);
 
+static __inline__ bool _error_alloc_fail_(void)
+{
+  fprintf(stderr, "MEMORY ALLOCATION failled\n");
+  return false;
+}
 
 #endif

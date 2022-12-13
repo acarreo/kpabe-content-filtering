@@ -3,10 +3,6 @@
 
 bn_t Fq;    /* Definition of modulus, it's declared in matrices.h */
 
-MAT_INLINE bool _error_mat_alloc_(void)
-{
-    fprintf(stderr, "ALLOC matrix failled\n");
-    return false;
 }
 
 bool bn_vect_init(bn_vect_t vect, uint8_t dim)
