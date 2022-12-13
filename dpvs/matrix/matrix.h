@@ -43,6 +43,7 @@ void mat_rand(mat_t mat);
 void mat_product(mat_t dest, const mat_t A, const mat_t B);
 void mat_rand_inv(mat_t A, mat_t inv_A);
 
+bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index);
 void mat_clear(mat_t mat);
 
 int mat_fprint(FILE * file, int format, const mat_t mat);

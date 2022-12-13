@@ -166,6 +166,15 @@ void mat_rand_inv(mat_t A, mat_t inv_A)
     while (!mat_inv(inv_A, A)) mat_rand(A);
 }
 
+bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index)
+{
+  if (index >= mat_dim(mat) || mat_dim(mat) != row->dim) return false;
+
+  for (uint8_t j = 0; j < mat_dim(mat); j++)
+    bn_copy(row->coord[j], GET(mat, index, j));
+
+  return true;
+}
 int mat_fprint(FILE * file, int format, const mat_t mat)
 
 void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
