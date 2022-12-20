@@ -147,27 +147,6 @@ void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k)
   }
 }
 
-void dpvs_inner_product(gt_t ip, const g1_vect_t vect, g2_vect_t dvect)
-{
-  gt_t tmp;
-
-  gt_null(tmp);
-
-  if (vect->dim == dvect->dim)
-  {
-    gt_new(tmp);
-    gt_set_unity(ip);
-
-    for (uint8_t i = 0; i < vect->dim; i++)
-    {
-      pc_map(tmp, vect->coord[i], dvect->coord[i]);
-      gt_mul(ip, ip, tmp);
-    }
-  }
-
-  gt_free(tmp);
-}
-
 void dpvs_g1_vect_copy (g1_vect_t dest, g1_vect_t src) {
   if (dest->dim == src->dim)
     for (uint8_t i = 0; i < src->dim; i++)

@@ -53,9 +53,14 @@ bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
 void dpvs_k_mul_vect(g1_vect_t dest, const g1_vect_t src, bn_t k);
 void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k);
 
-void dpvs_inner_product(gt_t ip, const g1_vect_t vect, g2_vect_t dvect);
 void dpvs_g1_vect_copy (g1_vect_t dest, g1_vect_t src);
 void dpvs_g2_vect_copy (g2_vect_t dest, g2_vect_t src);
+
+static __inline__ void dpvs_inner_product(gt_t ip, const g1_vect_t vect, g2_vect_t dvect)
+{
+  if (vect->dim == dvect->dim)
+    pp_map_sim_oatep_k12(ip, vect->coord, dvect->coord, vect->dim);
+}
 
 void dpvs_clear_base_vect(g1_vect_t bvect);
 void dpvs_clear_dual_base_vect(g2_vect_t dbvect);
