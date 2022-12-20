@@ -1,4 +1,4 @@
-#include "kp-abe.h"
+#include "kpabe.h"
 
 bool ABE_pub_key_new(ABE_pub_key_t pk)
 {

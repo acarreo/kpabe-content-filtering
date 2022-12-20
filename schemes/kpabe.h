@@ -1,7 +1,7 @@
 #ifndef _KP_ABE_
 #define _KP_ABE_
 
-#include "dpvs.h"
+#include "../dpvs/dpvs.h"
 
 #define ND  3
 #define NG  4
