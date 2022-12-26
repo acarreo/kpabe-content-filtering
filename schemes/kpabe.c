@@ -28,7 +28,7 @@ bool ABE_ms_key_new(ABE_ms_key_t msk)
   return false;
 }
 
-bool ABE_setup(ABE_pub_key_t pk, ABE_ms_key_t msk)
+bool ABE_gen_params(ABE_pub_key_t pk, ABE_ms_key_t msk)
 {
   bool ret = true;
   dpvs_t D, G, F, H;
