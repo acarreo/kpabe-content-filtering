@@ -4,8 +4,8 @@
 CXXFLAGS = -g -Wall -Wunused-function
 CXX = gcc
 
-RELIC_LIB=/usr/lib/librelic_s.a
-RELIC_INCLUDE=/usr/include/relic
+RELIC_LIB=/usr/lib/librelic_s.a_bls12-381
+RELIC_INCLUDE=/usr/include/relic_bls12-381
 
 all: test
 
