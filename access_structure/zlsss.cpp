@@ -99,7 +99,7 @@ OpenABELSSS::shareSecret(const OpenABEFunctionInput *input, ZP &elt)
   // Verify that the input is a supported type (OpenABEPolicy)
   const OpenABEPolicy *policy = dynamic_cast<const OpenABEPolicy*>(input);
   if (policy == nullptr) {
-      //OpenABE_LOG_AND_THROW("Sharing input must be a Policy", OpenABE_ERROR_INVALID_INPUT);
+    //OpenABE_LOG_AND_THROW("Sharing input must be a Policy", OpenABE_ERROR_INVALID_INPUT);
   }
   // Clear any existing results
   this->clearExistingResults();
@@ -128,19 +128,17 @@ OpenABELSSS::shareSecret(const OpenABEFunctionInput *input, ZP &elt)
 bool
 OpenABELSSS::recoverCoefficients(OpenABEPolicy *policy, OpenABEAttributeList *attrList)
 {
-  //ASSERT_NOTNULL(policy);
-  //ASSERT_NOTNULL(attrList);
   // Clear any existing results
   this->clearExistingResults();
 
   // Recursively compute the coefficients
   if (this->performCoefficientRecovery(policy, attrList) == false) {
-      // If there was an error, clear any partial results and
-      // return false (indicating failure).
-      this->m_ResultMap.clear();
+    // If there was an error, clear any partial results and
+    // return false (indicating failure).
+    this->m_ResultMap.clear();
 
-  // Return false
-  return false;
+    // Return false
+    return false;
   }
 
   // Success, return true
@@ -236,34 +234,24 @@ OpenABELSSS::performCoefficientRecovery(OpenABEPolicy *policy, OpenABEAttributeL
 void
 OpenABELSSS::iterativeShareSecret(OpenABETreeNode *treeNode, ZP &elt)
 {
-    std::stack<OpenABETreeNode*> nodes;
-    std::stack<ZP> eltList;
-    OpenABETreeNode *visitedNode = NULL;
-    ZP theSecret, coefficient;
-    //this->m_Pairing->initZP(theSecret, 0);
-    //this->m_Pairing->initZP(coefficient, 0);
+  std::stack<OpenABETreeNode*> nodes;
+  std::stack<ZP> eltList;
+  OpenABETreeNode *visitedNode = NULL;
+  ZP theSecret, coefficient;
+  BPGroup group(OpenABE_NONE_ID);
 
-  bn_null(theSecret.m_ZP);
-  bn_new(theSecret.m_ZP);
+  bn_null(theSecret.m_ZP); bn_new(theSecret.m_ZP);
   bn_zero(theSecret.m_ZP);
+  theSecret.setOrder(group.order);
 
-  bn_t order_tmp;
-  bn_null(order_tmp); bn_new(order_tmp);
-  bn_zero(order_tmp);
-
-  ep_curve_get_ord(order_tmp);
-  theSecret.setOrder(order_tmp);
-
-
-  bn_null(coefficient.m_ZP);
-  bn_new(coefficient.m_ZP);
+  bn_null(coefficient.m_ZP); bn_new(coefficient.m_ZP);
   bn_zero(coefficient.m_ZP);
 
-  coefficient.setOrder(order_tmp);
+  coefficient.setOrder(group.order);
 
-    // push the root to the stack
-    nodes.push(treeNode);
-    eltList.push(elt);
+  // push the root to the stack
+  nodes.push(treeNode);
+  eltList.push(elt);
   OpenABEElementList coefficients;
 
   do {
@@ -378,7 +366,7 @@ OpenABELSSS::iterativeCoefficientRecover(OpenABETreeNode *treeNode, ZP &inCoeff)
       this->addShareToResults(visitedNode, tmpInCoeff);
       result = true;
     }
-    	else {
+    else {
       // First get the number of subnodes for this tree node.
       uint32_t numSubnodes = visitedNode->getNumSubnodes();
 
@@ -411,7 +399,7 @@ OpenABELSSS::iterativeCoefficientRecover(OpenABETreeNode *treeNode, ZP &inCoeff)
           result = true;
         }
       }
-    	}
+    }
   } while(!nodes.empty());
 
   return result;
@@ -584,30 +572,28 @@ bool iterativeScanTree(OpenABETreeNode *treeNode, OpenABEAttributeList *attribut
     isInternalNode = true;
     // peek at the top
     topNode = nodes.top();
-    //ASSERT_NOTNULL(topNode);
     switch (topNode->getNodeType()) {
       case GATE_TYPE_AND:
-          // AND gate: all subnodes must be present to satisfy subtree
-          threshold = topNode->getNumSubnodes();
-          break;
+        // AND gate: all subnodes must be present to satisfy subtree
+        threshold = topNode->getNumSubnodes();
+        break;
       case GATE_TYPE_OR:
-          // OR gate: any one subnode will satisfy the entire subtree
-          threshold = 1;
-          break;
+        // OR gate: any one subnode will satisfy the entire subtree
+        threshold = 1;
+        break;
 #if 0
       case GATE_TYPE_THRESHOLD:
-          // THRESHOLD gate: any k-of-n subnodes will satisfy the entire subtree
-          threshold = topNode->getThresholdValue();
-          break;
+        // THRESHOLD gate: any k-of-n subnodes will satisfy the entire subtree
+        threshold = topNode->getThresholdValue();
+        break;
 #endif
       case GATE_TYPE_LEAF:
-          isInternalNode = false;
-          break;
+        isInternalNode = false;
+        break;
       default:
-          // Unrecognized node type
-          //OpenABE_LOG_AND_THROW("Unrecognized node type", OpenABE_ERROR_SECRET_SHARING_FAILED);
-          cout << "unrecognized node type" << endl;
-          break;
+        // Unrecognized node type
+        cout << "unrecognized node type" << endl;
+        break;
     }
 
     allSubnodesVisited = true;
@@ -651,7 +637,7 @@ bool iterativeScanTree(OpenABETreeNode *treeNode, OpenABEAttributeList *attribut
 // comparator for pair of integers
 struct less_than {
     bool operator()(const std::pair<int,int> &left, const std::pair<int,int> &right) {
-        return (left.second < right.second);
+      return (left.second < right.second);
     }
 };
 
@@ -666,9 +652,9 @@ bool determineIfNodeShouldBeMarked(uint32_t threshold, OpenABETreeNode *node)
     int sum = 0;
     for(uint32_t i = 0; i < node->getNumSubnodes(); i++) {
       if(!node->getSubnode(i)->getMark()) {
-          // mark this node as not being satisfied
-          // (found at least one unmatched subnode)
-          result = false;
+        // mark this node as not being satisfied
+        // (found at least one unmatched subnode)
+        result = false;
       }
       sum += node->getSubnode(i)->getNumSatisfied();
     }
@@ -716,7 +702,7 @@ bool determineIfNodeShouldBeMarked(uint32_t threshold, OpenABETreeNode *node)
     }
   }
   else {
-      result = false;
+    result = false;
   }
 
   return result;
