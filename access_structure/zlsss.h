@@ -88,8 +88,6 @@ typedef OpenABELSSSRowMap::iterator OpenABELSSSRowMapIterator;
 
 class OpenABELSSS : public ZObject {
 protected:
-  //OpenABEPairing *m_Pairing;
-  //OpenABERNG *m_RNG;
   OpenABELSSSRowMap	m_ResultMap;
   bool debug;
   ZP zero, iPlusOne, indexPlusOne;
@@ -110,8 +108,8 @@ protected:
   inline ZP calculateCoefficient(OpenABETreeNode *treeNode, uint32_t index, uint32_t threshold, uint32_t total);
 
 public:
-  OpenABELSSS(int d);                      
-  OpenABELSSS(bn_t m_order);
+  OpenABELSSS();
+  // OpenABELSSS(bn_t m_order);
   ~OpenABELSSS();
     
   // Public secret sharing and recovery methods

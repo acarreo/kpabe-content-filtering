@@ -66,69 +66,14 @@ OpenABELSSSElement::OpenABELSSSElement(std::string label, ZP &element)
  * Constructor for the OpenABELSSS class.
  *
  */
-
-/*OpenABELSSS::OpenABELSSS(OpenABEPairing *pairing) : ZObject(), m_Pairing(pairing)
-{
-  this->debug = false;
-  //this->m_Pairing->addRef();
-  //this->m_RNG = rng;
-  //this->m_Pairing->initZP(zero, 0);
-  bn_null(zero.m_ZP);
-  bn_new(zero.m_ZP);
-  bn_zero(zero.m_ZP);
-
-  bn_t order_tmp;
-  bn_null(order_tmp); bn_new(order_tmp);
-  bn_zero(order_tmp);
-
-  ep_curve_get_ord(order_tmp);
-  zero.setOrder(order_tmp);
-
-}
-*/
-OpenABELSSS::OpenABELSSS(int d) : ZObject()
-{
-  this->debug = false;
-  //this->m_Pairing->addRef();
-  //this->m_RNG = rng;
-  //this->m_Pairing->initZP(zero, 0);
-  bn_null(zero.m_ZP);
-  bn_new(zero.m_ZP);
-  bn_zero(zero.m_ZP);
-
-  bn_t order_tmp;
-  bn_null(order_tmp); bn_new(order_tmp);
-  bn_zero(order_tmp);
-
-  ep_curve_get_ord(order_tmp);
-  zero.setOrder(order_tmp);
-
-}
-
-
-
-
-OpenABELSSS::OpenABELSSS(bn_t m_order) : ZObject() {
-  /*this->debug = false;
-  this->m_Pairing->addRef();
-  //this->m_RNG = rng;
-  this->m_Pairing->initZP(zero, 0);
-  zero = (uint32_t)0; zero.setOrder(m_order);
-
-  bn_copy(this->order, m_order);
-*/
-}
-
+OpenABELSSS::OpenABELSSS() : ZObject() {}
 
 /*!
  * Destructor for the OpenABECiphertext class.
  *
  */
 
-OpenABELSSS::~OpenABELSSS()
-{
-  //this->m_Pairing->deRef();
-}
+OpenABELSSS::~OpenABELSSS() {}
 
 /*!
  * Given a secret (an element of ZP) and a OpenABEFunctionInput describing
