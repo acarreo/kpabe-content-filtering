@@ -106,12 +106,6 @@ OpenABELSSS::shareSecret(const OpenABEFunctionInput *input, ZP &elt)
 
   // Recursively share the secret
   this->performSecretSharing(policy, elt);
-//  {
-//      // If there was an error, clear any partial results and
-//      // throw a general exception
-//      this->m_ResultMap.clear();
-//      OpenABE_LOG_AND_THROW("Could not share secret", OpenABE_ERROR_SECRET_SHARING_FAILED);
-//  }
 }
 
 /*!
@@ -205,7 +199,6 @@ OpenABELSSS::performCoefficientRecovery(OpenABEPolicy *policy, OpenABEAttributeL
   // computing the necessary coefficients at each stage. When we hit a leaf node,
   // the coefficient will be added to the m_ResultMap result list.
   ZP one;
-  //this->m_Pairing->initZP(one, 1);
   BPGroup group(OpenABE_NONE_ID);
 
   bn_null(one.m_ZP); bn_new(one.m_ZP);
@@ -256,7 +249,6 @@ OpenABELSSS::iterativeShareSecret(OpenABETreeNode *treeNode, ZP &elt)
     theSecret    = eltList.top();
     nodes.pop();
     eltList.pop();
-    //ASSERT_NOTNULL(visitedNode);
 
     // Base case:
     // If the node is a leaf node, simply add the given element to the results
@@ -275,7 +267,6 @@ OpenABELSSS::iterativeShareSecret(OpenABETreeNode *treeNode, ZP &elt)
       for (uint32_t i = 0; i < threshold; i++) {
         // Each coefficient is a random element of same field
         // as the element
-        //ZP coefficient = this->m_Pairing->randomZP();
 
         coefficient.setRandom(group.order);
         coefficients.push_back(coefficient);
@@ -446,8 +437,6 @@ OpenABELSSS::addShareToResults(OpenABETreeNode *treeNode, ZP &elt)
   OpenABELSSSElement lsssElement(treeNode->getCompleteLabel(), elt);
   this->m_ResultMap[this->makeUniqueLabel(treeNode)] = lsssElement;
   // JAA: uncomment to debug labels
-  // cout << "Unique label: " << this->makeUniqueLabel(treeNode) << endl;
-  // cout << treeNode->getCompleteLabel() << " -> " << elt << endl;
 }
 
 /*!
@@ -567,8 +556,6 @@ bool iterativeScanTree(OpenABETreeNode *treeNode, OpenABEAttributeList *attribut
     } else {
       // Visit the node
       // This is a leaf node, so let's see if there's a match
-      // cout << "Find attribute: " << topNode->getLabel() << " in " << attributeList->toString() << endl;
-      // cout << "Result: " << attributeList->matchAttribute(topNode->getLabel()) << endl;
       bool leaf_matched = attributeList->matchAttribute(topNode->getCompleteLabel());
       topNode->setMark(leaf_matched, leaf_matched ? 1 : 0);
       // mark this node as visited then pop from the stack
@@ -579,17 +566,12 @@ bool iterativeScanTree(OpenABETreeNode *treeNode, OpenABEAttributeList *attribut
     if (allSubnodesVisited && isInternalNode) {
       // visit the internal node
       determineIfNodeShouldBeMarked(threshold, topNode);
-      // bool internanode_satisfied = determineIfNodeShouldBeMarked(threshold, topNode);
-      // if (internanode_satisfied) {
-      //    cout << "Gate satisfied. Num matches: " << topNode->getNumSatisfied() endl;
-      // }
+
       topNode->m_Visited = true;
       nodes.pop();
     }
   }
 
-  // cout << "Satisfied: " << (treeNode->getMark() ? "true" : "false") << endl;
-  // cout << "How many matches: " << treeNode->getNumSatisfied() << endl;
   return treeNode->getMark();
 }
 
@@ -643,8 +625,6 @@ bool determineIfNodeShouldBeMarked(uint32_t threshold, OpenABETreeNode *node)
     // determine satisfiability of subtree
     for (size_t k = 0; k < list.size(); k++) {
       i = list[k].first;
-      // cout << "index: " << i << ", subnodes: " << list[k].second <<
-      //        ", satisfied: " << (node->getSubnode(i)->getMark() ? "true": "false") << endl;
       if (node->getSubnode(i)->getMark() && enough_nodes > 0) {
         enough_nodes--;
         result = true;
