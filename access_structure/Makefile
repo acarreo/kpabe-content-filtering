@@ -1,25 +1,21 @@
-.PHONY: all test clean
+.PHONY: all compile clean
 
-CXX = g++
-CXXFLAGS = -Wall -g
-LDFLAGS = /usr/lib/librelic_s.a_bls12-381 -lgmp
-EXE=test_policy.out
+OBJ_DIR = build
+SRC = $(wildcard *.cpp)
+OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
 
-RELIC_INCLUDE=/usr/include/relic_bls12-381
-LEGACY_OBJ = zobject.o zfunctioninput.o zattributelist.o zpolicy.o zdriver.o zscanner.o zparser.tab.o zgroup.o zlsss.o zelement_bp.o
+all: compile
 
-all: $(EXE)
+compile: $(OBJ_DIR) $(OBJ) $(OBJ_DIR)/zparser.tab.o
 
-$(EXE):
-	$(CXX) $(CXXFLAGS) -c legacy/zattributelist.cpp legacy/zfunctioninput.cpp legacy/zobject.cpp legacy/zpolicy.cpp
-	$(CXX) $(CXXFLAGS) -c legacy/parser/zdriver.cpp legacy/parser/zscanner.cpp legacy/parser/zparser.tab.cc
-	$(CXX) $(CXXFLAGS) -c legacy/arith/zgroup.cpp
-	$(CXX) $(CXXFLAGS) -c legacy/arith/zelement_bp.cpp -I$(RELIC_INCLUDE)
-	$(CXX) $(CXXFLAGS) -c legacy/lsss/zlsss.cpp -I$(RELIC_INCLUDE)
-	$(CXX) -o $@ $(CXXFLAGS) $(LEGACY_OBJ) -I$(RELIC_INCLUDE) test_policy.cpp $(LDFLAGS)
+$(OBJ_DIR):
+	@mkdir -p $@
 
-test: $(EXE)
-	./$(EXE) logic "A5 and ((A1 and A2) or (A3 and A4))" "A5|A1|A2"
+$(OBJ_DIR)/%.o: %.cpp
+	$(CXX) -o $@ -c $< $(CXXFLAGS) -I$(RELIC_INCLUDE)
+
+$(OBJ_DIR)/zparser.tab.o: zparser.tab.cc
+	$(CC) -o $@ -c $< $(CXXFLAGS)
 
 clean:
-	rm -f *.o *.out *~
+	rm -rf $(OBJ_DIR) *.o *~
