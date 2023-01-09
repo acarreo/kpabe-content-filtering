@@ -28,8 +28,9 @@ typedef ABE_pub_key_st ABE_pub_key_t[1];
 typedef ABE_master_key_st ABE_ms_key_t[1];
 
 
-bool ABE_pub_key_new(ABE_pub_key_t pk);
-bool ABE_ms_key_new(ABE_ms_key_t msk);
+
+bool ABE_pub_key_init(ABE_pub_key_t pk);
+bool ABE_ms_key_init(ABE_ms_key_t msk);
 bool ABE_gen_params(ABE_pub_key_t pk, ABE_ms_key_t msk);
 
 // bool ABE_extract(ABE_sk_t sk, ABE_ms_key_t msk, (A, WL, BL));

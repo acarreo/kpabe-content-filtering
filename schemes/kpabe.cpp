@@ -1,6 +1,6 @@
 #include "kpabe.h"
 
-bool ABE_pub_key_new(ABE_pub_key_t pk)
+bool ABE_pub_key_init(ABE_pub_key_t pk)
 {
   if (dpvs_init_base_vect(pk->d1, ND) && dpvs_init_base_vect(pk->d3, ND) &&
       dpvs_init_base_vect(pk->g1, NG) && dpvs_init_base_vect(pk->g2, NG) &&
@@ -14,7 +14,7 @@ bool ABE_pub_key_new(ABE_pub_key_t pk)
   return false;
 }
 
-bool ABE_ms_key_new(ABE_ms_key_t msk)
+bool ABE_ms_key_init(ABE_ms_key_t msk)
 {
   if (dpvs_init_dual_base_vect(msk->d1, ND) && dpvs_init_dual_base_vect(msk->d3, ND) &&
       dpvs_init_dual_base_vect(msk->g1, NG) && dpvs_init_dual_base_vect(msk->g2, NG) &&
@@ -33,7 +33,7 @@ bool ABE_gen_params(ABE_pub_key_t pk, ABE_ms_key_t msk)
   bool ret = true;
   dpvs_t D, G, F, H;
 
-  if (ABE_pub_key_new(pk) && ABE_ms_key_new(msk)) {
+  if (ABE_pub_key_init(pk) && ABE_ms_key_init(msk)) {
     if (dpvs_gen(D, ND) && dpvs_gen(G, NG) && dpvs_gen(F, NF) && dpvs_gen(H, NH))
     {
       /* Public key */
