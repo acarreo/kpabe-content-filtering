@@ -32,13 +32,33 @@
 ///	\author J. Ayo Akinyele
 ///
 
+#if 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#include "defs.h"
+#include <assert.h>
+#include <sched.h>
+#include <stdbool.h>
+#include <unistd.h>
+
+#include "zattributelist.h"
+#include "zconstants.h"
+#include "zinteger.h"
+#include "zpolicy.h"
+#include "zbytestring.h"
+#include "zfunctioninput.h"
+#include "zobject.h"
+
+#include "zgroup.h"
+#include "zelement_bp.h"
+#include "zlsss.h"
+
+extern "C" {
+  #include "zelement.h"
+}
 
 using namespace std;
 
@@ -139,3 +159,4 @@ int main(int argc, char **argv)
 
   return -1;
 }
+#endif
