@@ -1,17 +1,19 @@
 
-.PHONY: all clean
+.PHONY: all compile clean
 
-CXXFLAGS = -g -Wall -Wunused-function
-CXX = gcc
+OBJ_DIR = build
+SRC = matrix.c inv_mat.c dpvs.c
+OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.c=.o))
 
-RELIC_LIB=/usr/lib/librelic_s.a_bls12-381
-RELIC_INCLUDE=/usr/include/relic_bls12-381
+all: compile
 
-all: test
+compile: $(OBJ_DIR) $(OBJ)
 
-test:
-	$(CXX) $(CXXFLAGS) -I$(RELIC_INCLUDE) -c matrix.c inv_mat.c dpvs.c test.c test_main.c
-	$(CXX) -o test.out $(CXXFLAGS) *.o $(RELIC_LIB) -lgmp
+$(OBJ_DIR):
+	@mkdir -p $@
+
+$(OBJ_DIR)/%.o: %.c
+	$(CC) -o $@ -c $< $(CXXFLAGS) -I$(RELIC_INCLUDE)
 
 clean:
-	rm -f *.o test.out *~
+	rm -rf $(OBJ_DIR) *.o *~
