@@ -206,17 +206,11 @@ OpenABELSSS::performCoefficientRecovery(OpenABEPolicy *policy, OpenABEAttributeL
   // the coefficient will be added to the m_ResultMap result list.
   ZP one;
   //this->m_Pairing->initZP(one, 1);
+  BPGroup group(OpenABE_NONE_ID);
 
- bn_null(one.m_ZP);
- bn_new(one.m_ZP);
- bn_set_dig(one.m_ZP, 1);
-
- bn_t order_tmp;
- bn_null(order_tmp); bn_new(order_tmp);
- bn_zero(order_tmp);
-
- ep_curve_get_ord(order_tmp);
- one.setOrder(order_tmp);
+  bn_null(one.m_ZP); bn_new(one.m_ZP);
+  bn_set_dig(one.m_ZP, 1);
+  one.setOrder(group.order);
 
   return iterativeCoefficientRecover(node, one);
 }
@@ -283,14 +277,7 @@ OpenABELSSS::iterativeShareSecret(OpenABETreeNode *treeNode, ZP &elt)
         // as the element
         //ZP coefficient = this->m_Pairing->randomZP();
 
-        bn_t order_tmp;
-        bn_null(order_tmp); bn_new(order_tmp);
-        ep_curve_get_ord(order_tmp);
-        coefficient.setOrder(order_tmp);
-
-        bn_rand(coefficient.m_ZP, RLC_POS, bn_bits(order_tmp));
-        bn_mod(coefficient.m_ZP, coefficient.m_ZP, order_tmp);
-
+        coefficient.setRandom(group.order);
         coefficients.push_back(coefficient);
       }
       // set position 0 as the passed in secret
@@ -327,24 +314,15 @@ OpenABELSSS::iterativeCoefficientRecover(OpenABETreeNode *treeNode, ZP &inCoeff)
   std::stack<ZP> coeffs;
   OpenABETreeNode *visitedNode = NULL;
   ZP tmpInCoeff, coefficient;
+  BPGroup group(OpenABE_NONE_ID);
 
-  bn_null(tmpInCoeff.m_ZP);
-  bn_new(tmpInCoeff.m_ZP);
+  bn_null(tmpInCoeff.m_ZP); bn_new(tmpInCoeff.m_ZP);
   bn_zero(tmpInCoeff.m_ZP);
+  tmpInCoeff.setOrder(group.order);
 
-  bn_t order_tmp;
-  bn_null(order_tmp); bn_new(order_tmp);
-  bn_zero(order_tmp);
-
-  ep_curve_get_ord(order_tmp);
-  tmpInCoeff.setOrder(order_tmp);
-
-
-  bn_null(coefficient.m_ZP);
-  bn_new(coefficient.m_ZP);
+  bn_null(coefficient.m_ZP); bn_new(coefficient.m_ZP);
   bn_zero(coefficient.m_ZP);
-
-  coefficient.setOrder(order_tmp);
+  coefficient.setOrder(group.order);
 
   // push the root to the stack
   nodes.push(treeNode);
@@ -420,40 +398,28 @@ OpenABELSSS::iterativeCoefficientRecover(OpenABETreeNode *treeNode, ZP &inCoeff)
 ZP
 OpenABELSSS::calculateCoefficient(OpenABETreeNode *treeNode, uint32_t index, uint32_t threshold, uint32_t total)
 {
+  BPGroup group(OpenABE_NONE_ID);
   ZP result;
 
-  bn_null(result.m_ZP);
-  bn_new(result.m_ZP);
+  bn_null(result.m_ZP); bn_new(result.m_ZP);
   bn_set_dig(result.m_ZP, 1);
-
-  bn_t order_tmp;
-  bn_null(order_tmp); bn_new(order_tmp);
-  bn_zero(order_tmp);
-
-  ep_curve_get_ord(order_tmp);
-  result.setOrder(order_tmp);
+  result.setOrder(group.order);
 
   bn_null(this->indexPlusOne.m_ZP);
   bn_new(this->indexPlusOne.m_ZP);
   bn_set_dig(this->indexPlusOne.m_ZP, index + 1);
 
-  this->indexPlusOne.setOrder(order_tmp);
+  this->indexPlusOne.setOrder(group.order);
 
   // Product for all marked subnodes (excluding index) of ( (0 - (X(i))) / (X(subnode_index) - (X(i))) )
   // Note that X(i) = i+1.
   for (uint32_t i = 0; i < threshold; i++) {
     /* Check if this subnode is being used for the recovery.	*/
-    //this->m_Pairing->initZP(this->iPlusOne, i + 1);
 
     bn_null(this->iPlusOne.m_ZP);
     bn_new(this->iPlusOne.m_ZP);
     bn_set_dig(this->iPlusOne.m_ZP, i+1);
-
-    bn_t order_tmp;
-    bn_null(order_tmp); bn_new(order_tmp);
-    bn_zero(order_tmp);
-    ep_curve_get_ord(order_tmp);
-    this->iPlusOne.setOrder(order_tmp);
+    this->iPlusOne.setOrder(group.order);
 
     if (treeNode->getSubnode(i)->getMark() == true) {
       if (i != index) {
@@ -500,24 +466,17 @@ OpenABELSSS::evaluatePolynomial(OpenABEElementList &coefficients, uint32_t x)
   // Make sure the coefficients vector is non-trivial
   assert(coefficients.size() > 0);
 
+  BPGroup group(OpenABE_NONE_ID);
   ZP share, xpow;
   unsigned int i = 0;
 
-  bn_null(share.m_ZP);
-  bn_new(share.m_ZP);
+  bn_null(share.m_ZP); bn_new(share.m_ZP);
   bn_zero(share.m_ZP);
+  share.setOrder(group.order);
 
-  bn_t order_tmp;
-  bn_null(order_tmp); bn_new(order_tmp);
-  bn_zero(order_tmp);
-
-  ep_curve_get_ord(order_tmp);
-  share.setOrder(order_tmp);
-
-  bn_null(xpow.m_ZP);
-  bn_new(xpow.m_ZP);
+  bn_null(xpow.m_ZP); bn_new(xpow.m_ZP);
   bn_set_dig(xpow.m_ZP, x);
-  xpow.setOrder(order_tmp);
+  xpow.setOrder(group.order);
 
   for (OpenABEElementListIterator it = coefficients.begin(); it != coefficients.end(); ++it) {
     share += ( *it * power(xpow, i) );
