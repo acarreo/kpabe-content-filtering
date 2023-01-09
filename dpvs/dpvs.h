@@ -1,5 +1,9 @@
-#ifndef _DPVS_
-#define _DPVS_
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef __DPVS_H__
+#define __DPVS_H__
 
 #include "matrix.h"
 
@@ -69,4 +73,8 @@ void dpvs_clear(dpvs_t dpvs);
 void set_params(void);
 void clear_params(void);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
