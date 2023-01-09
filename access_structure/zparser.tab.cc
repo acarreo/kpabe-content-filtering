@@ -45,14 +45,13 @@
 #include <string>
 #include <vector>
 
-#include "../zobject.h"
-//#include <openabe/utils/zerror.h>
-#include "../zconstants.h"
-#include "../zbytestring.h"
-#include "../zfunctioninput.h"
-#include "../zinteger.h"
-#include "../zattributelist.h"
-#include "../zpolicy.h"
+#include "zobject.h"
+#include "zconstants.h"
+#include "zbytestring.h"
+#include "zfunctioninput.h"
+#include "zinteger.h"
+#include "zattributelist.h"
+#include "zpolicy.h"
 
 
 #line 59 "zparser.tab.cc"

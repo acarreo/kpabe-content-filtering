@@ -39,10 +39,10 @@
 #include <vector>
 #include <map>
 
-#include "../zobject.h"
-#include "../arith/zelement_bp.h"
-#include "../zpolicy.h"
-#include "../zattributelist.h"
+#include "zobject.h"
+#include "zelement_bp.h"
+#include "zpolicy.h"
+#include "zattributelist.h"
 
 
 /// \class  ZLSSSElement

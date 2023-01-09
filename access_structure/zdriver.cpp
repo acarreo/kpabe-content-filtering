@@ -41,9 +41,9 @@
 
 #include "zdriver.h"
 #include "zscanner.h"
-#include "../zpolicy.h"
-#include "../zinteger.h"
-#include "../zattributelist.h"
+#include "zpolicy.h"
+#include "zinteger.h"
+#include "zattributelist.h"
 
 const size_t DAY_IN_SECS = 60*60*24;
 

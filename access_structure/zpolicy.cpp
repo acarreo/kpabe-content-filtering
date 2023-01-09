@@ -41,7 +41,7 @@
 #include <stack>
 
 #include "zpolicy.h"
-#include "parser/zdriver.h"
+#include "zdriver.h"
 
 using namespace std;
 

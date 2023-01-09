@@ -41,9 +41,9 @@ extern "C" {
   #include "zelement.h"
 }
 
-#include "../zbytestring.h"
+#include "zbytestring.h"
 #include "zgroup.h"
-#include "../zobject.h"
+#include "zobject.h"
 
 
 class OpenABEByteString;

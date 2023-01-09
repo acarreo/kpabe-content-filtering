@@ -42,11 +42,11 @@
 #include <fstream>
 #include <string>
 
-#include "../zobject.h"
-#include "../arith/zelement_bp.h"
-#include "../zpolicy.h"
-#include "../zattributelist.h"
-#include "../parser/zdriver.h"
+#include "zobject.h"
+#include "zelement_bp.h"
+#include "zpolicy.h"
+#include "zattributelist.h"
+#include "zdriver.h"
 #include "zlsss.h"
 
 using namespace std;

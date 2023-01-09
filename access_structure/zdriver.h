@@ -43,9 +43,9 @@
 #include <iomanip>
 #include <sstream>
 
-#include "../zpolicy.h"
-#include "../zattributelist.h"
-#include "../zinteger.h"
+#include "zpolicy.h"
+#include "zattributelist.h"
+#include "zinteger.h"
 
 #define COLON     ':'
 #define FLEXINT   "_flexint_"

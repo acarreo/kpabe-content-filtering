@@ -35,8 +35,8 @@
 #define __ZGROUP_H__
 
 #include <gmpxx.h>
-#include "../zobject.h"
-#include "../zconstants.h"
+#include "zobject.h"
+#include "zconstants.h"
 
 ///
 /// @class  ZGroup
