@@ -1,6 +1,17 @@
 #ifndef _KP_ABE_
 #define _KP_ABE_
 
+#include <vector>
+#include <string>
+
+#include "../access_structure/zpolicy.h"
+#include "../access_structure/zlsss.h"
+#include "../access_structure/zattributelist.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../dpvs/dpvs.h"
 
 #define ND  3
@@ -53,6 +64,9 @@ typedef ABE_ciphertext_st ABE_cipher_t[1];
 }
 #endif
 
+typedef std::string                  url_t;
+typedef std::vector<std::string>     WhiteList_t;
+typedef std::vector<std::string>     BlackList_t;
 
 
 bool ABE_pub_key_init(ABE_pub_key_t pk);
@@ -70,5 +84,8 @@ void ABE_free_ms_key(ABE_ms_key_t msk);
 void ABE_secret_key_free(ABE_secret_key_t sk);
 void ABE_ciphertext_free(ABE_cipher_t cipher);
 
+
+bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
+                        WhiteList_t wl, BlackList_t bl, std::string& url);
 
 #endif

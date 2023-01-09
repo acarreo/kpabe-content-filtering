@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "kpabe.h"
 
 bool ABE_pub_key_init(ABE_pub_key_t pk)
@@ -215,3 +216,26 @@ void ABE_ciphertext_free(ABE_cipher_t cipher)
 
 }
 
+
+bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
+                        WhiteList_t wl, BlackList_t bl, std::string& url)
+{
+  std::pair<bool,int> result;
+  if (std::find(wl.begin(), wl.end(), url) != wl.end()) {
+    result.first = true;
+  }
+  else if (std::find(bl.begin(), bl.end(), url) == bl.end()) {
+    try {
+      std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
+      std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(attributes);
+      if (policy != nullptr && attrList != nullptr) {
+        result = checkIfSatisfied(policy.get(), attrList.get());
+        // std::cout << "Check if satisfied => " << (result.first ? "true" : "false") << endl;
+        // std::cout << "Number of matches => " << result.second << endl;
+      }
+    }
+    catch(errors) {}
+  }
+
+  return result.first;
+}
