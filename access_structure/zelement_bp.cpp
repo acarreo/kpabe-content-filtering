@@ -255,9 +255,6 @@ void ZP::setRandom(bignum_t o) {
     this->isOrderSet = true;
     zmbignum_copy(this->order, o);
   }
-  int length = zmbignum_countbytes(this->order);
-  uint8_t buf[length];
-  memset(buf, 0, length);
   zmbignum_rand(this->m_ZP, this->order);
 }
 
