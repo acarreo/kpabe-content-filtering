@@ -28,6 +28,84 @@ bool ABE_ms_key_init(ABE_ms_key_t msk)
   return false;
 }
 
+bool ABE_secret_key_init(ABE_secret_key_t sk, uint size_wl, uint size_bl, uint size_att)
+{
+  bool ret = false;
+  uint i = 0, j = 0, k = 0;
+
+  sk->size_wl = size_wl;
+  sk->size_bl = size_bl;
+  sk->size_att = size_att;
+
+  if (dpvs_init_dual_base_vect(sk->key_root, ND))
+  {
+    /* Initialize K_WL in the dual base F* */
+    if ((sk->keys_wl = (g2_vect_st**)malloc(size_wl * sizeof(g2_vect_st*))) != NULL) {
+      for (; i < size_wl; i++) {
+        if ((sk->keys_wl[i] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
+            !dpvs_init_dual_base_vect(sk->keys_wl[i], NF)) {
+              ret = _error_alloc_fail_();
+              break;
+        }
+      }
+    }
+
+    /* Initialize K_BL in the dual base G* */
+    if ((sk->keys_bl = (g2_vect_st**)malloc(size_bl * sizeof(g2_vect_st*))) != NULL) {
+      for (; j < size_bl; j++) {
+        if ((sk->keys_bl[j] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
+            !dpvs_init_dual_base_vect(sk->keys_bl[j], NG)) {
+              ret = _error_alloc_fail_();
+              break;
+        }
+      }
+    }
+
+    /* Initialize K_att for j in list_att(policy) in the dual base H* */
+    if ((sk->keys_att = (g2_vect_st**)malloc(size_att * sizeof(g2_vect_st*))) != NULL) {
+      for (; k < size_att; k++) {
+        if ((sk->keys_att[k] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
+            !dpvs_init_dual_base_vect(sk->keys_att[k], NH)) {
+              ret = _error_alloc_fail_();
+              break;
+        }
+      }
+    }
+  }
+
+  ret = (i == size_wl) && (j == size_bl) && (k == size_att);
+
+  return ret;
+}
+
+bool ABE_ciphertext_init(ABE_cipher_t cipher, uint size_att)
+{
+  bool ret = false;
+  uint i = 0;
+
+  cipher->size_att = size_att;
+
+  if ((cipher->ctx_att = (g1_vect_st**)malloc(size_att * sizeof(g1_vect_st*))) != NULL) {
+    for (; i < size_att; i++) {
+      if ((cipher->ctx_att[i] = (g1_vect_st*)malloc(sizeof(g1_vect_st))) == NULL ||
+          !dpvs_init_base_vect(cipher->ctx_att[i], NH)) {
+            ret = _error_alloc_fail_();
+            break;
+      }
+    }
+
+    if (!dpvs_init_base_vect(cipher->ctx_root, ND) ||
+        !dpvs_init_base_vect(cipher->ctx_wl, NF) ||
+        !dpvs_init_base_vect(cipher->ctx_bl, NG)) {
+          ret = _error_alloc_fail_();
+    }
+  }
+
+  ret = (i == size_att);
+
+  return ret;
+}
+
 bool ABE_gen_params(ABE_pub_key_t pk, ABE_ms_key_t msk)
 {
   bool ret = true;
@@ -99,3 +177,41 @@ void ABE_free_ms_key(ABE_ms_key_t msk)
   dpvs_clear_dual_base_vect(msk->f3); dpvs_clear_dual_base_vect(msk->h1);
   dpvs_clear_dual_base_vect(msk->h2); dpvs_clear_dual_base_vect(msk->h3);
 }
+
+void ABE_secret_key_free(ABE_secret_key_t sk)
+{
+  for (uint i = 0; i < sk->size_wl; i++) {
+    dpvs_clear_dual_base_vect(sk->keys_wl[i]);
+    free(sk->keys_wl[i]);
+  }
+
+  for (uint j = 0; j < sk->size_bl; j++) {
+    dpvs_clear_dual_base_vect(sk->keys_bl[j]);
+    free(sk->keys_bl[j]);
+  }
+
+  for (uint k = 0; k < sk->size_att; k++) {
+    dpvs_clear_dual_base_vect(sk->keys_att[k]);
+    free(sk->keys_att[k]);
+  }
+
+  free(sk->keys_wl);
+  free(sk->keys_bl);
+  free(sk->keys_att);
+  dpvs_clear_dual_base_vect(sk->key_root);
+}
+
+void ABE_ciphertext_free(ABE_cipher_t cipher)
+{
+  for (uint i = 0; i < cipher->size_att; i++) {
+    dpvs_clear_base_vect(cipher->ctx_att[i]);
+    free(cipher->ctx_att[i]);
+  }
+
+  free(cipher->ctx_att);
+  dpvs_clear_base_vect(cipher->ctx_root);
+  dpvs_clear_base_vect(cipher->ctx_wl);
+  dpvs_clear_base_vect(cipher->ctx_bl);
+
+}
+
