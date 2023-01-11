@@ -242,6 +242,7 @@ bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
 {
   bn_vect_t ri;
   bn_t y0, y1, tmp1, tmp2;
+  g2_vect_t vect_tmp;
 
   BPGroup group(OpenABE_NONE_ID);
   OpenABELSSS lsss;
@@ -279,13 +280,14 @@ bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
 
     if ((ret = ABE_secret_key_init(sk, size_wl, size_bl, secret_shares.size())))
     {
-      /* set key_root : (g2^-y0, Inf, g2) */
+      /* set key_root : -y0 * msk->d1 + msk->d3 */
       bn_neg(tmp1, y0); bn_mod(tmp1, tmp1, group.order);
-      g2_mul_gen(sk->key_root->coord[0], tmp1);
-      g2_set_infty(sk->key_root->coord[1]);
-      g2_get_gen(sk->key_root->coord[2]);
+      dpvs_k_mul_dual_vect(sk->key_root, msk->d1, tmp1);
+      dpvs_add_dual_vect(sk->key_root, sk->key_root, msk->d3);
 
-      /* set keys whitelist */
+      /* set keys whitelist
+        (theta[i] * url[i]) * msk->f1 - theta[i] * msk->f2 + y0 * msk->f3 */
+      dpvs_init_dual_base_vect(vect_tmp, NF);
       for (uint i = 0; i < size_wl; i++) {
         hash_to_bn(tmp1, wl[i].c_str(), wl[i].size());
         bn_mod(tmp1, tmp1, group.order);
@@ -293,28 +295,30 @@ bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
         bn_mod_mul(tmp1, tmp1, tmp2, group.order);
         bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order);
 
-        g2_mul_gen(sk->keys_wl[i]->coord[0], tmp1);
-        g2_mul_gen(sk->keys_wl[i]->coord[1], tmp2);
-        g2_mul_gen(sk->keys_wl[i]->coord[2], y0);
-        g2_set_infty(sk->keys_wl[i]->coord[3]);
-        g2_set_infty(sk->keys_wl[i]->coord[4]);
-        g2_set_infty(sk->keys_wl[i]->coord[5]);
+        dpvs_k_mul_dual_vect(sk->keys_wl[i], msk->f1, tmp1);
+        dpvs_k_mul_dual_vect(vect_tmp, msk->f2, tmp2);
+        dpvs_add_dual_vect(sk->keys_wl[i], sk->keys_wl[i], vect_tmp);
+        dpvs_k_mul_dual_vect(vect_tmp, msk->f3, y0);
+        dpvs_add_dual_vect(sk->keys_wl[i], sk->keys_wl[i], vect_tmp);
       }
+      dpvs_clear_dual_base_vect(vect_tmp);
 
       /* set keys for blacklist */
+      dpvs_init_dual_base_vect(vect_tmp, NG);
       for (uint i = 0; i < size_bl; i++) {
         hash_to_bn(tmp1, bl[i].c_str(), bl[i].size());
         bn_mod(tmp1, tmp1, group.order);
         bn_mod_mul(tmp1, tmp1, ri->coord[i], group.order);
         bn_neg(tmp2, ri->coord[i]); bn_mod(tmp2, tmp2, group.order);
 
-        g2_mul_gen(sk->keys_bl[i]->coord[0], tmp1);
-        g2_mul_gen(sk->keys_bl[i]->coord[1], tmp2);
-        g2_set_infty(sk->keys_bl[i]->coord[2]);
-        g2_set_infty(sk->keys_bl[i]->coord[3]);
+        dpvs_k_mul_dual_vect(sk->keys_bl[i], msk->g1, tmp1);
+        dpvs_k_mul_dual_vect(vect_tmp, msk->g2, tmp2);
+        dpvs_add_dual_vect(sk->keys_bl[i], sk->keys_bl[i], vect_tmp);
       }
+      dpvs_clear_dual_base_vect(vect_tmp);
 
       /* set keys k_att */
+      dpvs_init_dual_base_vect(vect_tmp, NH);
       int i = 0;
       for(auto it = secret_shares.cbegin(); it != secret_shares.cend(); ++it, i++)
       {
@@ -327,13 +331,13 @@ bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
         bn_mod_mul(tmp1, tmp1, tmp2, group.order);     /* theta_j * att_j */
         bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order); /* - theta_j */
 
-        g2_mul_gen(sk->keys_att[i]->coord[0], tmp1);
-        g2_mul_gen(sk->keys_att[i]->coord[1], tmp2);
-        g2_mul_gen(sk->keys_att[i]->coord[2], aj.m_ZP);
-
-        for (int j = 3; j < NH; j++)
-          g2_set_infty(sk->keys_att[i]->coord[j]);
+        dpvs_k_mul_dual_vect(sk->keys_att[i], msk->h1, tmp1);
+        dpvs_k_mul_dual_vect(vect_tmp, msk->h2, tmp2);
+        dpvs_add_dual_vect(sk->keys_att[i], sk->keys_att[i], vect_tmp);
+        dpvs_k_mul_dual_vect(vect_tmp, msk->h3, aj.m_ZP);
+        dpvs_add_dual_vect(sk->keys_att[i], sk->keys_att[i], vect_tmp);
       }
+      dpvs_clear_dual_base_vect(vect_tmp);
     }
   }
 
