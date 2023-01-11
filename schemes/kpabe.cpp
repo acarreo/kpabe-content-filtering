@@ -226,16 +226,11 @@ bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
     result.first = true;
   }
   else if (std::find(bl.begin(), bl.end(), url) == bl.end()) {
-    try {
-      std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
-      std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(attributes);
-      if (policy != nullptr && attrList != nullptr) {
-        result = checkIfSatisfied(policy.get(), attrList.get());
-        // std::cout << "Check if satisfied => " << (result.first ? "true" : "false") << endl;
-        // std::cout << "Number of matches => " << result.second << endl;
-      }
+    std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
+    std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(attributes);
+    if (policy != nullptr && attrList != nullptr) {
+      result = checkIfSatisfied(policy.get(), attrList.get());
     }
-    catch(errors) {}
   }
 
   return result.first;
