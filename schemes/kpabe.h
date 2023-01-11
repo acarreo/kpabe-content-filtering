@@ -81,9 +81,8 @@ bool ABE_ciphertext_init(ABE_cipher_t cipher, uint size_att);
 
 void ABE_free_pub_key(ABE_pub_key_t pk);
 void ABE_free_ms_key(ABE_ms_key_t msk);
-void ABE_secret_key_free(ABE_secret_key_t sk);
-void ABE_ciphertext_free(ABE_cipher_t cipher);
-
+void ABE_free_secret_key(ABE_secret_key_t sk);
+void ABE_free_ciphertext(ABE_cipher_t cipher);
 
 bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
                         WhiteList_t wl, BlackList_t bl, std::string& url);

@@ -181,7 +181,7 @@ void ABE_free_ms_key(ABE_ms_key_t msk)
   dpvs_clear_dual_base_vect(msk->h2); dpvs_clear_dual_base_vect(msk->h3);
 }
 
-void ABE_secret_key_free(ABE_secret_key_t sk)
+void ABE_free_secret_key(ABE_secret_key_t sk)
 {
   for (uint i = 0; i < sk->size_wl; i++) {
     dpvs_clear_dual_base_vect(sk->keys_wl[i]);
@@ -204,7 +204,7 @@ void ABE_secret_key_free(ABE_secret_key_t sk)
   dpvs_clear_dual_base_vect(sk->key_root);
 }
 
-void ABE_ciphertext_free(ABE_cipher_t cipher)
+void ABE_free_ciphertext(ABE_cipher_t cipher)
 {
   for (uint i = 0; i < cipher->size_att; i++) {
     dpvs_clear_base_vect(cipher->ctx_att[i]);
@@ -217,7 +217,6 @@ void ABE_ciphertext_free(ABE_cipher_t cipher)
   dpvs_clear_base_vect(cipher->ctx_bl);
 
 }
-
 
 bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
                         WhiteList_t wl, BlackList_t bl, std::string& url)
