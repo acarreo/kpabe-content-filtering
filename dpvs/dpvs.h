@@ -57,6 +57,9 @@ bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
 void dpvs_k_mul_vect(g1_vect_t dest, const g1_vect_t src, bn_t k);
 void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k);
 
+void dpvs_add_vect(g1_vect_t dest, const g1_vect_t src1, const g1_vect_t src2);
+void dpvs_add_dual_vect(g2_vect_t dest, const g2_vect_t src1, const g2_vect_t src2);
+
 void dpvs_g1_vect_copy (g1_vect_t dest, g1_vect_t src);
 void dpvs_g2_vect_copy (g2_vect_t dest, g2_vect_t src);
 

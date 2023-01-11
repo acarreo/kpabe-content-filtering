@@ -147,6 +147,24 @@ void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k)
   }
 }
 
+void dpvs_add_vect(g1_vect_t dest, const g1_vect_t src1, const g1_vect_t src2)
+{
+  if (src1->dim == src2->dim && dest->dim == src2->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++) {
+      g1_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+    }
+  }
+}
+
+void dpvs_add_dual_vect(g2_vect_t dest, const g2_vect_t src1, const g2_vect_t src2)
+{
+  if (src1->dim == src2->dim && dest->dim == src2->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++) {
+      g2_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+    }
+  }
+}
+
 void dpvs_g1_vect_copy (g1_vect_t dest, g1_vect_t src) {
   if (dest->dim == src->dim)
     for (uint8_t i = 0; i < src->dim; i++)
