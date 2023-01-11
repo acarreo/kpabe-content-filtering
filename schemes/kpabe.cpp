@@ -1,6 +1,8 @@
 #include <algorithm>
 #include "kpabe.h"
 
+static void hash_to_bn(bn_t hash, const char *digest, int len);
+
 bool ABE_pub_key_init(ABE_pub_key_t pk)
 {
   if (dpvs_init_base_vect(pk->d1, ND) && dpvs_init_base_vect(pk->d3, ND) &&
@@ -238,4 +240,12 @@ bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
   }
 
   return result.first;
+}
+/**********************************************************************/
+
+static void hash_to_bn(bn_t hash, const char *digest, int len)
+{
+  uint8_t h[RLC_MD_LEN];
+  md_map(h, (uint8_t*)digest, len);
+  bn_read_bin(hash, h, RLC_MD_LEN);
 }
