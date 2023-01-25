@@ -31,6 +31,9 @@ bool ABE_ms_key_init(ABE_ms_key_t msk)
   return false;
 }
 
+/* On ne gere pas le cas d'erreurs (allocation fail) ici, mais il faudra penser à liberer
+ * correctement si une allocation echoue
+ */
 bool ABE_secret_key_init(ABE_secret_key_t sk, uint size_wl, uint size_bl, uint size_att)
 {
   bool ret = false;
@@ -259,87 +262,85 @@ bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
   bn_null(y0); bn_new(y0); bn_zero(y0); /* y0 := y1 + secret_y2 */
   bn_null(secret_y2.m_ZP); bn_new(secret_y2.m_ZP);
 
-  if ((ret = bn_vect_init(ri, size_bl)))
-  {
-    std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
-    if (policy == nullptr) {
-      std::cout << "Errors while trying to create PolicyTree" << std::endl;
-      return false;
-    }
-
-    for (uint i = 0; i < size_bl; i++) {
-      bn_rand_mod(ri->coord[i], group.order);
-      bn_mod_add(y1, y1, ri->coord[i], group.order);
-    }
-
-    secret_y2.setRandom(group.order);
-    bn_mod_add(y0, y1, secret_y2.m_ZP, group.order);
-
-    lsss.shareSecret(policy.get(), secret_y2);
-    OpenABELSSSRowMap secret_shares = lsss.getRows();
-
-    if ((ret = ABE_secret_key_init(sk, size_wl, size_bl, secret_shares.size())))
-    {
-      /* set key_root : -y0 * msk->d1 + msk->d3 */
-      bn_neg(tmp1, y0); bn_mod(tmp1, tmp1, group.order);
-      dpvs_k_mul_dual_vect(sk->key_root, msk->d1, tmp1);
-      dpvs_add_dual_vect(sk->key_root, sk->key_root, msk->d3);
-
-      /* set keys whitelist
-        (theta[i] * url[i]) * msk->f1 - theta[i] * msk->f2 + y0 * msk->f3 */
-      dpvs_init_dual_base_vect(vect_tmp, NF);
-      for (uint i = 0; i < size_wl; i++) {
-        hash_to_bn(tmp1, wl[i].c_str(), wl[i].size());
-        bn_mod(tmp1, tmp1, group.order);
-        bn_rand_mod(tmp2, group.order);
-        bn_mod_mul(tmp1, tmp1, tmp2, group.order);
-        bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order);
-
-        dpvs_k_mul_dual_vect(sk->keys_wl[i], msk->f1, tmp1);
-        dpvs_k_mul_dual_vect(vect_tmp, msk->f2, tmp2);
-        dpvs_add_dual_vect(sk->keys_wl[i], sk->keys_wl[i], vect_tmp);
-        dpvs_k_mul_dual_vect(vect_tmp, msk->f3, y0);
-        dpvs_add_dual_vect(sk->keys_wl[i], sk->keys_wl[i], vect_tmp);
-      }
-      dpvs_clear_dual_base_vect(vect_tmp);
-
-      /* set keys for blacklist */
-      dpvs_init_dual_base_vect(vect_tmp, NG);
-      for (uint i = 0; i < size_bl; i++) {
-        hash_to_bn(tmp1, bl[i].c_str(), bl[i].size());
-        bn_mod(tmp1, tmp1, group.order);
-        bn_mod_mul(tmp1, tmp1, ri->coord[i], group.order);
-        bn_neg(tmp2, ri->coord[i]); bn_mod(tmp2, tmp2, group.order);
-
-        dpvs_k_mul_dual_vect(sk->keys_bl[i], msk->g1, tmp1);
-        dpvs_k_mul_dual_vect(vect_tmp, msk->g2, tmp2);
-        dpvs_add_dual_vect(sk->keys_bl[i], sk->keys_bl[i], vect_tmp);
-      }
-      dpvs_clear_dual_base_vect(vect_tmp);
-
-      /* set keys k_att */
-      dpvs_init_dual_base_vect(vect_tmp, NH);
-      int i = 0;
-      for(auto it = secret_shares.cbegin(); it != secret_shares.cend(); ++it, i++)
-      {
-        ZP aj = it->second.element();
-        std::string att_j = it->second.label();
-
-        hash_to_bn(tmp1, att_j.c_str(), att_j.size()); /* att_j */
-        bn_mod(tmp1, tmp1, group.order);
-        bn_rand_mod(tmp2, group.order);                /* theta_j */
-        bn_mod_mul(tmp1, tmp1, tmp2, group.order);     /* theta_j * att_j */
-        bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order); /* - theta_j */
-
-        dpvs_k_mul_dual_vect(sk->keys_att[i], msk->h1, tmp1);
-        dpvs_k_mul_dual_vect(vect_tmp, msk->h2, tmp2);
-        dpvs_add_dual_vect(sk->keys_att[i], sk->keys_att[i], vect_tmp);
-        dpvs_k_mul_dual_vect(vect_tmp, msk->h3, aj.m_ZP);
-        dpvs_add_dual_vect(sk->keys_att[i], sk->keys_att[i], vect_tmp);
-      }
-      dpvs_clear_dual_base_vect(vect_tmp);
-    }
+  std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
+  if (policy == nullptr) {
+    std::cout << "Errors while trying to create PolicyTree" << std::endl;
+    return false;
   }
+
+  bn_vect_init(ri, size_bl);
+  for (uint i = 0; i < size_bl; i++) {
+    bn_rand_mod(ri->coord[i], group.order);
+    bn_mod_add(y1, y1, ri->coord[i], group.order);
+  }
+
+  secret_y2.setRandom(group.order);
+  bn_mod_add(y0, y1, secret_y2.m_ZP, group.order);
+
+  lsss.shareSecret(policy.get(), secret_y2);
+  OpenABELSSSRowMap secret_shares = lsss.getRows();
+
+  if (!ABE_secret_key_init(sk, size_wl, size_bl, secret_shares.size()))
+    return false;
+
+  /* set key_root : -y0 * msk->d1 + msk->d3 */
+  bn_neg(tmp1, y0); bn_mod(tmp1, tmp1, group.order);
+  dpvs_k_mul_dual_vect(sk->key_root, msk->d1, tmp1);
+  dpvs_add_dual_vect(sk->key_root, sk->key_root, msk->d3);
+
+  /* set keys whitelist
+    (theta[i] * url[i]) * msk->f1 - theta[i] * msk->f2 + y0 * msk->f3 */
+  dpvs_init_dual_base_vect(vect_tmp, NF);
+  for (uint i = 0; i < size_wl; i++) {
+    hash_to_bn(tmp1, wl[i].c_str(), wl[i].size());
+    bn_mod(tmp1, tmp1, group.order);
+    bn_rand_mod(tmp2, group.order);
+    bn_mod_mul(tmp1, tmp1, tmp2, group.order);
+    bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order);
+
+    dpvs_k_mul_dual_vect(sk->keys_wl[i], msk->f1, tmp1);
+    dpvs_k_mul_dual_vect(vect_tmp, msk->f2, tmp2);
+    dpvs_add_dual_vect(sk->keys_wl[i], sk->keys_wl[i], vect_tmp);
+    dpvs_k_mul_dual_vect(vect_tmp, msk->f3, y0);
+    dpvs_add_dual_vect(sk->keys_wl[i], sk->keys_wl[i], vect_tmp);
+  }
+  dpvs_clear_dual_base_vect(vect_tmp);
+
+  /* set keys for blacklist */
+  dpvs_init_dual_base_vect(vect_tmp, NG);
+  for (uint i = 0; i < size_bl; i++) {
+    hash_to_bn(tmp1, bl[i].c_str(), bl[i].size());
+    bn_mod(tmp1, tmp1, group.order);
+    bn_mod_mul(tmp1, tmp1, ri->coord[i], group.order);
+    bn_neg(tmp2, ri->coord[i]); bn_mod(tmp2, tmp2, group.order);
+
+    dpvs_k_mul_dual_vect(sk->keys_bl[i], msk->g1, tmp1);
+    dpvs_k_mul_dual_vect(vect_tmp, msk->g2, tmp2);
+    dpvs_add_dual_vect(sk->keys_bl[i], sk->keys_bl[i], vect_tmp);
+  }
+  dpvs_clear_dual_base_vect(vect_tmp);
+
+  /* set keys k_att */
+  dpvs_init_dual_base_vect(vect_tmp, NH);
+  int i = 0;
+  for(auto it = secret_shares.cbegin(); it != secret_shares.cend(); ++it, i++)
+  {
+    ZP aj = it->second.element();
+    std::string att_j = it->second.label();
+
+    hash_to_bn(tmp1, att_j.c_str(), att_j.size()); /* att_j */
+    bn_mod(tmp1, tmp1, group.order);
+    bn_rand_mod(tmp2, group.order);                /* theta_j */
+    bn_mod_mul(tmp1, tmp1, tmp2, group.order);     /* theta_j * att_j */
+    bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order); /* - theta_j */
+
+    dpvs_k_mul_dual_vect(sk->keys_att[i], msk->h1, tmp1);
+    dpvs_k_mul_dual_vect(vect_tmp, msk->h2, tmp2);
+    dpvs_add_dual_vect(sk->keys_att[i], sk->keys_att[i], vect_tmp);
+    dpvs_k_mul_dual_vect(vect_tmp, msk->h3, aj.m_ZP);
+    dpvs_add_dual_vect(sk->keys_att[i], sk->keys_att[i], vect_tmp);
+  }
+  dpvs_clear_dual_base_vect(vect_tmp);
 
   bn_free(y0);
   bn_free(y1);
@@ -349,6 +350,92 @@ bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
 
   return ret;
 }
+
+bool ABE_encrypt(ABE_cipher_t ctx, bn_t psi, ABE_pub_key_t pk,
+                 std::string& url, std::string& attributes)
+{
+  bn_t sigma, omega, __url, tmp, sigma_j;
+  g1_vect_t vect_tmp, vect_tmp2;
+
+  BPGroup group(OpenABE_NONE_ID);
+
+  std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(attributes);
+  const std::vector<std::string>* attributes_list = attrList.getAttributeList();
+  uint size_att = attributes_list.size();
+
+  if (!ABE_ciphertext_init(ctx, size_att))
+    return false;
+
+  bn_null(sigma); bn_new(sigma);
+  bn_null(omega); bn_new(omega);
+  bn_null(__url); bn_new(__url);
+  bn_null(sigma_j); bn_new(sigma_j);
+  bn_null(tmp); bn_new(tmp);
+
+  bn_rand_mod(sigma, group.order);
+  bn_rand_mod(omega, group.order);
+  hash_to_bn(__url, url.c_str(), url.size());
+  bn_mod(__url, __url, group.order);
+
+  /* ctx root */
+  dpvs_init_base_vect(vect_tmp, ND);
+  dpvs_k_mul_vect(ctx->ctx_root, pk->d1, omega);
+  dpvs_k_mul_vect(vect_tmp, pk->d3, psi);
+  dpvs_add_vect(ctx->ctx_root, ctx->ctx_root, vect_tmp);
+  dpvs_clear_base_vect(vect_tmp);
+
+  /* whitelist ctx url */
+  dpvs_init_base_vect(vect_tmp, NF);
+  dpvs_k_mul_vect(ctx->ctx_wl, pk->f1, sigma);
+  bn_mod_mul(tmp, sigma, __url, group.order);
+  dpvs_k_mul_vect(vect_tmp, pk->f2, tmp);
+  dpvs_add_vect(ctx->ctx_wl, ctx->ctx_wl, vect_tmp);
+  dpvs_k_mul_vect(vect_tmp, pk->f3, omega);
+  dpvs_add_vect(ctx->ctx_wl, ctx->ctx_wl, vect_tmp);
+  dpvs_clear_base_vect(vect_tmp);
+
+  /* blacklist ctx url */
+  dpvs_init_base_vect(vect_tmp, NG);
+  dpvs_k_mul_vect(ctx->ctx_bl, pk->g1, omega);
+  bn_mod_mul(tmp, omega, __url, group.order);
+  dpvs_k_mul_vect(vect_tmp, pk->g2, tmp);
+  dpvs_add_vect(ctx->ctx_bl, ctx->ctx_bl, vect_tmp);
+  dpvs_clear_base_vect(vect_tmp);
+
+  dpvs_init_base_vect(vect_tmp, NH);
+  dpvs_init_base_vect(vect_tmp2, NH);
+  dpvs_k_mul_vect(vect_tmp2, pk->h3, omega);
+  for (uint j = 0; j < size_att; j++) {
+    bn_mod(sigma_j, group.order);
+    dpvs_k_mul_vect(ctx->ctx_att[j], pk->h1, sigma_j);
+    hash_to_bn(tmp, attributes_list[j].c_str(), attributes_list[j].size());
+    bn_mod(tmp, tmp, group.order);
+    bn_mod_mul(tmp, tmp, sigma_j, group.order);
+    dpvs_k_mul_vect(vect_tmp, pk->h2, tmp);
+    dpvs_add_vect(ctx->ctx_att[j], ctx->ctx_att[j], vect_tmp);
+    dpvs_add_vect(ctx->ctx_att[j], ctx->ctx_att[j], vect_tmp2);
+  }
+  dpvs_clear_base_vect(vect_tmp);
+  dpvs_clear_base_vect(vect_tmp2);
+
+  bn_free(tmp);
+  bn_free(omega);
+  bn_free(__url);
+  bn_free(sigma);
+  bn_free(sigma_j);
+
+  return true;
+}
+
+bool ABE_decrypt(bn_t psi, ABE_cipher_t ctx, ABE_secret_key_t sk)
+{
+
+
+
+  return false;
+}
+
+
 
 /**********************************************************************/
 

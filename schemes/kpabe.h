@@ -75,8 +75,6 @@ bool ABE_gen_params(ABE_pub_key_t pk, ABE_ms_key_t msk);
 
 bool ABE_secret_key_init(ABE_secret_key_t sk, uint size_wl, uint size_bl, uint size_att);
 bool ABE_ciphertext_init(ABE_cipher_t cipher, uint size_att);
-// bool ABE_encrypt(ABE_ctx_t ct, bn_t phi, ABE_pub_key_t pk, (url, Gama));
-// bool ABE_decrypt(bn_t psi, ABE_ctx_t ct, sk_(A, WL, BL));
 
 void ABE_free_pub_key(ABE_pub_key_t pk);
 void ABE_free_ms_key(ABE_ms_key_t msk);
@@ -88,5 +86,10 @@ bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
 
 bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
                  WhiteList_t wl, BlackList_t bl);
+
+bool ABE_encrypt(ABE_cipher_t ctx, bn_t psi, ABE_pub_key_t pk,
+                 std::string& url, std::string& attributes);
+
+bool ABE_decrypt(bn_t psi, ABE_cipher_t ctx, ABE_secret_key_t sk);
 
 #endif
