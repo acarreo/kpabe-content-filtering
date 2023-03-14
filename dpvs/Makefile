@@ -2,7 +2,7 @@
 .PHONY: all compile clean
 
 OBJ_DIR = build
-SRC = matrix.c inv_mat.c dpvs.c
+SRC = matrix.c dpvs.c
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.c=.o))
 
 all: compile
