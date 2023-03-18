@@ -1,5 +1,5 @@
-#ifndef _KP_ABE_
-#define _KP_ABE_
+#ifndef __KPABE_DPVS_H__
+#define __KPABE_DPVS_H__
 
 #include <vector>
 #include <string>
@@ -25,7 +25,7 @@ typedef struct
   g1_vect_t f1, f2, f3;
   g1_vect_t g1, g2;
   g1_vect_t h1, h2, h3;
-} ABE_pub_key_st;
+} KPABE_DPVS_master_public_key_st;
 
 typedef struct
 {
@@ -33,7 +33,7 @@ typedef struct
   g2_vect_t f1, f2, f3;
   g2_vect_t g1, g2;
   g2_vect_t h1, h2, h3;
-} ABE_master_key_st;
+} KPABE_DPVS_master_secret_key_st;
 
 typedef struct
 {
@@ -44,7 +44,7 @@ typedef struct
   uint size_wl;
   uint size_bl;
   uint size_att;
-} ABE_secret_key_st;
+} KPABE_DPVS_decryption_key_st;
 
 typedef struct
 {
@@ -53,12 +53,12 @@ typedef struct
   g1_vect_t ctx_bl;     // G
   g1_vect_st **ctx_att; // H
   uint size_att;
-} ABE_ciphertext_st;
+} KPABE_DPVS_ciphertext_st;
 
-typedef ABE_pub_key_st    ABE_pub_key_t[1];
-typedef ABE_master_key_st ABE_ms_key_t[1];
-typedef ABE_secret_key_st ABE_secret_key_t[1];
-typedef ABE_ciphertext_st ABE_cipher_t[1];
+typedef KPABE_DPVS_master_public_key_st KPABE_DPVS_master_public_key_t[1];
+typedef KPABE_DPVS_master_secret_key_st KPABE_DPVS_master_secret_key_t[1];
+typedef KPABE_DPVS_decryption_key_st    KPABE_DPVS_decryption_key_t[1];
+typedef KPABE_DPVS_ciphertext_st        KPABE_DPVS_ciphertext_t[1];
 
 #ifdef __cplusplus
 }
@@ -69,27 +69,32 @@ typedef std::vector<std::string>     WhiteList_t;
 typedef std::vector<std::string>     BlackList_t;
 
 
-bool ABE_pub_key_init(ABE_pub_key_t pk);
-bool ABE_ms_key_init(ABE_ms_key_t msk);
-bool ABE_gen_params(ABE_pub_key_t pk, ABE_ms_key_t msk);
+bool KPABE_DPVS_master_public_key_init(KPABE_DPVS_master_public_key_t mpk);
+bool KPABE_DPVS_master_secret_key_init(KPABE_DPVS_master_secret_key_t msk);
+bool KPABE_DPVS_decryption_key_init(KPABE_DPVS_decryption_key_t dec_key, uint size_wl, uint size_bl, uint size_att);
+bool KPABE_DPVS_ciphertext_init(KPABE_DPVS_ciphertext_t ciphertext, uint size_att);
 
-bool ABE_secret_key_init(ABE_secret_key_t sk, uint size_wl, uint size_bl, uint size_att);
-bool ABE_ciphertext_init(ABE_cipher_t cipher, uint size_att);
-
-void ABE_free_pub_key(ABE_pub_key_t pk);
-void ABE_free_ms_key(ABE_ms_key_t msk);
-void ABE_free_secret_key(ABE_secret_key_t sk);
-void ABE_free_ciphertext(ABE_cipher_t cipher);
+bool KPABE_DPVS_generate_params(KPABE_DPVS_master_public_key_t mpk, KPABE_DPVS_master_secret_key_t msk);
 
 bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
-                        WhiteList_t wl, BlackList_t bl, std::string& url);
+                        std::vector<std::string>& white_list,
+                        std::vector<std::string>& black_list, std::string& url);
 
-bool ABE_key_gen(ABE_secret_key_t sk, ABE_ms_key_t msk, std::string& policy_str,
-                 WhiteList_t wl, BlackList_t bl);
+bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
+                                        KPABE_DPVS_master_secret_key_t msk,
+                                        std::string& policy_str,
+                                        std::vector<std::string>& white_list,
+                                        std::vector<std::string>& black_list);
 
-bool ABE_encrypt(ABE_cipher_t ctx, bn_t psi, ABE_pub_key_t pk,
-                 std::string& url, std::string& attributes);
+bool KPABE_DPVS_encrypt(KPABE_DPVS_ciphertext_t ciphertext, bn_t psi,
+                        KPABE_DPVS_master_public_key_t mpk,
+                        std::string& url, std::string& attributes);
 
-bool ABE_decrypt(bn_t psi, ABE_cipher_t ctx, ABE_secret_key_t sk);
+bool KPABE_DPVS_decrypt(bn_t psi, KPABE_DPVS_ciphertext_t ciphertext, KPABE_DPVS_decryption_key_t dec_key);
+
+void KPABE_DPVS_master_public_key_destroy(KPABE_DPVS_master_public_key_t mpk);
+void KPABE_DPVS_master_secret_key_destroy(KPABE_DPVS_master_secret_key_t msk);
+void KPABE_DPVS_decryption_key_destroy(KPABE_DPVS_decryption_key_t dec_key);
+void KPABE_DPVS_ciphertext_destroy(KPABE_DPVS_ciphertext_t ciphertext);
 
 #endif
