@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "kpabe.h"
 
 bool KPABE_DPVS_generate_params(KPABE_DPVS_master_public_key_t mpk, KPABE_DPVS_master_secret_key_t msk)
@@ -54,26 +53,6 @@ bool KPABE_DPVS_generate_params(KPABE_DPVS_master_public_key_t mpk, KPABE_DPVS_m
 
   return ret;
 }
-
-
-bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
-                        WhiteList_t wl, BlackList_t bl, std::string& url)
-{
-  std::pair<bool,int> result;
-  if (std::find(wl.begin(), wl.end(), url) != wl.end()) {
-    result.first = true;
-  }
-  else if (std::find(bl.begin(), bl.end(), url) == bl.end()) {
-    std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
-    std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(attributes);
-    if (policy != nullptr && attrList != nullptr) {
-      result = checkIfSatisfied(policy.get(), attrList.get());
-    }
-  }
-
-  return result.first;
-}
-
 
 bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
         KPABE_DPVS_master_secret_key_t msk, std::string& policy_str,
