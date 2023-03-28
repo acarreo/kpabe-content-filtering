@@ -77,18 +77,21 @@ bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
 
 bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
         KPABE_DPVS_master_secret_key_t msk, std::string& policy_str,
-        std::vector<std::string>& wl, std::vector<std::string>& bl)
+        std::vector<std::string>& white_list, std::vector<std::string>& black_list)
 {
   bn_vect_t ri;
   bn_t y0, y1, tmp1, tmp2;
   g2_vect_t vect_tmp;
+  g2_vect_st** keys_wl = nullptr;
+  g2_vect_st** keys_bl = nullptr;
+  g2_vect_st** keys_att = nullptr;
 
   BPGroup group(OpenABE_NONE_ID);
   OpenABELSSS lsss;
   ZP secret_y2;
 
-  uint size_bl = bl.size();
-  uint size_wl = wl.size();
+  uint size_bl = black_list.size();
+  uint size_wl = white_list.size();
 
   bn_null(tmp1); bn_new(tmp1);
   bn_null(tmp2); bn_new(tmp2);
@@ -97,11 +100,17 @@ bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
   bn_null(y0); bn_new(y0); bn_zero(y0); /* y0 := y1 + secret_y2 */
   bn_null(secret_y2.m_ZP); bn_new(secret_y2.m_ZP);
 
-  std::unique_ptr<OpenABEPolicy> policy = createPolicyTree(policy_str);
+  auto policy = createPolicyTree(policy_str);
+
   if (policy == nullptr) {
     std::cout << "Errors while trying to create PolicyTree" << std::endl;
     return false;
   }
+
+  if (!KPABE_DPVS_decryption_key_init(dec_key))
+    return false;
+
+  dec_key->policy = policy_str;
 
   bn_vect_init(ri, size_bl);
   for (uint i = 0; i < size_bl; i++) {
@@ -115,9 +124,6 @@ bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
   lsss.shareSecret(policy.get(), secret_y2);
   OpenABELSSSRowMap secret_shares = lsss.getRows();
 
-  if (!KPABE_DPVS_decryption_key_init(dec_key, size_wl, size_bl, secret_shares.size()))
-    return false;
-
   /* set key_root : -y0 * msk->d1 + msk->d3 */
   bn_neg(tmp1, y0); bn_mod(tmp1, tmp1, group.order);
   dpvs_k_mul_dual_vect(dec_key->key_root, msk->d1, tmp1);
@@ -125,43 +131,53 @@ bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
 
   /* set keys whitelist
     (theta[i] * url[i]) * msk->f1 - theta[i] * msk->f2 + y0 * msk->f3 */
+  uint j = 0;
+  keys_wl = dpvs_alloc_dual_base_vect_2(size_wl);
   dpvs_init_dual_base_vect(vect_tmp, NF);
-  for (uint i = 0; i < size_wl; i++) {
-    hash_to_bn(tmp1, wl[i].c_str(), wl[i].size());
+  for (const auto& wl : white_list) {
+    hash_to_bn(tmp1, wl.c_str(), wl.size());
     bn_mod(tmp1, tmp1, group.order);
     bn_rand_mod(tmp2, group.order);
     bn_mod_mul(tmp1, tmp1, tmp2, group.order);
     bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order);
 
-    dpvs_k_mul_dual_vect(dec_key->keys_wl[i], msk->f1, tmp1);
+    dpvs_init_dual_base_vect(keys_wl[j], NF);
+    dpvs_k_mul_dual_vect(keys_wl[j], msk->f1, tmp1);
     dpvs_k_mul_dual_vect(vect_tmp, msk->f2, tmp2);
-    dpvs_add_dual_vect(dec_key->keys_wl[i], dec_key->keys_wl[i], vect_tmp);
+    dpvs_add_dual_vect(keys_wl[j], keys_wl[j], vect_tmp);
     dpvs_k_mul_dual_vect(vect_tmp, msk->f3, y0);
-    dpvs_add_dual_vect(dec_key->keys_wl[i], dec_key->keys_wl[i], vect_tmp);
+    dpvs_add_dual_vect(keys_wl[j], keys_wl[j], vect_tmp);
+    dec_key->key_wl.insert(std::pair<std::string, g2_vect_st*>(wl, keys_wl[j]));
+    j++;
   }
   dpvs_clear_dual_base_vect(vect_tmp);
 
   /* set keys for blacklist */
+  j = 0;
+  keys_bl = dpvs_alloc_dual_base_vect_2(size_bl);
   dpvs_init_dual_base_vect(vect_tmp, NG);
-  for (uint i = 0; i < size_bl; i++) {
-    hash_to_bn(tmp1, bl[i].c_str(), bl[i].size());
+  for (const auto& bl : black_list) {
+    hash_to_bn(tmp1, bl.c_str(), bl.size());
     bn_mod(tmp1, tmp1, group.order);
-    bn_mod_mul(tmp1, tmp1, ri->coord[i], group.order);
-    bn_neg(tmp2, ri->coord[i]); bn_mod(tmp2, tmp2, group.order);
+    bn_mod_mul(tmp1, tmp1, ri->coord[j], group.order);
+    bn_neg(tmp2, ri->coord[j]); bn_mod(tmp2, tmp2, group.order);
 
-    dpvs_k_mul_dual_vect(dec_key->keys_bl[i], msk->g1, tmp1);
+    dpvs_init_dual_base_vect(keys_bl[j], NG);
+    dpvs_k_mul_dual_vect(keys_bl[j], msk->g1, tmp1);
     dpvs_k_mul_dual_vect(vect_tmp, msk->g2, tmp2);
-    dpvs_add_dual_vect(dec_key->keys_bl[i], dec_key->keys_bl[i], vect_tmp);
+    dpvs_add_dual_vect(keys_bl[j], keys_bl[j], vect_tmp);
+    dec_key->key_bl.insert(std::pair<std::string, g2_vect_st*>(bl, keys_bl[j]));
+    j++;
   }
   dpvs_clear_dual_base_vect(vect_tmp);
 
   /* set keys k_att */
+  j = 0;
+  keys_att = dpvs_alloc_dual_base_vect_2(secret_shares.size());
   dpvs_init_dual_base_vect(vect_tmp, NH);
-  int i = 0;
-  for(auto it = secret_shares.cbegin(); it != secret_shares.cend(); ++it, i++)
-  {
-    ZP aj = it->second.element();
-    std::string att_j = it->second.label();
+  for (const auto& [_, secret] : secret_shares) {
+    ZP aj = secret.element();
+    std::string att_j = secret.label();
 
     hash_to_bn(tmp1, att_j.c_str(), att_j.size()); /* att_j */
     bn_mod(tmp1, tmp1, group.order);
@@ -169,11 +185,14 @@ bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
     bn_mod_mul(tmp1, tmp1, tmp2, group.order);     /* theta_j * att_j */
     bn_neg(tmp2, tmp2); bn_mod(tmp2, tmp2, group.order); /* - theta_j */
 
-    dpvs_k_mul_dual_vect(dec_key->keys_att[i], msk->h1, tmp1);
+    dpvs_init_dual_base_vect(keys_att[j], NH);
+    dpvs_k_mul_dual_vect(keys_att[j], msk->h1, tmp1);
     dpvs_k_mul_dual_vect(vect_tmp, msk->h2, tmp2);
-    dpvs_add_dual_vect(dec_key->keys_att[i], dec_key->keys_att[i], vect_tmp);
+    dpvs_add_dual_vect(keys_att[j], keys_att[j], vect_tmp);
     dpvs_k_mul_dual_vect(vect_tmp, msk->h3, aj.m_ZP);
-    dpvs_add_dual_vect(dec_key->keys_att[i], dec_key->keys_att[i], vect_tmp);
+    dpvs_add_dual_vect(keys_att[j], keys_att[j], vect_tmp);
+    dec_key->key_att.insert(std::pair<std::string, g2_vect_st*>(att_j, keys_att[j]));
+    j++;
   }
   dpvs_clear_dual_base_vect(vect_tmp);
 
@@ -186,36 +205,49 @@ bool KPABE_DPVS_generate_decryption_key(KPABE_DPVS_decryption_key_t dec_key,
   return true;
 }
 
-bool KPABE_DPVS_encrypt(KPABE_DPVS_ciphertext_t cipher, bn_t psi,
+bool KPABE_DPVS_encrypt(KPABE_DPVS_ciphertext_t cipher, gt_t psi,
         KPABE_DPVS_master_public_key_t mpk, std::string& url, std::string& attributes)
 {
-  bn_t sigma, omega, __url, tmp, sigma_j;
+  bn_t sigma, omega, __url, tmp, sigma_j, __psi;
   g1_vect_t vect_tmp, vect_tmp2;
+  g1_vect_st** vect_ctx_att = nullptr;
 
   BPGroup group(OpenABE_NONE_ID);
 
   std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(attributes);
   const std::vector<std::string>* attributes_list = attrList->getAttributeList();
-  uint size_att = attributes_list->size();
 
-  if (!KPABE_DPVS_ciphertext_init(cipher, size_att))
+  if (!(vect_ctx_att = dpvs_alloc_base_vect_2(attributes_list->size())))
     return false;
+
+  if (!KPABE_DPVS_ciphertext_init(cipher)) {
+    for (uint i = 0; i < attributes_list->size(); i++) free(vect_ctx_att[i]);
+    free(vect_ctx_att);
+    return false;
+  }
+
+  cipher->attributes = attributes; /* List of attributes */
 
   bn_null(sigma); bn_new(sigma);
   bn_null(omega); bn_new(omega);
   bn_null(__url); bn_new(__url);
   bn_null(sigma_j); bn_new(sigma_j);
   bn_null(tmp); bn_new(tmp);
+  bn_null(__psi); bn_new(__psi);
 
+  bn_rand_mod(__psi, group.order);
   bn_rand_mod(sigma, group.order);
   bn_rand_mod(omega, group.order);
   hash_to_bn(__url, url.c_str(), url.size());
   bn_mod(__url, __url, group.order);
 
+  /* ephemeral session key */
+  gt_exp(psi, params->gt, __psi);
+
   /* ctx root */
   dpvs_init_base_vect(vect_tmp, ND);
   dpvs_k_mul_vect(cipher->ctx_root, mpk->d1, omega);
-  dpvs_k_mul_vect(vect_tmp, mpk->d3, psi);
+  dpvs_k_mul_vect(vect_tmp, mpk->d3, __psi);
   dpvs_add_vect(cipher->ctx_root, cipher->ctx_root, vect_tmp);
   dpvs_clear_base_vect(vect_tmp);
 
@@ -242,14 +274,16 @@ bool KPABE_DPVS_encrypt(KPABE_DPVS_ciphertext_t cipher, bn_t psi,
   dpvs_k_mul_vect(vect_tmp2, mpk->h3, omega);
   uint j = 0;
   for (const auto& attr : *attributes_list) {
+    dpvs_init_base_vect(vect_ctx_att[j], NH);
     bn_rand_mod(sigma_j, group.order);
-    dpvs_k_mul_vect(cipher->ctx_att[j], mpk->h1, sigma_j);
+    dpvs_k_mul_vect(vect_ctx_att[j], mpk->h1, sigma_j);
     hash_to_bn(tmp, attr.c_str(), attr.size());
     bn_mod(tmp, tmp, group.order);
     bn_mod_mul(tmp, tmp, sigma_j, group.order);
     dpvs_k_mul_vect(vect_tmp, mpk->h2, tmp);
-    dpvs_add_vect(cipher->ctx_att[j], cipher->ctx_att[j], vect_tmp);
-    dpvs_add_vect(cipher->ctx_att[j], cipher->ctx_att[j], vect_tmp2);
+    dpvs_add_vect(vect_ctx_att[j], vect_ctx_att[j], vect_tmp);
+    dpvs_add_vect(vect_ctx_att[j], vect_ctx_att[j], vect_tmp2);
+    cipher->ctx_att.insert(std::pair<std::string, g1_vect_st*>(attr, vect_ctx_att[j]));
     j++;
   }
   dpvs_clear_base_vect(vect_tmp);
@@ -258,6 +292,7 @@ bool KPABE_DPVS_encrypt(KPABE_DPVS_ciphertext_t cipher, bn_t psi,
   bn_free(tmp);
   bn_free(omega);
   bn_free(__url);
+  bn_free(__psi);
   bn_free(sigma);
   bn_free(sigma_j);
 
