@@ -278,9 +278,85 @@ bool KPABE_DPVS_encrypt(KPABE_DPVS_ciphertext_t cipher, gt_t psi,
   return true;
 }
 
-bool KPABE_DPVS_decrypt(bn_t psi, KPABE_DPVS_ciphertext_t ciphertext, KPABE_DPVS_decryption_key_t dec_key)
+bool KPABE_DPVS_decrypt(gt_t psi, KPABE_DPVS_ciphertext_t cipher,
+                        KPABE_DPVS_decryption_key_t dec_key, std::string& url)
 {
+  bool result = false;
+  g2_vect_t vect_tmp;
+  bn_t bn, bn_bl, bn_url;
+  gt_t ip, ip_lsss, ip_bl, ip_root;
 
+  gt_null(ip);
+  gt_null(ip_bl);
+  gt_null(ip_lsss);
+  gt_null(ip_root);
+
+  bn_null(bn);
+  bn_null(bn_bl);
+  bn_null(bn_url);
+
+  gt_new(ip);
+  gt_new(ip_root);
+
+  if (dec_key->key_wl.contains(url)) {
+    dpvs_inner_product(ip, cipher->ctx_wl, dec_key->key_wl[url]);
+    dpvs_inner_product(ip_root, cipher->ctx_root, dec_key->key_root);
+    gt_mul(psi, ip, ip_root);
+    result = true;
+  }
+  else if (!dec_key->key_bl.contains(url)) {
+    auto policy = createPolicyTree(dec_key->policy);
+    auto attribute_list = createAttributeList(cipher->attributes);
+
+    if (policy != nullptr && attribute_list != nullptr) {
+      OpenABELSSS lsss;
+      if (lsss.recoverCoefficients(policy.get(), attribute_list.get()))
+      {
+        gt_new(ip_bl); gt_new(ip_lsss);
+        bn_new(bn); bn_new(bn_bl); bn_new(bn_url);
+
+        auto coefficients = lsss.getRows();
+
+        gt_set_unity(ip_lsss);
+        dpvs_init_dual_base_vect(vect_tmp, NH);
+        for (const auto& [_, coeff] : coefficients) {
+          ZP coef_j = coeff.element();
+          std::string att_j = coeff.label();
+          dpvs_k_mul_dual_vect(vect_tmp, dec_key->key_att[att_j], coef_j.m_ZP);
+          dpvs_inner_product(ip, cipher->ctx_att[att_j], vect_tmp);
+          gt_mul(ip_lsss, ip_lsss, ip);
+        }
+        dpvs_clear_dual_base_vect(vect_tmp);
+
+        gt_set_unity(ip_bl);
+        hash_to_bn(bn_url, url.c_str(), url.size());
+        for (const auto& [bl, key_bl] : dec_key->key_bl) {
+          hash_to_bn(bn_bl, bl.c_str(), bl.size());
+          bn_mod_sub(bn, bn_bl, bn_url, Fq);
+          bn_mod_inv(bn, bn, Fq);
+
+          dpvs_inner_product(ip, cipher->ctx_bl, key_bl);
+          gt_exp(ip, ip, bn);
+          gt_mul(ip_bl, ip_bl, ip);
+        }
+
+        dpvs_inner_product(ip_root, cipher->ctx_root, dec_key->key_root);
+        gt_mul(psi, ip_lsss, ip_bl);
+        gt_mul(psi, psi, ip_root);
+
+        gt_free(ip_bl); gt_free(ip_lsss); gt_free(ip_root);
+        bn_free(bn); bn_free(bl_bl); bn_free(bn_url);
+
+        result = true;
+      }
+    }
+  }
+
+  gt_free(ip);
+  gt_free(ip_root);
+
+  return result;
+}
 
 
 bool KPABE_DPVS_master_public_key_init(KPABE_DPVS_master_public_key_t mpk)
