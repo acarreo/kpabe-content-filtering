@@ -39,6 +39,8 @@ typedef dpvs_st dpvs_t[1];
 
 bool dpvs_init_base_vect(g1_vect_t bvect, uint8_t dim);
 bool dpvs_init_dual_base_vect(g2_vect_t db_vect, uint8_t dim);
+g1_vect_st** dpvs_alloc_base_vect_2(uint8_t dim);
+g2_vect_st** dpvs_alloc_dual_base_vect_2(uint8_t dim);
 bool dpvs_init(dpvs_t dpvs, uint8_t dim);
 
 bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
