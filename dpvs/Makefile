@@ -13,7 +13,7 @@ $(OBJ_DIR):
 	@mkdir -p $@
 
 $(OBJ_DIR)/%.o: %.c
-	$(CC) -o $@ -c $< $(CXXFLAGS) -I$(RELIC_INCLUDE)
+	$(CC) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
 
 clean:
 	rm -rf $(OBJ_DIR) *.o *~
