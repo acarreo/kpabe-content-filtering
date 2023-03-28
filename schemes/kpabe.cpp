@@ -1,116 +1,6 @@
 #include <algorithm>
 #include "kpabe.h"
 
-
-bool KPABE_DPVS_master_public_key_init(KPABE_DPVS_master_public_key_t mpk)
-{
-  if (dpvs_init_base_vect(mpk->d1, ND) && dpvs_init_base_vect(mpk->d3, ND) &&
-      dpvs_init_base_vect(mpk->g1, NG) && dpvs_init_base_vect(mpk->g2, NG) &&
-      dpvs_init_base_vect(mpk->f1, NF) && dpvs_init_base_vect(mpk->f2, NF) &&
-      dpvs_init_base_vect(mpk->f3, NF) && dpvs_init_base_vect(mpk->h1, NH) &&
-      dpvs_init_base_vect(mpk->h2, NH) && dpvs_init_base_vect(mpk->h3, NH))
-  {
-    return true;
-  }
-
-  return false;
-}
-
-bool KPABE_DPVS_master_secret_key_init(KPABE_DPVS_master_secret_key_t msk)
-{
-  if (dpvs_init_dual_base_vect(msk->d1, ND) && dpvs_init_dual_base_vect(msk->d3, ND) &&
-      dpvs_init_dual_base_vect(msk->g1, NG) && dpvs_init_dual_base_vect(msk->g2, NG) &&
-      dpvs_init_dual_base_vect(msk->f1, NF) && dpvs_init_dual_base_vect(msk->f2, NF) &&
-      dpvs_init_dual_base_vect(msk->f3, NF) && dpvs_init_dual_base_vect(msk->h1, NH) &&
-      dpvs_init_dual_base_vect(msk->h2, NH) && dpvs_init_dual_base_vect(msk->h3, NH))
-  {
-    return true;
-  }
-
-  return false;
-}
-
-/* On ne gere pas le cas d'erreurs (allocation fail) ici, mais il faudra penser à liberer
- * correctement si une allocation echoue
- */
-bool KPABE_DPVS_decryption_key_init(KPABE_DPVS_decryption_key_t dec_key, uint size_wl, uint size_bl, uint size_att)
-{
-  bool ret = false;
-  uint i = 0, j = 0, k = 0;
-
-  dec_key->size_wl = size_wl;
-  dec_key->size_bl = size_bl;
-  dec_key->size_att = size_att;
-
-  if (dpvs_init_dual_base_vect(dec_key->key_root, ND))
-  {
-    /* Initialize K_WL in the dual base F* */
-    if ((dec_key->keys_wl = (g2_vect_st**)malloc(size_wl * sizeof(g2_vect_st*))) != NULL) {
-      for (; i < size_wl; i++) {
-        if ((dec_key->keys_wl[i] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
-            !dpvs_init_dual_base_vect(dec_key->keys_wl[i], NF)) {
-              ret = _error_alloc_fail_();
-              break;
-        }
-      }
-    }
-
-    /* Initialize K_BL in the dual base G* */
-    if ((dec_key->keys_bl = (g2_vect_st**)malloc(size_bl * sizeof(g2_vect_st*))) != NULL) {
-      for (; j < size_bl; j++) {
-        if ((dec_key->keys_bl[j] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
-            !dpvs_init_dual_base_vect(dec_key->keys_bl[j], NG)) {
-              ret = _error_alloc_fail_();
-              break;
-        }
-      }
-    }
-
-    /* Initialize K_att for j in list_att(policy) in the dual base H* */
-    if ((dec_key->keys_att = (g2_vect_st**)malloc(size_att * sizeof(g2_vect_st*))) != NULL) {
-      for (; k < size_att; k++) {
-        if ((dec_key->keys_att[k] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
-            !dpvs_init_dual_base_vect(dec_key->keys_att[k], NH)) {
-              ret = _error_alloc_fail_();
-              break;
-        }
-      }
-    }
-  }
-
-  ret = (i == size_wl) && (j == size_bl) && (k == size_att);
-
-  return ret;
-}
-
-bool KPABE_DPVS_ciphertext_init(KPABE_DPVS_ciphertext_t cipher, uint size_att)
-{
-  bool ret = false;
-  uint i = 0;
-
-  cipher->size_att = size_att;
-
-  if ((cipher->ctx_att = (g1_vect_st**)malloc(size_att * sizeof(g1_vect_st*))) != NULL) {
-    for (; i < size_att; i++) {
-      if ((cipher->ctx_att[i] = (g1_vect_st*)malloc(sizeof(g1_vect_st))) == NULL ||
-          !dpvs_init_base_vect(cipher->ctx_att[i], NH)) {
-            ret = _error_alloc_fail_();
-            break;
-      }
-    }
-
-    if (!dpvs_init_base_vect(cipher->ctx_root, ND) ||
-        !dpvs_init_base_vect(cipher->ctx_wl, NF) ||
-        !dpvs_init_base_vect(cipher->ctx_bl, NG)) {
-          ret = _error_alloc_fail_();
-    }
-  }
-
-  ret = (i == size_att);
-
-  return ret;
-}
-
 bool KPABE_DPVS_generate_params(KPABE_DPVS_master_public_key_t mpk, KPABE_DPVS_master_secret_key_t msk)
 {
   bool ret = true;
@@ -165,60 +55,6 @@ bool KPABE_DPVS_generate_params(KPABE_DPVS_master_public_key_t mpk, KPABE_DPVS_m
   return ret;
 }
 
-void KPABE_DPVS_master_public_key_destroy(KPABE_DPVS_master_public_key_t mpk)
-{
-  dpvs_clear_base_vect(mpk->d1); dpvs_clear_base_vect(mpk->d3);
-  dpvs_clear_base_vect(mpk->g1); dpvs_clear_base_vect(mpk->g2);
-  dpvs_clear_base_vect(mpk->f1); dpvs_clear_base_vect(mpk->f2);
-  dpvs_clear_base_vect(mpk->f3); dpvs_clear_base_vect(mpk->h1);
-  dpvs_clear_base_vect(mpk->h2); dpvs_clear_base_vect(mpk->h3);
-}
-
-void KPABE_DPVS_master_secret_key_destroy(KPABE_DPVS_master_secret_key_t msk)
-{
-  dpvs_clear_dual_base_vect(msk->d1); dpvs_clear_dual_base_vect(msk->d3);
-  dpvs_clear_dual_base_vect(msk->g1); dpvs_clear_dual_base_vect(msk->g2);
-  dpvs_clear_dual_base_vect(msk->f1); dpvs_clear_dual_base_vect(msk->f2);
-  dpvs_clear_dual_base_vect(msk->f3); dpvs_clear_dual_base_vect(msk->h1);
-  dpvs_clear_dual_base_vect(msk->h2); dpvs_clear_dual_base_vect(msk->h3);
-}
-
-void KPABE_DPVS_decryption_key_destroy(KPABE_DPVS_decryption_key_t dec_key)
-{
-  for (uint i = 0; i < dec_key->size_wl; i++) {
-    dpvs_clear_dual_base_vect(dec_key->keys_wl[i]);
-    free(dec_key->keys_wl[i]);
-  }
-
-  for (uint j = 0; j < dec_key->size_bl; j++) {
-    dpvs_clear_dual_base_vect(dec_key->keys_bl[j]);
-    free(dec_key->keys_bl[j]);
-  }
-
-  for (uint k = 0; k < dec_key->size_att; k++) {
-    dpvs_clear_dual_base_vect(dec_key->keys_att[k]);
-    free(dec_key->keys_att[k]);
-  }
-
-  free(dec_key->keys_wl);
-  free(dec_key->keys_bl);
-  free(dec_key->keys_att);
-  dpvs_clear_dual_base_vect(dec_key->key_root);
-}
-
-void KPABE_DPVS_ciphertext_destroy(KPABE_DPVS_ciphertext_t cipher)
-{
-  for (uint i = 0; i < cipher->size_att; i++) {
-    dpvs_clear_base_vect(cipher->ctx_att[i]);
-    free(cipher->ctx_att[i]);
-  }
-
-  free(cipher->ctx_att);
-  dpvs_clear_base_vect(cipher->ctx_root);
-  dpvs_clear_base_vect(cipher->ctx_wl);
-  dpvs_clear_base_vect(cipher->ctx_bl);
-
-}
 
 bool checkSatisfyPolicy(std::string& policy_str, std::string& attributes,
                         WhiteList_t wl, BlackList_t bl, std::string& url)
@@ -433,11 +269,97 @@ bool KPABE_DPVS_decrypt(bn_t psi, KPABE_DPVS_ciphertext_t ciphertext, KPABE_DPVS
 
 
 
+bool KPABE_DPVS_master_public_key_init(KPABE_DPVS_master_public_key_t mpk)
+{
+  if (dpvs_init_base_vect(mpk->d1, ND) && dpvs_init_base_vect(mpk->d3, ND) &&
+      dpvs_init_base_vect(mpk->g1, NG) && dpvs_init_base_vect(mpk->g2, NG) &&
+      dpvs_init_base_vect(mpk->f1, NF) && dpvs_init_base_vect(mpk->f2, NF) &&
+      dpvs_init_base_vect(mpk->f3, NF) && dpvs_init_base_vect(mpk->h1, NH) &&
+      dpvs_init_base_vect(mpk->h2, NH) && dpvs_init_base_vect(mpk->h3, NH))
+  {
+    return true;
+  }
+
   return false;
 }
 
-
-
-
+bool KPABE_DPVS_master_secret_key_init(KPABE_DPVS_master_secret_key_t msk)
 {
+  if (dpvs_init_dual_base_vect(msk->d1, ND) && dpvs_init_dual_base_vect(msk->d3, ND) &&
+      dpvs_init_dual_base_vect(msk->g1, NG) && dpvs_init_dual_base_vect(msk->g2, NG) &&
+      dpvs_init_dual_base_vect(msk->f1, NF) && dpvs_init_dual_base_vect(msk->f2, NF) &&
+      dpvs_init_dual_base_vect(msk->f3, NF) && dpvs_init_dual_base_vect(msk->h1, NH) &&
+      dpvs_init_dual_base_vect(msk->h2, NH) && dpvs_init_dual_base_vect(msk->h3, NH))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+bool KPABE_DPVS_decryption_key_init(KPABE_DPVS_decryption_key_t dec_key)
+{
+  return dpvs_init_dual_base_vect(dec_key->key_root, ND) ? true : _error_alloc_fail_();
+}
+
+bool KPABE_DPVS_ciphertext_init(KPABE_DPVS_ciphertext_t cipher)
+{
+  if (!dpvs_init_base_vect(cipher->ctx_root, ND) ||
+      !dpvs_init_base_vect(cipher->ctx_wl, NF) ||
+      !dpvs_init_base_vect(cipher->ctx_bl, NG)) {
+        return _error_alloc_fail_();
+  }
+
+  return true;
+}
+
+void KPABE_DPVS_master_public_key_destroy(KPABE_DPVS_master_public_key_t mpk)
+{
+  dpvs_clear_base_vect(mpk->d1); dpvs_clear_base_vect(mpk->d3);
+  dpvs_clear_base_vect(mpk->g1); dpvs_clear_base_vect(mpk->g2);
+  dpvs_clear_base_vect(mpk->f1); dpvs_clear_base_vect(mpk->f2);
+  dpvs_clear_base_vect(mpk->f3); dpvs_clear_base_vect(mpk->h1);
+  dpvs_clear_base_vect(mpk->h2); dpvs_clear_base_vect(mpk->h3);
+}
+
+void KPABE_DPVS_master_secret_key_destroy(KPABE_DPVS_master_secret_key_t msk)
+{
+  dpvs_clear_dual_base_vect(msk->d1); dpvs_clear_dual_base_vect(msk->d3);
+  dpvs_clear_dual_base_vect(msk->g1); dpvs_clear_dual_base_vect(msk->g2);
+  dpvs_clear_dual_base_vect(msk->f1); dpvs_clear_dual_base_vect(msk->f2);
+  dpvs_clear_dual_base_vect(msk->f3); dpvs_clear_dual_base_vect(msk->h1);
+  dpvs_clear_dual_base_vect(msk->h2); dpvs_clear_dual_base_vect(msk->h3);
+}
+
+void KPABE_DPVS_decryption_key_destroy(KPABE_DPVS_decryption_key_t dec_key)
+{
+  for (auto& [_, key_wl] : dec_key->key_wl) {
+    dpvs_clear_dual_base_vect(key_wl);
+    free(key_wl); key_wl = NULL;
+  }
+
+  for (auto& [_, key_bl] : dec_key->key_bl) {
+    dpvs_clear_dual_base_vect(key_bl);
+    free(key_bl); key_bl = NULL;
+  }
+
+  for (auto& [_, key_att] : dec_key->key_att) {
+    dpvs_clear_dual_base_vect(key_att);
+    free(key_att); key_att = NULL;
+  }
+
+  dpvs_clear_dual_base_vect(dec_key->key_root);
+}
+
+void KPABE_DPVS_ciphertext_destroy(KPABE_DPVS_ciphertext_t cipher)
+{
+  for (auto& [_, ctx_att] : cipher->ctx_att) {
+    dpvs_clear_base_vect(ctx_att);
+    free(ctx_att); ctx_att = NULL;
+  }
+
+  dpvs_clear_base_vect(cipher->ctx_root);
+  dpvs_clear_base_vect(cipher->ctx_wl);
+  dpvs_clear_base_vect(cipher->ctx_bl);
+
 }
