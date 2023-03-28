@@ -9,14 +9,6 @@ extern "C" {
 
 typedef struct
 {
-  gt_t gt;
-  bn_t q;
-} group_setting_st;
-
-typedef group_setting_st group_setting_t[1];
-
-typedef struct
-{
   uint8_t dim;
   g1_t* coord;
 } g1_vect_st;
@@ -39,8 +31,6 @@ typedef struct
 } dpvs_st;
 
 typedef dpvs_st dpvs_t[1];
-
-extern group_setting_t params;
 
 /* Initialize a base implies initialisation matrix */
 #define dpvs_get_mat_row    mat_get_row

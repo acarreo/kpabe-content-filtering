@@ -1,7 +1,6 @@
 #include <algorithm>
 #include "kpabe.h"
 
-static void hash_to_bn(bn_t hash, const char *digest, int len);
 
 bool KPABE_DPVS_master_public_key_init(KPABE_DPVS_master_public_key_t mpk)
 {
@@ -439,11 +438,6 @@ bool KPABE_DPVS_decrypt(bn_t psi, KPABE_DPVS_ciphertext_t ciphertext, KPABE_DPVS
 
 
 
-/**********************************************************************/
 
-static void hash_to_bn(bn_t hash, const char *digest, int len)
 {
-  uint8_t h[RLC_MD_LEN];
-  md_map(h, (uint8_t*)digest, len);
-  bn_read_bin(hash, h, RLC_MD_LEN);
 }
