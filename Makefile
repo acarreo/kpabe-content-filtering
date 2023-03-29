@@ -1,35 +1,43 @@
-.PHONY: all compile_dpvs compile_access_structure clean
+.PHONY: all compile_dpvs compile_lsss compile_schemes clean
 
 export CC = cc
 export CXX = g++
 export CCFLAGS = -Wall
 export CXXFLAGS = $(CCFLAGS) -std=c++20
-export LDFLAGS = /usr/lib/librelic_s.a_bls12-381 -lgmp
+export LDFLAGS = /usr/lib/librelic_s.a_bls12-381 lsss/liblsss_bls12-381.a -lgmp
 export RELIC_INCLUDE = /usr/include/relic_bls12-381
 
 EXEC = test_abe
 DPVS_DIR = dpvs
-SCHEMES = schemes
-ACCESS_STRUCTURE_DIR = access_structure
-OBJ_SCHEMES = schemes/kpabe.o schemes/test_lsss.o
-OBJ = $(wildcard $(DPVS_DIR)/build/*.o) $(wildcard $(ACCESS_STRUCTURE_DIR)/build/*.o) $(OBJ_SCHEMES) utils.o
+SCHEMES_DIR = schemes
+LSSS_DIR = lsss
+DPVS_OBJ = $(wildcard $(DPVS_DIR)/build/*.o)
+SCHEMES_OBJ = $(wildcard $(SCHEMES_DIR)/build/*.o)
+OBJ = $(DPVS_OBJ) $(SCHEMES_OBJ) utils.o
 
 all: $(EXEC)
 
 compile_dpvs:
-	cd $(DPVS_DIR) && $(MAKE)
+	$(MAKE) -C $(DPVS_DIR)
 
-compile_access_structure:
-	cd $(ACCESS_STRUCTURE_DIR) && $(MAKE)
+compile_lsss:
+	$(MAKE) -C $(LSSS_DIR)
 
-schemes/%.o: schemes/%.cpp
-	$(CXX) -o $@ -c $< $(CXXFLAGS) -I$(RELIC_INCLUDE)
+compile_schemes:
+	$(MAKE) -C $(SCHEMES_DIR)
 
 utils.o: utils.c
 	$(CC) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
 
-$(EXEC): compile_dpvs compile_access_structure $(OBJ_SCHEMES) utils.o
+test_cunit.o: test_cunit.cpp
+	$(CXX) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
+
+$(EXEC): compile_dpvs compile_lsss compile_schemes utils.o
 	@$(CXX) -o $@ $(CXXFLAGS) $(OBJ) $(LDFLAGS)
 
+
+test_cunit: compile_dpvs compile_lsss compile_schemes utils.o test_cunit.o
+	@$(CXX) -o $@ $(CXXFLAGS) $(DPVS_OBJ) $(SCHEMES_DIR)/build/kpabe.o utils.o test_cunit.o $(LDFLAGS)
+
 clean:
-	rm -rf $(DPVS_DIR)/build $(ACCESS_STRUCTURE_DIR)/build schemes/*.o *.o *~
+	rm -rf $(DPVS_DIR)/build $(SCHEMES_DIR)/build *.o *~
