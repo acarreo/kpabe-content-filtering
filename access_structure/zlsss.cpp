@@ -191,7 +191,7 @@ OpenABELSSS::performCoefficientRecovery(OpenABEPolicy *policy, OpenABEAttributeL
   // from the leaves up to the root.
   bool result = iterativeScanTree(node, attrList);
   if(!result) {
-    cout << "Insufficient attributes to recover the secret key." << endl;
+    // cout << "Insufficient attributes to recover the secret key." << endl;
     return result;
   }
 
