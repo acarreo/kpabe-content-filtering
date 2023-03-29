@@ -5,9 +5,9 @@
 #include <string>
 #include <map>
 
-#include "../access_structure/zpolicy.h"
-#include "../access_structure/zlsss.h"
-#include "../access_structure/zattributelist.h"
+#include "../lsss/zpolicy.h"
+#include "../lsss/zlsss.h"
+#include "../lsss/zattributelist.h"
 
 #ifdef __cplusplus
 extern "C" {
