@@ -1,6 +1,6 @@
 #include "utils.h"
 
-bool init_librairies(void) {
+bool init_libraries(void) {
   if (core_init() == RLC_OK && pc_param_set_any() == RLC_OK) {
     set_params();
     return true;

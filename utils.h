@@ -15,7 +15,7 @@ typedef struct
 // typedef group_setting_st group_setting_t[1];
 extern group_setting_t params;
 
-bool init_librairies(void);
+bool init_libraries(void);
 void clean_libraries(void);
 
 void hash_to_bn(bn_t hash, const char *digest, int len);
