@@ -1,13 +1,16 @@
-FROM debian:buster
+FROM debian:bullseye
 
-ARG COMMIT_RELIC="fe61f2f9518667f5c6d26cf00c3721e98b3f0528"
+ARG RELIC_TAG="0.6.0"
 
 RUN apt-get update && apt-get install -y --no-install-recommends git \
-	cmake make g++ ca-certificates libgmp-dev vim pkg-config && apt-get clean
+	cmake make g++ ca-certificates libgmp-dev vim flex libfl-dev pkg-config && apt-get clean
 
-RUN git clone https://github.com/relic-toolkit/relic /root/relic
+RUN git clone --branch ${RELIC_TAG} --depth 1 https://github.com/relic-toolkit/relic /root/relic
 WORKDIR /root/relic
-RUN git checkout -b current ${COMMIT_RELIC}
 COPY compile_relic_curves.sh .
 RUN ./compile_relic_curves.sh
+
 WORKDIR /root
+COPY lsss.tar.gz .
+COPY compile_lsss.sh .
+RUN ./compile_lsss.sh

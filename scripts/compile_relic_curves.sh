@@ -14,7 +14,7 @@ if [ -d "/root/relic" ]; then
         ../preset/x64-pbc-${curve}.sh .. && make -j && make install
         rm -rf "/root/relic/target_${curve}"
         mv /usr/local/include/relic /usr/include/relic_${curve}
-        mv /usr/local/lib/librelic_s.a /usr/lib/librelic_s.a_${curve}
+        mv /usr/local/lib/librelic_s.a /usr/lib/librelic_${curve}.a
     done
 else
     echo "[ ERRORS ] The directory '/root/relic' does not exist !"
