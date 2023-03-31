@@ -1,13 +1,15 @@
-.PHONY: all compile_dpvs compile_lsss compile_schemes clean
+.PHONY: all compile_dpvs compile_schemes clean
+
+CURVE ?= bls12-381
 
 export CC = cc
 export CXX = g++
 export CCFLAGS = -Wall
 export CXXFLAGS = $(CCFLAGS) -std=c++20
-export LDFLAGS = /usr/lib/librelic_s.a_bls12-381 lsss/liblsss_bls12-381.a -lgmp
-export RELIC_INCLUDE = /usr/include/relic_bls12-381
+export RELIC_INCLUDE = /usr/include/relic_$(CURVE)
+LDFLAGS = -lrelic_$(CURVE) -llsss_$(CURVE) -lgmp
 
-EXEC = test_abe
+EXEC = test_abe_$(CURVE)
 DPVS_DIR = dpvs
 SCHEMES_DIR = schemes
 LSSS_DIR = lsss
@@ -17,11 +19,11 @@ OBJ = $(DPVS_OBJ) $(SCHEMES_OBJ) utils.o
 
 all: $(EXEC)
 
+test:
+	@./test.sh $(CURVE)
+
 compile_dpvs:
 	$(MAKE) -C $(DPVS_DIR)
-
-compile_lsss:
-	$(MAKE) -C $(LSSS_DIR)
 
 compile_schemes:
 	$(MAKE) -C $(SCHEMES_DIR)
@@ -32,12 +34,12 @@ utils.o: utils.c
 test_cunit.o: test_cunit.cpp
 	$(CXX) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
 
-$(EXEC): compile_dpvs compile_lsss compile_schemes utils.o
+$(EXEC): compile_dpvs compile_schemes utils.o
 	@$(CXX) -o $@ $(CXXFLAGS) $(OBJ) $(LDFLAGS)
 
 
-test_cunit: compile_dpvs compile_lsss compile_schemes utils.o test_cunit.o
+test_cunit: compile_dpvs compile_schemes utils.o test_cunit.o
 	@$(CXX) -o $@ $(CXXFLAGS) $(DPVS_OBJ) $(SCHEMES_DIR)/build/kpabe.o utils.o test_cunit.o $(LDFLAGS)
 
 clean:
-	rm -rf $(DPVS_DIR)/build $(SCHEMES_DIR)/build *.o *~
+	rm -rf $(DPVS_DIR)/build $(SCHEMES_DIR)/build $(EXEC) *.o *~
