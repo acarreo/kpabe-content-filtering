@@ -2,10 +2,10 @@
 
 list_curves=(
     "bls12-381"
-    "bls12-446"
-    "bn254"
-    "bn382"
-    "bn446"
+    # "bls12-446"
+    # "bn254"
+    # "bn382"
+    # "bn446"
 )
 
 if [ -d "/root/relic" ]; then
