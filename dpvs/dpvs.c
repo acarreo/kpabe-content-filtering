@@ -1,0 +1,250 @@
+#include "dpvs.h"
+
+bool dpvs_init_base_vect(g1_vect_t bvect, uint8_t dim)
+{
+  bool ret;
+
+  bvect->dim = dim;
+
+  if ((ret = (dim != 0)))
+  {
+    if ((bvect->coord = malloc(dim * sizeof(g1_t))) == NULL)
+      return _error_alloc_fail_();
+
+    int i = 0;
+    RLC_TRY {
+      for (; i < dim; i++) {
+        g1_null(bvect->coord[i]);
+        g1_new(bvect->coord[i]);
+      }
+    }
+    RLC_CATCH_ANY {
+      bvect->dim = i;
+      dpvs_clear_base_vect(bvect);
+      ret = _error_alloc_fail_();
+    }
+  }
+
+  return ret;
+}
+
+bool dpvs_init_dual_base_vect(g2_vect_t db_vect, uint8_t dim)
+{
+  bool ret;
+
+  db_vect->dim = dim;
+
+  if ((ret = (dim != 0)))
+  {
+    if ((db_vect->coord = malloc(dim * sizeof(g2_t))) == NULL)
+      return _error_alloc_fail_();
+
+    int i = 0;
+    RLC_TRY {
+      for (; i < dim; i++) {
+        g2_null(db_vect->coord[i]);
+        g2_new(db_vect->coord[i]);
+      }
+    }
+    RLC_CATCH_ANY {
+      db_vect->dim = i;
+      dpvs_clear_dual_base_vect(db_vect);
+      ret = _error_alloc_fail_();
+    }
+  }
+
+  return ret;
+}
+
+g1_vect_st** dpvs_alloc_base_vect_2(uint8_t dim)
+{
+  g1_vect_st** vect = NULL;
+
+  if ((vect = (g1_vect_st**) malloc(dim * sizeof(g1_vect_st*)))) {
+    for (uint8_t i = 0; i < dim; i++) {
+      if ((vect[i] = (g1_vect_st*)malloc(sizeof(g1_vect_st))) == NULL) {
+        for (; i > 0; i--) free(vect[i-1]);
+        free(vect); vect = NULL;
+        _error_alloc_fail_();
+        break;
+      }
+    }
+  }
+
+  return vect;
+}
+
+g2_vect_st** dpvs_alloc_dual_base_vect_2(uint8_t dim)
+{
+  g2_vect_st** dvect = NULL;
+
+  if ((dvect = (g2_vect_st**) malloc(dim * sizeof(g2_vect_st*)))) {
+    for (uint8_t i = 0; i < dim; i++) {
+      if ((dvect[i] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL) {
+        for (; i > 0; i--) free(dvect[i-1]);
+        free(dvect); dvect = NULL;
+        _error_alloc_fail_();
+        break;
+      }
+    }
+  }
+
+  return dvect;
+}
+
+bool dpvs_init(dpvs_t dpvs, uint8_t dim)
+{
+  bool ret = false;
+
+  dpvs->dim = dim;
+
+  if ((ret = (dim != 0)))
+  {
+    if ((dpvs->base = malloc(dim * sizeof(g1_vect_st*))) == NULL ||
+        (dpvs->dual_base = malloc(dim * sizeof(g2_vect_st*))) == NULL)
+    {
+      return _error_alloc_fail_();
+    }
+
+    int i = 0;
+    RLC_TRY {
+      for (; i < dim; i++)
+      {
+        if ((dpvs->base[i] = malloc(sizeof(g1_vect_st))) == NULL ||
+            !dpvs_init_base_vect(dpvs->base[i], dim) ||
+            (dpvs->dual_base[i] = malloc(sizeof(g2_vect_st))) == NULL ||
+            !dpvs_init_dual_base_vect(dpvs->dual_base[i], dim))
+        {
+          RLC_THROW(ERR_MAX);
+        }
+      }
+    }
+    RLC_CATCH_ANY {
+      dpvs->dim = i;
+      dpvs_clear(dpvs);
+      ret = _error_alloc_fail_();
+    }
+  }
+
+  return ret;
+}
+
+bool dpvs_gen(dpvs_t dpvs, uint8_t dim)
+{
+  bool ret = false;
+  mat_t mat, dual_mat;
+  bn_vect_t row, drow;
+
+  if (dpvs_init(dpvs, dim) && dpvs_gen_matrices(mat, dual_mat, dim))
+  {
+    if (bn_vect_init(row, dim) && bn_vect_init(drow, dim))
+    {
+      for (uint8_t i = 0; i < dim; i++)
+      {
+        dpvs_get_mat_row(row, mat, i);
+        dpvs_get_mat_row(drow, dual_mat, i);
+        for (uint8_t j = 0; j < dim; j++)
+        {
+          g1_mul_gen(dpvs->base[i]->coord[j], row->coord[j]);
+          g2_mul_gen(dpvs->dual_base[i]->coord[j], drow->coord[j]);
+        }
+      }
+      ret = true;
+    }
+    else {
+      fprintf(stderr, "[Errors] dpvs_gen: vectors initialization failled\n");
+    }
+  }
+  else {
+    fprintf(stderr, "[Errors] dpvs_gen: dpvs entries, initialization failled\n");
+  }
+
+  bn_vect_clear(row);
+  bn_vect_clear(drow);
+  mat_clear(mat);
+  mat_clear(dual_mat);
+
+  return ret;
+}
+
+void dpvs_k_mul_vect(g1_vect_t dest, const g1_vect_t src, bn_t k)
+{
+  if (dest->dim == src->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++)
+      g1_mul(dest->coord[i], src->coord[i], k);
+  }
+}
+
+void dpvs_k_mul_dual_vect(g2_vect_t dest, const g2_vect_t src, bn_t k)
+{
+  if (dest->dim == src->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++)
+      g2_mul(dest->coord[i], src->coord[i], k);
+  }
+}
+
+void dpvs_add_vect(g1_vect_t dest, const g1_vect_t src1, const g1_vect_t src2)
+{
+  if (src1->dim == src2->dim && dest->dim == src2->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++) {
+      g1_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+    }
+  }
+}
+
+void dpvs_add_dual_vect(g2_vect_t dest, const g2_vect_t src1, const g2_vect_t src2)
+{
+  if (src1->dim == src2->dim && dest->dim == src2->dim) {
+    for (uint8_t i = 0; i < dest->dim; i++) {
+      g2_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+    }
+  }
+}
+
+void dpvs_g1_vect_copy (g1_vect_t dest, g1_vect_t src) {
+  if (dest->dim == src->dim)
+    for (uint8_t i = 0; i < src->dim; i++)
+      g1_copy(dest->coord[i], src->coord[i]);
+}
+
+void dpvs_g2_vect_copy (g2_vect_t dest, g2_vect_t src) {
+  if (dest->dim == src->dim)
+    for (uint8_t i = 0; i < src->dim; i++)
+      g2_copy(dest->coord[i], src->coord[i]);
+}
+
+void dpvs_clear_base_vect(g1_vect_t bvect)
+{
+  if (bvect->dim != 0)
+  {
+    for (uint8_t i = 0; i < bvect->dim; i++) g1_free(bvect->coord[i-1]);
+    free(bvect->coord);
+    bvect->coord = NULL;
+  }
+}
+
+void dpvs_clear_dual_base_vect(g2_vect_t db_vect)
+{
+  if (db_vect->dim != 0)
+  {
+    for (uint8_t i = 0; i < db_vect->dim; i++) g2_free(db_vect->coord[i]);
+    free(db_vect->coord);
+    db_vect->coord = NULL;
+  }
+}
+
+void dpvs_clear(dpvs_t dpvs)
+{
+  if (dpvs->dim != 0 && dpvs->base && dpvs->dual_base)
+  {
+    for (uint8_t i = 0; i < dpvs->dim; i++)
+    {
+      dpvs_clear_base_vect(dpvs->base[i]);
+      dpvs_clear_dual_base_vect(dpvs->dual_base[i]);
+      free(dpvs->base[i]);
+      free(dpvs->dual_base[i]);
+    }
+    free(dpvs->base);
+    free(dpvs->dual_base);
+  }
+}

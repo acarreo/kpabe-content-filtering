@@ -1,0 +1,7 @@
+*.out
+*test*
+*.bin
+*.o
+*~
+*.vscode*
+.gitignore
