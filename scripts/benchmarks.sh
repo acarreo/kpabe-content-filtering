@@ -5,6 +5,7 @@ if [ "$curve" != "bls12-446" ]; then
     curve="bls12-381"
 fi
 
+cd ../
 docker run -id --name benchmark --rm -v $PWD/:/root presto-content-filtering-use-case:relic-0.6.0--lsss
 
 echo "Compiltation"
