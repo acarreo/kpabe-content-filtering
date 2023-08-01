@@ -56,13 +56,13 @@ bool dpvs_init_dual_base_vect(g2_vect_t db_vect, uint8_t dim)
   return ret;
 }
 
-g1_vect_st** dpvs_alloc_base_vect_2(uint8_t dim)
+G1_VS_BASE dpvs_alloc_base_vect_2(uint8_t dim)
 {
-  g1_vect_st** vect = NULL;
+  G1_VS_BASE vect = NULL;
 
-  if ((vect = (g1_vect_st**) malloc(dim * sizeof(g1_vect_st*)))) {
+  if ((vect = (G1_VS_BASE) malloc(dim * sizeof(G1_VS_VECT)))) {
     for (uint8_t i = 0; i < dim; i++) {
-      if ((vect[i] = (g1_vect_st*)malloc(sizeof(g1_vect_st))) == NULL ||
+      if ((vect[i] = (G1_VS_VECT)malloc(sizeof(g1_vect_st))) == NULL ||
           !dpvs_init_base_vect(vect[i], dim)) {
         for (; i > 0; i--) free(vect[i-1]);
         free(vect); vect = NULL;
@@ -75,13 +75,13 @@ g1_vect_st** dpvs_alloc_base_vect_2(uint8_t dim)
   return vect;
 }
 
-g2_vect_st** dpvs_alloc_dual_base_vect_2(uint8_t dim)
+G2_VS_BASE dpvs_alloc_dual_base_vect_2(uint8_t dim)
 {
-  g2_vect_st** dvect = NULL;
+  G2_VS_BASE dvect = NULL;
 
-  if ((dvect = (g2_vect_st**) malloc(dim * sizeof(g2_vect_st*)))) {
+  if ((dvect = (G2_VS_BASE) malloc(dim * sizeof(G2_VS_VECT)))) {
     for (uint8_t i = 0; i < dim; i++) {
-      if ((dvect[i] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
+      if ((dvect[i] = (G2_VS_VECT)malloc(sizeof(g2_vect_st))) == NULL ||
           !dpvs_init_dual_base_vect(dvect[i], dim)) {
         for (; i > 0; i--) free(dvect[i-1]);
         free(dvect); dvect = NULL;

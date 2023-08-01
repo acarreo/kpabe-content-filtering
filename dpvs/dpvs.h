@@ -1,46 +1,50 @@
+#ifndef __DPVS_H__
+#define __DPVS_H__
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef __DPVS_H__
-#define __DPVS_H__
 
 #include "matrix.h"
 
 typedef struct
 {
-  uint8_t dim;
-  g1_t* coord;
-} g1_vect_st;
-
-typedef g1_vect_st g1_vect_t[1];
+  uint8_t dim;  // Dimension of the vector
+  g1_t* coord;  // Coordinates of vector of G1 elements
+} g1_vect_st, *G1_VS_VECT;
 
 typedef struct
 {
-  uint8_t dim;
-  g2_t* coord;
-} g2_vect_st;
-
-typedef g2_vect_st g2_vect_t[1];
+  uint8_t dim;  // Dimension of the vector
+  g2_t* coord;  // Coordinates of the vector of G2 elements
+} g2_vect_st, *G2_VS_VECT;
 
 typedef struct
 {
-  uint8_t dim;
-  g1_vect_st **base;
-  g2_vect_st **dual_base;
+  uint8_t dim;          // Dimension of the base
+  G1_VS_VECT *base;      // Base of G1^dim vector space
+  G2_VS_VECT *dual_base; // Base of G2^dim (dual space of G1^dim)
 } dpvs_st;
 
+typedef g1_vect_st g1_vect_t[1];
+typedef g2_vect_st g2_vect_t[1];
 typedef dpvs_st dpvs_t[1];
+
+#define G1_VS_BASE G1_VS_VECT* // Base of G1^dim vector space
+#define G2_VS_BASE G2_VS_VECT* // Base of G2^dim (dual space of G1^dim)
 
 /* Initialize a base implies initialisation matrix */
 #define dpvs_get_mat_row    mat_get_row
 #define dpvs_gen_matrices   mat_rand_dual_mat
 
+#ifdef __cplusplus
+}
+#endif
 
 bool dpvs_init_base_vect(g1_vect_t bvect, uint8_t dim);
 bool dpvs_init_dual_base_vect(g2_vect_t db_vect, uint8_t dim);
-g1_vect_st** dpvs_alloc_base_vect_2(uint8_t dim);
-g2_vect_st** dpvs_alloc_dual_base_vect_2(uint8_t dim);
+G1_VS_BASE dpvs_alloc_base_vect_2(uint8_t dim);
+G2_VS_BASE dpvs_alloc_dual_base_vect_2(uint8_t dim);
 bool dpvs_init(dpvs_t dpvs, uint8_t dim);
 
 bool dpvs_gen(dpvs_t dpvs, uint8_t dim);
@@ -68,8 +72,4 @@ void dpvs_clear(dpvs_t dpvs);
 void set_params(void);
 void clear_params(void);
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
