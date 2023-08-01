@@ -62,7 +62,8 @@ g1_vect_st** dpvs_alloc_base_vect_2(uint8_t dim)
 
   if ((vect = (g1_vect_st**) malloc(dim * sizeof(g1_vect_st*)))) {
     for (uint8_t i = 0; i < dim; i++) {
-      if ((vect[i] = (g1_vect_st*)malloc(sizeof(g1_vect_st))) == NULL) {
+      if ((vect[i] = (g1_vect_st*)malloc(sizeof(g1_vect_st))) == NULL ||
+          !dpvs_init_base_vect(vect[i], dim)) {
         for (; i > 0; i--) free(vect[i-1]);
         free(vect); vect = NULL;
         _error_alloc_fail_();
@@ -80,7 +81,8 @@ g2_vect_st** dpvs_alloc_dual_base_vect_2(uint8_t dim)
 
   if ((dvect = (g2_vect_st**) malloc(dim * sizeof(g2_vect_st*)))) {
     for (uint8_t i = 0; i < dim; i++) {
-      if ((dvect[i] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL) {
+      if ((dvect[i] = (g2_vect_st*)malloc(sizeof(g2_vect_st))) == NULL ||
+          !dpvs_init_dual_base_vect(dvect[i], dim)) {
         for (; i > 0; i--) free(dvect[i-1]);
         free(dvect); dvect = NULL;
         _error_alloc_fail_();
@@ -94,39 +96,17 @@ g2_vect_st** dpvs_alloc_dual_base_vect_2(uint8_t dim)
 
 bool dpvs_init(dpvs_t dpvs, uint8_t dim)
 {
-  bool ret = false;
-
-  dpvs->dim = dim;
-
-  if ((ret = (dim != 0)))
+  if (dim != 0)
   {
-    if ((dpvs->base = malloc(dim * sizeof(g1_vect_st*))) == NULL ||
-        (dpvs->dual_base = malloc(dim * sizeof(g2_vect_st*))) == NULL)
+    dpvs->dim = dim;
+    if ((dpvs->base = dpvs_alloc_base_vect_2(dim)) != NULL &&
+        (dpvs->dual_base = dpvs_alloc_dual_base_vect_2(dim)) != NULL)
     {
-      return _error_alloc_fail_();
-    }
-
-    int i = 0;
-    RLC_TRY {
-      for (; i < dim; i++)
-      {
-        if ((dpvs->base[i] = malloc(sizeof(g1_vect_st))) == NULL ||
-            !dpvs_init_base_vect(dpvs->base[i], dim) ||
-            (dpvs->dual_base[i] = malloc(sizeof(g2_vect_st))) == NULL ||
-            !dpvs_init_dual_base_vect(dpvs->dual_base[i], dim))
-        {
-          RLC_THROW(ERR_MAX);
-        }
-      }
-    }
-    RLC_CATCH_ANY {
-      dpvs->dim = i;
-      dpvs_clear(dpvs);
-      ret = _error_alloc_fail_();
+      return true;
     }
   }
 
-  return ret;
+  return _error_alloc_fail_();
 }
 
 bool dpvs_gen(dpvs_t dpvs, uint8_t dim)
