@@ -4,7 +4,7 @@ export RELIC_INCLUDE="/usr/local/include/relic"
 WORKDIR=$(pwd)
 
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends cmake make g++ ca-certificates libgmp-dev flex libfl-dev pkg-config
+sudo apt-get install -y --no-install-recommends cmake make g++ ca-certificates libgmp-dev libmsgpack-dev flex libfl-dev pkg-config
 
 # Build RELIC
 git clone https://github.com/relic-toolkit/relic /tmp/relic
