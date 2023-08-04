@@ -20,7 +20,7 @@ void clean_libraries(void);
 
 void hash_to_bn(bn_t hash, const char *digest, int len);
 void gt_md_map(uint8_t* hash, gt_t gt);
-void print_vect_base(const g1_vect_t vect);
-void print_vect_dual_base(const g2_vect_t dvect);
+void print_vect_base(const G1_VS_VECT vect);
+void print_vect_dual_base(const G2_VS_VECT dvect);
 
 #endif
