@@ -5,7 +5,7 @@ export CXX = g++
 export CCFLAGS = -Wall -g
 export CXXFLAGS = $(CCFLAGS) -std=c++20
 export RELIC_INCLUDE = /usr/local/include/relic
-LDFLAGS = -lrelic_s -lgmp
+LDFLAGS = -lrelic_s -lgmp -lmsgpackc
 
 DPVS_DIR = ../dpvs
 SRC = serialization.cpp test_serialization.cpp
@@ -23,15 +23,19 @@ dpvs_compile:
 
 utils.o: ../utils.c
 	$(CC) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
+	ldconfig -N
 
 test_dpvs.o: test_dpvs.c
 	$(CC) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
 
-test_dpvs.out: dpvs_compile utils.o test_dpvs.o
-	$(CXX) -o $@ $(CCFLAGS) $(DPVS_OBJ) utils.o test_dpvs.o $(LDFLAGS)
+test_serial.o: test_serial.c
+	$(CC) -o $@ -c $< $(CCFLAGS) -I$(RELIC_INCLUDE)
+
+test_serial.out: dpvs_compile utils.o test_serial.o
+	$(CXX) -o $@ $(CCFLAGS) $(DPVS_OBJ) utils.o test_serial.o $(LDFLAGS)
 
 test_main.out: dpvs_compile $(SER_OBJ) $(OBJ)
-	$(CXX) -o $@ $(CXXFLAGS) ../dpvs/build/matrix.o ../dpvs/build/dpvs.o utils.o $(SER_OBJ) $(LDFLAGS)
+	$(CXX) -o $@ $(CXXFLAGS) utils.o $(SER_OBJ) ../dpvs/build/matrix.o ../dpvs/build/dpvs.o $(LDFLAGS)
 
 clean:
 	rm -rf $(DPVS_DIR)/build *.o *~ *.out
