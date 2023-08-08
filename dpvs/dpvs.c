@@ -200,6 +200,28 @@ void dpvs_copy_g2_vect (G2_VS_VECT dest, G2_VS_VECT src) {
       g2_copy(dest->coord[i], src->coord[i]);
 }
 
+bool dpvs_compare_g1_vect(const G1_VS_VECT vect1, const G1_VS_VECT vect2) {
+  if (vect1->dim != vect2->dim)
+    return false;
+
+  for (uint8_t i = 0; i < vect1->dim; i++)
+    if (g1_cmp(vect1->coord[i], vect2->coord[i]) != RLC_EQ)
+      return false;
+
+  return true;
+}
+
+bool dpvs_compare_g2_vect(const G2_VS_VECT vect1, const G2_VS_VECT vect2) {
+  if (vect1->dim != vect2->dim)
+    return false;
+
+  for (uint8_t i = 0; i < vect1->dim; i++)
+    if (g2_cmp(vect1->coord[i], vect2->coord[i]) != RLC_EQ)
+      return false;
+
+  return true;
+}
+
 void dpvs_clear_g1_vect(G1_VS_VECT vect)
 {
   if (vect->dim != 0) {
