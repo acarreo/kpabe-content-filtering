@@ -4,7 +4,17 @@ export RELIC_INCLUDE="/usr/local/include/relic"
 WORKDIR=$(pwd)
 
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends cmake make g++ ca-certificates libgmp-dev libmsgpack-dev flex libfl-dev pkg-config
+sudo apt-get install -y cmake make g++ ca-certificates libgmp-dev libmsgpack-dev flex libfl-dev pkg-config
+
+# Upgrade gcc/g++ to 11 if necessary
+gcc_version=$(gcc --version 2>&1 | grep -o '([0-9]+\.[0-9]+\.[0-9]+)' | head -1)
+if [[ $(echo $gcc_version |cut -d'.' -f1) -le 11 ]]; then
+    sudo apt-repository ppa:ubuntu-toolchain-r/test
+    sudo apt-get update
+    sudo apt-get install -y gcc-11 g++-11
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 20
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 20
+fi
 
 # Build RELIC
 git clone https://github.com/relic-toolkit/relic /tmp/relic
