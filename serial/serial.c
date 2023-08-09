@@ -11,38 +11,42 @@
 
 /**
  * @brief Serialize a G1 element : g1_t element
- * 
+ *
  * @param g1  the element to serialize
- * @param buf must be allocated with the right size : G1_SIZE_BIN + sizeof(uint8_t) 
+ * @param buf buffer conatins serialization of g1; it must be allocated with the
+ *            right size : G1_SIZE_BIN + sizeof(uint8_t)
  * @return size of the serialized element in bytes or 0 if errors occured
  */
 int serialize_g1_element(const g1_t g1, uint8_t buf[]) {
 
 	if (buf == NULL) return 0;
 
-	uint8_t g1_size = g1_size_bin(g1, 0);
-	memcpy(buf, &g1_size, sizeof(uint8_t));
-	g1_write_bin(buf + sizeof(uint8_t), g1_size, g1, 0);
+	uint8_t size = g1_size_bin(g1, 0);
+	memcpy(buf, &size, sizeof(uint8_t));
+	g1_write_bin(buf + sizeof(uint8_t), size, g1, 0);
 	
-	return (sizeof(uint8_t) + g1_size);
+	return (sizeof(uint8_t) + size);
 }
 
 /**
  * @brief Deserialize a G1 element : g1_t element
  * 
  * @param buf the buffer to deserialize in g1
- * @param g1 the result of the deserialization of buf
+ * @param g1 the result of the deserialization of buf, must be allocated before
+ *           calling the function
  * @return size of the serialized element in bytes or 0 if errors occured
  */
 int deserialize_g1_element(const uint8_t buf[], g1_t g1) {
 	
 	if (buf == NULL) return 0;
 
-	uint8_t g1_size = 0;
-	memcpy(&g1_size, buf, sizeof(uint8_t));
-	g1_read_bin(g1, buf + sizeof(uint8_t), g1_size);
+	uint8_t size = 0;
+	memcpy(&size, buf, sizeof(uint8_t));
+	g1_read_bin(g1, buf + sizeof(uint8_t), size);
 
-	return (sizeof(uint8_t) + g1_size);
+	return (sizeof(uint8_t) + size);
+}
+
 }
 
 /**
