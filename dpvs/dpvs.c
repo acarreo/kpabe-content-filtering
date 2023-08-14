@@ -234,35 +234,40 @@ bool dpvs_compare_g2_vect(const G2_VS_VECT vect1, const G2_VS_VECT vect2) {
 
 void dpvs_clear_g1_vect(G1_VS_VECT vect)
 {
-  if (vect->dim != 0) {
-    for (uint8_t i = 0; i < vect->dim; i++) g1_free(vect->coord[i]);
+  if (vect) {
+    if (vect->coord) {
+      for (uint8_t i = 0; i < vect->dim; i++) g1_free(vect->coord[i]);
 
-    free(vect->coord);
+      free(vect->coord);
+    }
     free(vect);
   }
 }
 
 void dpvs_clear_g2_vect(G2_VS_VECT vect)
 {
-  if (vect->dim != 0) {
-    for (uint8_t i = 0; i < vect->dim; i++) g2_free(vect->coord[i]);
+  if (vect) {
+    if (vect->coord) {
+      for (uint8_t i = 0; i < vect->dim; i++) g2_free(vect->coord[i]);
 
-    free(vect->coord);
+      free(vect->coord);
+    }
     free(vect);
   }
 }
 
 void dpvs_clear(dpvs_t* dpvs)
 {
-  if (dpvs->dim != 0 && dpvs->base && dpvs->dual_base)
-  {
-    for (uint8_t i = 0; i < dpvs->dim; i++)
-    {
-      dpvs_clear_g1_vect(dpvs->base[i]);
-      dpvs_clear_g2_vect(dpvs->dual_base[i]);
+  if (dpvs) {
+    if (dpvs->base && dpvs->dual_base) {
+      for (uint8_t i = 0; i < dpvs->dim; i++)
+      {
+        dpvs_clear_g1_vect(dpvs->base[i]);
+        dpvs_clear_g2_vect(dpvs->dual_base[i]);
+      }
+      free(dpvs->base);
+      free(dpvs->dual_base);
     }
-    free(dpvs->base);
-    free(dpvs->dual_base);
     free(dpvs);
   }
 }
