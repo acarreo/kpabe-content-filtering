@@ -154,17 +154,17 @@ dpvs_t* dpvs_generate_bases(uint8_t dim)
   return dpvs;
 }
 
-void dpvs_k_mul_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src, bn_t k)
+void dpvs_k_mul_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src, const bn_t k)
 {
-  if (dest->dim == src->dim) {
+  if (dest && src && dest->dim == src->dim) {
     for (uint8_t i = 0; i < dest->dim; i++)
       g1_mul(dest->coord[i], src->coord[i], k);
   }
 }
 
-void dpvs_k_mul_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src, bn_t k)
+void dpvs_k_mul_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src, const bn_t k)
 {
-  if (dest->dim == src->dim) {
+  if (dest && src && dest->dim == src->dim) {
     for (uint8_t i = 0; i < dest->dim; i++)
       g2_mul(dest->coord[i], src->coord[i], k);
   }
@@ -172,35 +172,42 @@ void dpvs_k_mul_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src, bn_t k)
 
 void dpvs_add_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src1, const G1_VS_VECT src2)
 {
-  if (src1->dim == src2->dim && dest->dim == src2->dim) {
-    for (uint8_t i = 0; i < dest->dim; i++) {
-      g1_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+  if (dest && src1 && src2) {
+    if (src1->dim == src2->dim && dest->dim == src2->dim) {
+      for (uint8_t i = 0; i < dest->dim; i++) {
+        g1_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+      }
     }
   }
 }
 
 void dpvs_add_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src1, const G2_VS_VECT src2)
 {
-  if (src1->dim == src2->dim && dest->dim == src2->dim) {
-    for (uint8_t i = 0; i < dest->dim; i++) {
-      g2_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+  if (dest && src1 && src2) {
+    if (src1->dim == src2->dim && dest->dim == src2->dim) {
+      for (uint8_t i = 0; i < dest->dim; i++) {
+        g2_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+      }
     }
   }
 }
 
 void dpvs_copy_g1_vect (G1_VS_VECT dest, G1_VS_VECT src) {
-  if (dest->dim == src->dim)
+  if (dest && src && dest->dim == src->dim)
     for (uint8_t i = 0; i < src->dim; i++)
       g1_copy(dest->coord[i], src->coord[i]);
 }
 
 void dpvs_copy_g2_vect (G2_VS_VECT dest, G2_VS_VECT src) {
-  if (dest->dim == src->dim)
+  if (dest && src && dest->dim == src->dim)
     for (uint8_t i = 0; i < src->dim; i++)
       g2_copy(dest->coord[i], src->coord[i]);
 }
 
 bool dpvs_compare_g1_vect(const G1_VS_VECT vect1, const G1_VS_VECT vect2) {
+  if (!vect1 || !vect2)
+    return (vect1 == vect2);
+
   if (vect1->dim != vect2->dim)
     return false;
 
@@ -212,6 +219,9 @@ bool dpvs_compare_g1_vect(const G1_VS_VECT vect1, const G1_VS_VECT vect2) {
 }
 
 bool dpvs_compare_g2_vect(const G2_VS_VECT vect1, const G2_VS_VECT vect2) {
+  if (!vect1 || !vect2)
+    return (vect1 == vect2);
+
   if (vect1->dim != vect2->dim)
     return false;
 
