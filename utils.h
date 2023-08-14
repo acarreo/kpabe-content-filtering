@@ -4,17 +4,6 @@
 #include <relic.h>
 #include "dpvs/dpvs.h"
 
-typedef struct
-{
-  g1_t g1;
-  g2_t g2;
-  gt_t gt;
-  bn_t q;
-} group_setting_t[1];
-
-// typedef group_setting_st group_setting_t[1];
-extern group_setting_t params;
-
 bool init_libraries(void);
 void clean_libraries(void);
 

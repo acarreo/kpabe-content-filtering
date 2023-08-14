@@ -68,7 +68,4 @@ void dpvs_clear_g1_vect(G1_VS_VECT bvect);
 void dpvs_clear_g2_vect(G2_VS_VECT dbvect);
 void dpvs_clear(dpvs_t* dpvs);
 
-void set_params(void);
-void clear_params(void);
-
 #endif
