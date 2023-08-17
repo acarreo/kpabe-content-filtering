@@ -231,3 +231,13 @@ G2_VECTOR* deserialize_g2_vect(std::istream &is) {
   return result;
 }
 
+void inner_product(gt_t result, const G1_VECTOR &vect1, const G2_VECTOR &vect2)
+{
+  G1_VS_VECT vs_vect1 = nullptr; vect1.get_g1_vect(vs_vect1);
+  G2_VS_VECT vs_vect2 = nullptr; vect2.get_g2_vect(vs_vect2);
+
+  dpvs_inner_product(result, vs_vect1, vs_vect2);
+
+  dpvs_clear_g1_vect(vs_vect1);
+  dpvs_clear_g2_vect(vs_vect2);
+}
