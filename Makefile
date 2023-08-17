@@ -6,8 +6,8 @@ export CC = cc
 export CXX = g++
 export CCFLAGS = -Wall
 export CXXFLAGS = $(CCFLAGS) -std=c++20
-export RELIC_INCLUDE = /usr/include/relic_$(CURVE)
-LDFLAGS = -lrelic_$(CURVE) -llsss_$(CURVE) -lgmp
+export RELIC_INCLUDE = /usr/local/include/relic
+LDFLAGS = -lrelic_s -llsss -lgmp
 
 EXEC = test_abe_$(CURVE)
 DPVS_DIR = dpvs
