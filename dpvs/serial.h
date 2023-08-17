@@ -9,7 +9,7 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#include "../dpvs/dpvs.h"
+#include "dpvs.h"
 #include "../utils.h"
 
 #define G1_SIZE_BIN     (RLC_PC_BYTES * 2 + 1)
