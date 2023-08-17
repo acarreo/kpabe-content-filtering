@@ -13,8 +13,6 @@
 
 extern "C" {
   #include "../serial/serial.h"
-  #include "../dpvs/dpvs.h"
-  #include "../utils.h"
 }
 
 typedef enum {
