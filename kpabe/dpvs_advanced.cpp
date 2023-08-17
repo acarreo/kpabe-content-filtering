@@ -54,7 +54,7 @@ G1_VECTOR::G1_VECTOR(const G1_VECTOR& other) {
  * 
  * @param result_vect The result vector
  */
-void G1_VECTOR::get_g1_vect(G1_VS_VECT& result_vect) {
+void G1_VECTOR::get_g1_vect(G1_VS_VECT& result_vect) const {
   if (!result_vect || this->dim != result_vect->dim) {
     dpvs_clear_g1_vect(result_vect);
     result_vect = dpvs_create_g1_vect(this->dim);
@@ -156,7 +156,7 @@ G2_VECTOR::G2_VECTOR(const G2_VECTOR& other) {
  * 
  * @param result_vect The result vector
  */
-void G2_VECTOR::get_g2_vect(G2_VS_VECT& result_vect) {
+void G2_VECTOR::get_g2_vect(G2_VS_VECT& result_vect) const {
   if (!result_vect || this->dim != result_vect->dim) {
     dpvs_clear_g2_vect(result_vect);
     result_vect = dpvs_create_g2_vect(this->dim);

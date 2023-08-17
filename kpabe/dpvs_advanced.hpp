@@ -38,7 +38,7 @@ class G1_VECTOR {
     G1_VECTOR(const G1_VECTOR& other);
     ~G1_VECTOR() { dpvs_clear_g1_vect(this->vect); }
 
-    void get_g1_vect(G1_VS_VECT& result_vect);
+    void get_g1_vect(G1_VS_VECT& result_vect) const;
 
     bool operator==(const G1_VECTOR& other) const;
     G1_VECTOR& operator=(const G1_VECTOR& other);
@@ -71,7 +71,7 @@ class G2_VECTOR {
     G2_VECTOR(const G2_VECTOR& other);
     ~G2_VECTOR() { dpvs_clear_g2_vect(this->vect); }
 
-    void get_g2_vect(G2_VS_VECT& result_vect);
+    void get_g2_vect(G2_VS_VECT& result_vect) const;
 
     bool operator==(const G2_VECTOR& other) const;
     G2_VECTOR& operator=(const G2_VECTOR& other);
