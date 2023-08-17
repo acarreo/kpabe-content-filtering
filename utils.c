@@ -11,10 +11,11 @@ bool init_libraries(void) {
   return false;
 }
 
-void hash_to_bn(bn_t hash, const char *digest, int len) {
+void str_to_bn(bn_t hash, const char *digest, int len, bn_t order) {
   uint8_t h[RLC_MD_LEN];
   md_map(h, (uint8_t*)digest, len);
   bn_read_bin(hash, h, RLC_MD_LEN);
+  bn_mod(hash, hash, order);
 }
 
 void gt_md_map(uint8_t* hash, gt_t gt) {
