@@ -1,0 +1,253 @@
+/**
+ * @file kpabe.cpp
+ * @author Adam Oumar Abdel-rahman
+ * @brief Implementation of KP-ABE scheme using DPVS structure
+ * @date 2023-08-16
+ *
+ */
+
+#include "kpabe.hpp"
+
+/**
+ * @brief This method generates the public and master keys.
+ * 
+ * @return true if the keys are generated successfully, false otherwise
+ */
+bool KPABE_DPVS::setup() {
+
+  bool is_setup = false;
+
+  // Generate DPVS bases
+  dpvs_t *base_D = dpvs_generate_bases(ND);
+  dpvs_t *base_F = dpvs_generate_bases(NF);
+  dpvs_t *base_G = dpvs_generate_bases(NG);
+  dpvs_t *base_H = dpvs_generate_bases(NH);
+
+  if (base_D == nullptr || base_F == nullptr ||
+      base_G == nullptr || base_H == nullptr) {
+    std::cerr << "Error: Could not generate DPVS bases" << std::endl;
+  }
+  else { 
+    // Set public key
+    public_key.set_bases(base_D->base, base_F->base,
+                         base_G->base, base_H->base);
+
+    // Set master key
+    master_key.set_bases(base_D->dual_base, base_F->dual_base,
+                         base_G->dual_base, base_H->dual_base);
+
+    is_setup = true;
+  }
+
+  // Clear bases
+  dpvs_clear(base_D);
+  dpvs_clear(base_F);
+  dpvs_clear(base_G);
+  dpvs_clear(base_H);
+
+  return is_setup;
+}
+
+/**
+ * @brief This method generates an ephemeral session key, using the public key,
+ *        url and set of attributes. Before calling this function, the url and
+ *        the attributes must be set. The ciphertext is also generated.
+ *
+ * @param psi The ephemeral session key. [Use this key to generate the
+ *            symmetric key for the message.
+ * @param public_key The public key 
+ * @return true if the encryption is successful, false otherwise
+ */
+bool KPABE_DPVS_CIPHERTEXT::cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public_key)
+{
+  g1_t g1;
+  g2_t g2;
+  gt_t gt;
+  bn_t sigma, omega, bn_url, tmp, sigma_att, bn_psi;
+  BPGroup group(OpenABE_NONE_ID);
+
+  if (this->url.empty() || this->attributes.empty()) {
+    std::cerr << "Error: URL or attributes are empty" << std::endl;
+    return false;
+  }
+
+  g1_null(g1); g1_new(g1); g1_get_gen(g1);
+  g2_null(g2); g2_new(g2); g2_get_gen(g2);
+  gt_null(gt); gt_new(gt); pc_map(gt, g1, g2);
+
+  bn_null(sigma);  bn_new(sigma);  bn_rand_mod(sigma, group.order);
+  bn_null(omega);  bn_new(omega);  bn_rand_mod(omega, group.order);
+  bn_null(bn_psi); bn_new(bn_psi); bn_rand_mod(bn_psi, group.order);
+
+  bn_null(sigma_att); bn_new(sigma_att);
+  bn_null(bn_url);    bn_new(bn_url);
+  bn_null(tmp);       bn_new(tmp);
+
+  /* set ctx_root : pk->d1 * omega + pk->d3 * bn_psi */
+  this->ctx_root = public_key.get_d1() * omega +
+                   public_key.get_d3() * bn_psi;
+
+  /* set ctx_wl : pk->f1 * sigma + pk->f2 * (sigma * bn_url) + pk->f3 * omega */
+  str_to_bn(bn_url, this->url.c_str(), this->url.size(), group.order);
+  bn_mod_mul(tmp, sigma, bn_url, group.order);
+  this->ctx_wl = public_key.get_f1() * sigma +
+                 public_key.get_f2() * tmp +
+                 public_key.get_f3() * omega;
+
+  /* set ctx_bl : pk->g1 * omega + (omega * bn_url) * pk->g2 */
+  bn_mod_mul(tmp, omega, bn_url, group.order);
+  this->ctx_bl = public_key.get_g1() * omega + public_key.get_g2() * tmp;
+
+  // Create attribute list
+  std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(this->attributes);
+  const std::vector<std::string>* attributes_list = attrList->getAttributeList();
+
+  /* set ctx_att: for all att in attributes_list,
+   *  pk->h1 * sigma_att + pk->h2 * (sigma_att * att) + omega * pk->h3 */
+  G1_VECTOR h3_times_omega = public_key.get_h3() * omega;
+  for (const auto& att : *attributes_list) {
+    bn_rand_mod(sigma_att, group.order);
+    str_to_bn(tmp, att.c_str(), att.size(), group.order);
+    bn_mod_mul(tmp, tmp, sigma_att, group.order);
+
+    this->ctx_att[att] = public_key.get_h1() * sigma_att +
+                         public_key.get_h2() * tmp +
+                         h3_times_omega;
+  }
+
+  /* Ephemeral session key : psi = e(g1, g2) ^ bn_psi = gt ^ bn_psi */
+  gt_exp(psi, gt, bn_psi);
+
+  // Clear memory
+  g1_free(g1); g2_free(g2); gt_free(gt);
+  bn_free(sigma); bn_free(omega); bn_free(bn_psi);
+  bn_free(sigma_att); bn_free(bn_url); bn_free(tmp);
+
+  return true;
+}
+
+/**
+ * @brief This encryption method generates the ephemeral session key, using the
+ *        public key, url and set of attributes. Before calling this function,
+ *        the psi must be initialized. The ciphertext is also generated.
+ * 
+ * @param[out] psi The ephemeral session key. 
+ * @param[in]  url The url requested by the user
+ * @param[in]  attributes Set of attributes associated to the  requested url
+ * @param[in]  public_key The user public key
+ * @return std::optional<KPABE_DPVS_CIPHERTEXT> 
+ */
+std::optional<KPABE_DPVS_CIPHERTEXT> encrypt(gt_t psi,
+                                             const std::string& url,
+                                             const std::string& attributes,
+                                             const KPABE_DPVS_PUBLIC_KEY& public_key) {
+  KPABE_DPVS_CIPHERTEXT ciphertext(attributes, url);
+  if (ciphertext.cipher(psi, public_key)) {
+    return ciphertext;
+  }
+  return std::nullopt;
+}
+
+/**
+ * @brief This method try to decrypt the ciphertext, using the decryption key.
+ *        The decryption fails if the url is in the black list or if the policy
+ *        is not satisfied.
+ *
+ * @param[out] phi The ephemeral session key
+ * @param[in]  ciphertext The ciphertext to decrypt
+ * @param[in]  dec_key The decryption key
+ * @return true if the decryption is successful, false otherwise 
+ */
+bool decrypt(gt_t phi,
+             const KPABE_DPVS_CIPHERTEXT &ciphertext,
+             const KPABE_DPVS_DECRYPTION_KEY &dec_key)
+{
+  // TODO : clear memory at the end of the function, even in case of error
+
+  bn_t bn, bn_bl, bn_url;
+  gt_t ip, ip_lsss, ip_bl, ip_root;
+
+  bn_null(bn);     bn_new(bn);
+  bn_null(bn_bl);  bn_new(bn_bl);
+  bn_null(bn_url); bn_new(bn_url);
+
+  gt_null(ip);      gt_new(ip);
+  gt_null(ip_bl);   gt_new(ip_bl);
+  gt_null(ip_lsss); gt_new(ip_lsss);
+  gt_null(ip_root); gt_new(ip_root);
+
+  std::string url = ciphertext.get_url();
+
+  auto key_wl_url = dec_key.get_key_wl(url);
+  if (key_wl_url) {
+    std::cout << "URL is in WHITE_LIST" << std::endl;
+    inner_product(ip, ciphertext.get_ctx_wl(), *key_wl_url);
+    inner_product(ip_root, ciphertext.get_ctx_root(), dec_key.get_key_root());
+    gt_mul(phi, ip, ip_root);
+
+    return true;
+  }
+
+  if (dec_key.is_in_black_list(url)) {
+    std::cout << "URL is blacklisted" << std::endl;
+    return false;
+  }
+
+  // Here, the url is not in WHITE_LIST and not in BLACK_LIST
+  std::cout << "URL is not in WHITE_LIST and not in BLACK_LIST: " << url << std::endl;
+
+
+  BPGroup group(OpenABE_NONE_ID);
+  auto policy = createPolicyTree(dec_key.get_policy());
+  auto attribute_list = createAttributeList(ciphertext.get_attributes());
+
+  if (policy == nullptr || attribute_list == nullptr) {
+    std::cerr << "Error: Could not create policy tree or attribute list" << std::endl;
+    return false;
+  }
+
+  OpenABELSSS lsss;
+  if (!lsss.recoverCoefficients(policy.get(), attribute_list.get())) {
+    std::cout << "Policy not satisfied, could not recover LSSS coefficients." << std::endl;
+    return false;
+  }
+
+  auto recover_coeff = lsss.getRows();
+
+  gt_set_unity(ip_lsss);
+  for (const auto& [_, coeff] : recover_coeff) {
+    ZP cj = coeff.element();
+    std::string att = coeff.label();
+
+    auto ctx_att__ = ciphertext.get_ctx_att(att);
+    auto key_att__ = dec_key.get_key_att(att);
+
+    inner_product(ip, *ctx_att__, *key_att__ * cj.m_ZP);
+    gt_mul(ip_lsss, ip_lsss, ip);
+  }
+
+  str_to_bn(bn_url, url.c_str(), url.size(), group.order);
+  gt_set_unity(ip_bl);
+  for (auto it = dec_key.get_key_bl_begin(); it != dec_key.get_key_bl_end(); it++) {
+    std::string bl = it->first;
+    str_to_bn(bn_bl, bl.c_str(), bl.size(), group.order);
+    bn_mod_sub(bn, bn_bl, bn_url, group.order);
+    bn_mod_inv(bn, bn, group.order);
+
+    inner_product(ip, ciphertext.get_ctx_bl(), it->second);
+    gt_exp(ip, ip, bn);
+    gt_mul(ip_bl, ip_bl, ip);
+  }
+
+  inner_product(ip_root, ciphertext.get_ctx_root(), dec_key.get_key_root());
+
+  gt_mul(phi, ip_lsss, ip_bl);
+  gt_mul(phi, phi, ip_root);
+
+
+  // Clear memory
+  bn_free(bn); bn_free(bn_bl); bn_free(bn_url);
+  gt_free(ip); gt_free(ip_bl); gt_free(ip_lsss); gt_free(ip_root);
+
+  return true;
+}
