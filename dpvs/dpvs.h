@@ -46,14 +46,17 @@ dpvs_t* dpvs_create_bases(uint8_t dim);
 dpvs_t* dpvs_generate_bases(uint8_t dim);
 
 /* Compute the scalar multiplication of a vector */
-void dpvs_k_mul_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src, bn_t k);
-void dpvs_k_mul_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src, bn_t k);
+void dpvs_k_mul_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src, const bn_t k);
+void dpvs_k_mul_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src, const bn_t k);
 
 void dpvs_add_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src1, const G1_VS_VECT src2);
 void dpvs_add_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src1, const G2_VS_VECT src2);
 
 void dpvs_copy_g1_vect (G1_VS_VECT dest, G1_VS_VECT src);
 void dpvs_copy_g2_vect (G2_VS_VECT dest, G2_VS_VECT src);
+
+bool dpvs_compare_g1_vect(const G1_VS_VECT vect1, const G1_VS_VECT vect2);
+bool dpvs_compare_g2_vect(const G2_VS_VECT vect1, const G2_VS_VECT vect2);
 
 static __inline__ void dpvs_inner_product(gt_t ip, const G1_VS_VECT vect, G2_VS_VECT dvect)
 {
@@ -64,8 +67,5 @@ static __inline__ void dpvs_inner_product(gt_t ip, const G1_VS_VECT vect, G2_VS_
 void dpvs_clear_g1_vect(G1_VS_VECT bvect);
 void dpvs_clear_g2_vect(G2_VS_VECT dbvect);
 void dpvs_clear(dpvs_t* dpvs);
-
-void set_params(void);
-void clear_params(void);
 
 #endif
