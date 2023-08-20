@@ -58,6 +58,25 @@ class KPABE_DPVS_CIPHERTEXT {
 
     bool cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public_key);
 
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
+    }
+
   private:
     std::string attributes;
     std::string url;

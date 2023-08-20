@@ -126,6 +126,58 @@ bool KPABE_DPVS_CIPHERTEXT::cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public
   return true;
 }
 
+void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os) const {
+  if (os.good()) {
+    // Serialize url
+    uint url_size = this->url.size();
+    os.write(reinterpret_cast<const char*>(&url_size), sizeof(uint));
+    os.write(this->url.c_str(), url_size);
+
+    // Write ctx_root, ctx_wl and ctx_bl
+    this->ctx_root.serialize(os);
+    this->ctx_wl.serialize(os);
+    this->ctx_bl.serialize(os);
+
+    // Write ctx_att.size() and ctx_att
+    uint ctx_att_size = this->ctx_att.size();
+    os.write(reinterpret_cast<const char*>(&ctx_att_size), sizeof(uint));
+    for (const auto& [att, ctx] : this->ctx_att) {
+      uint att_size = att.size();
+      os.write(reinterpret_cast<const char*>(&att_size), sizeof(uint));
+      os.write(att.c_str(), att_size);
+      ctx.serialize(os);
+    }
+  }
+}
+
+void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
+  if (is.good()) {
+    uint url_size;
+    uint att_size;
+
+    // Deserialize url
+    is.read(reinterpret_cast<char*>(&url_size), sizeof(uint));
+    std::string url; url.resize(url_size);
+    is.read(&url[0], url_size);
+    this->url = url;
+
+    // Read ctx_root, ctx_wl and ctx_bl
+    this->ctx_root.deserialize(is);
+    this->ctx_wl.deserialize(is);
+    this->ctx_bl.deserialize(is);
+
+    // Read ctx_att.size() and ctx_att
+    uint ctx_att_size = 0;
+    is.read(reinterpret_cast<char*>(&ctx_att_size), sizeof(uint));
+    for (uint i = 0; i < ctx_att_size; i++) {
+      is.read(reinterpret_cast<char*>(&att_size), sizeof(uint));
+      std::string att; att.resize(att_size);
+      is.read(&att[0], att_size);
+      this->ctx_att[att].deserialize(is);
+    }
+  }
+}
+
 /**
  * @brief This encryption method generates the ephemeral session key, using the
  *        public key, url and set of attributes. Before calling this function,
