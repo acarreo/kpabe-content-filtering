@@ -30,6 +30,11 @@ class KPABE_DPVS_CIPHERTEXT {
       this->url = url;
     };
 
+    KPABE_DPVS_CIPHERTEXT(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
+
     ~KPABE_DPVS_CIPHERTEXT() {};
 
     // Setters for attributes and url
