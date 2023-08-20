@@ -33,6 +33,24 @@ void KPABE_DPVS_PUBLIC_KEY::set_bases(const G1_VS_BASE base_D,
   }
 }
 
+void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os) const {
+  if (os.good()) {
+    this->d1.serialize(os); this->d3.serialize(os);
+    this->f1.serialize(os); this->f2.serialize(os); this->f3.serialize(os);
+    this->g1.serialize(os); this->g2.serialize(os);
+    this->h1.serialize(os); this->h2.serialize(os); this->h3.serialize(os);
+  }
+}
+
+void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
+  if (is.good()) {
+    this->d1.deserialize(is); this->d3.deserialize(is);
+    this->f1.deserialize(is); this->f2.deserialize(is); this->f3.deserialize(is);
+    this->g1.deserialize(is); this->g2.deserialize(is);
+    this->h1.deserialize(is); this->h2.deserialize(is); this->h3.deserialize(is);
+  }
+}
+
 void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
                                       const G2_VS_BASE base_FF,
                                       const G2_VS_BASE base_GG,

@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <optional>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <map>
@@ -30,6 +32,12 @@
 class KPABE_DPVS_PUBLIC_KEY {
   public:
     KPABE_DPVS_PUBLIC_KEY() {};
+
+    KPABE_DPVS_PUBLIC_KEY(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
+
     ~KPABE_DPVS_PUBLIC_KEY() {};
 
     void set_bases(const G1_VS_BASE base_D, const G1_VS_BASE base_F,
@@ -47,6 +55,24 @@ class KPABE_DPVS_PUBLIC_KEY {
     G1_VECTOR get_h2() const { return this->h2; }
     G1_VECTOR get_h3() const { return this->h3; }
 
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
+    }
   private:
     G1_VECTOR d1, d3;
     G1_VECTOR f1, f2, f3;
