@@ -147,6 +147,11 @@ class KPABE_DPVS_DECRYPTION_KEY {
 
     KPABE_DPVS_DECRYPTION_KEY() : policy(""), white_list({}), black_list({}) {};
 
+    KPABE_DPVS_DECRYPTION_KEY(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
+
     KPABE_DPVS_DECRYPTION_KEY(const std::string& policy_str,
                               const std::vector<std::string>& white_list,
                               const std::vector<std::string>& black_list) {
@@ -197,6 +202,25 @@ class KPABE_DPVS_DECRYPTION_KEY {
     }
     key_map_t::const_iterator get_key_bl_end() const {
       return this->key_bl.end();
+    }
+
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
     }
 
   private:

@@ -198,3 +198,105 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
 
   return true;
 }
+
+void KPABE_DPVS_DECRYPTION_KEY::serialize(std::ostream &os) const {
+ if (os.good()) {
+  // write policy_size and policy in the output stream as bytes
+  uint policy_size = this->policy.size();
+  os.write(reinterpret_cast<const char*>(&policy_size), sizeof(policy_size));
+  os.write(this->policy.c_str(), policy_size);
+
+  /* We dont need to write white_list and black_list explicitly
+   * because they are included in key_wl and key_bl respectively.
+   * They must be recover during deserialization. */
+
+  // write key_root
+  this->key_root.serialize(os);
+
+  // write key_wl.size() and key_wl
+  uint key_wl_size = this->key_wl.size();
+  os.write(reinterpret_cast<const char*>(&key_wl_size), sizeof(key_wl_size));
+  for (const auto& [key, value] : this->key_wl) {
+    uint key_size = key.size();
+    os.write(reinterpret_cast<const char*>(&key_size), sizeof(key_size));
+    os.write(key.c_str(), key_size);
+    value.serialize(os);
+  }
+
+  // write key_bl.size() and key_bl
+  uint key_bl_size = this->key_bl.size();
+  os.write(reinterpret_cast<const char*>(&key_bl_size), sizeof(key_bl_size));
+  for (const auto& [key, value] : this->key_bl) {
+    uint key_size = key.size();
+    os.write(reinterpret_cast<const char*>(&key_size), sizeof(key_size));
+    os.write(key.c_str(), key_size);
+    value.serialize(os);
+  }
+
+  // write key_att.size() and key_att
+  uint key_att_size = this->key_att.size();
+  os.write(reinterpret_cast<const char*>(&key_att_size), sizeof(key_att_size));
+  for (const auto& [key, value] : this->key_att) {
+    uint key_size = key.size();
+    os.write(reinterpret_cast<const char*>(&key_size), sizeof(key_size));
+    os.write(key.c_str(), key_size);
+    value.serialize(os);
+  }
+ }
+}
+
+void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
+  if (is.good()) {
+    uint policy_size = 0;
+    uint key_size = 0;
+
+    // clear white_list and black_list
+    this->white_list.clear();
+    this->black_list.clear();
+
+    // read policy_size and policy from the input stream
+    is.read(reinterpret_cast<char*>(&policy_size), sizeof(policy_size));
+    std::string policy;
+    policy.resize(policy_size);
+    is.read(&policy[0], policy_size);
+    this->policy = policy;
+
+    // read key_root
+    this->key_root.deserialize(is);
+
+    // read key_wl.size() and key_wl
+    uint key_wl_size = 0;
+    is.read(reinterpret_cast<char*>(&key_wl_size), sizeof(key_wl_size));
+    for (uint i = 0; i < key_wl_size; i++) {
+      is.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+      std::string key; key.resize(key_size);
+      is.read(&key[0], key_size);
+
+      this->key_wl[key].deserialize(is);
+      this->white_list.push_back(key);
+    }
+
+    // read key_bl.size() and key_bl
+    uint key_bl_size = 0;
+    is.read(reinterpret_cast<char*>(&key_bl_size), sizeof(key_bl_size));
+    for (uint i = 0; i < key_bl_size; i++) {
+      is.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+      std::string key; key.resize(key_size);
+      is.read(&key[0], key_size);
+
+      this->key_bl[key].deserialize(is);
+      this->black_list.push_back(key);
+    }
+
+    // read key_att.size() and key_att
+    uint key_att_size = 0;
+    is.read(reinterpret_cast<char*>(&key_att_size), sizeof(key_att_size));
+    for (uint i = 0; i < key_att_size; i++) {
+      is.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+      std::string key; key.resize(key_size);
+      is.read(&key[0], key_size);
+
+      this->key_att[key].deserialize(is);
+    }
+  }
+}
