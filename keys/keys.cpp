@@ -75,6 +75,24 @@ void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
   }
 }
 
+void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os) const {
+  if (os.good()) {
+    this->dd1.serialize(os); this->dd3.serialize(os);
+    this->ff1.serialize(os); this->ff2.serialize(os); this->ff3.serialize(os);
+    this->gg1.serialize(os); this->gg2.serialize(os);
+    this->hh1.serialize(os); this->hh2.serialize(os); this->hh3.serialize(os);
+  }
+}
+
+void KPABE_DPVS_MASTER_KEY::deserialize(std::istream &is) {
+  if (is.good()) {
+    this->dd1.deserialize(is); this->dd3.deserialize(is);
+    this->ff1.deserialize(is); this->ff2.deserialize(is); this->ff3.deserialize(is);
+    this->gg1.deserialize(is); this->gg2.deserialize(is);
+    this->hh1.deserialize(is); this->hh2.deserialize(is); this->hh3.deserialize(is);
+  }
+}
+
 /**
  * @brief This method generates the decryption key, given the master key.
  *        Before calling this function, the policy, the white list and the
