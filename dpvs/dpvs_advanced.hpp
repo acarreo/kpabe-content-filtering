@@ -91,11 +91,6 @@ class G2_VECTOR {
     uint8_t dim;
 };
 
-
-G1_VECTOR* deserialize_g1_vect(std::istream& is);
-G2_VECTOR* deserialize_g2_vect(std::istream& is);
-
-
 void inner_product(gt_t result, const G1_VECTOR& vect1, const G2_VECTOR& vect2);
 
 #endif // __DPVS_ADVANCED_HPP__
