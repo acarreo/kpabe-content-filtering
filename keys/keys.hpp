@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <optional>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <map>
@@ -30,6 +32,12 @@
 class KPABE_DPVS_PUBLIC_KEY {
   public:
     KPABE_DPVS_PUBLIC_KEY() {};
+
+    KPABE_DPVS_PUBLIC_KEY(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
+
     ~KPABE_DPVS_PUBLIC_KEY() {};
 
     void set_bases(const G1_VS_BASE base_D, const G1_VS_BASE base_F,
@@ -47,6 +55,33 @@ class KPABE_DPVS_PUBLIC_KEY {
     G1_VECTOR get_h2() const { return this->h2; }
     G1_VECTOR get_h3() const { return this->h3; }
 
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
+    }
+
+    // Compare two public keys, temporary function for testing
+    bool operator==(const KPABE_DPVS_PUBLIC_KEY& other) const {
+      return (this->d1 == other.d1 && this->d3 == other.d3 &&
+              this->f1 == other.f1 && this->f2 == other.f2 && this->f3 == other.f3 &&
+              this->g1 == other.g1 && this->g2 == other.g2 &&
+              this->h1 == other.h1 && this->h2 == other.h2 && this->h3 == other.h3);
+    }
+
   private:
     G1_VECTOR d1, d3;
     G1_VECTOR f1, f2, f3;
@@ -57,6 +92,12 @@ class KPABE_DPVS_PUBLIC_KEY {
 class KPABE_DPVS_MASTER_KEY {
   public:
     KPABE_DPVS_MASTER_KEY() {};
+
+    KPABE_DPVS_MASTER_KEY(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
+
     ~KPABE_DPVS_MASTER_KEY() {};
 
     void set_bases(const G2_VS_BASE base_DD, const G2_VS_BASE base_FF,
@@ -74,6 +115,25 @@ class KPABE_DPVS_MASTER_KEY {
     G2_VECTOR get_hh2() const { return this->hh2; }
     G2_VECTOR get_hh3() const { return this->hh3; }
 
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
+    }
+
   private:
     G2_VECTOR dd1, dd3;
     G2_VECTOR ff1, ff2, ff3;
@@ -86,6 +146,11 @@ class KPABE_DPVS_DECRYPTION_KEY {
     typedef std::map<std::string, G2_VECTOR> key_map_t;
 
     KPABE_DPVS_DECRYPTION_KEY() : policy(""), white_list({}), black_list({}) {};
+
+    KPABE_DPVS_DECRYPTION_KEY(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
 
     KPABE_DPVS_DECRYPTION_KEY(const std::string& policy_str,
                               const std::vector<std::string>& white_list,
@@ -137,6 +202,25 @@ class KPABE_DPVS_DECRYPTION_KEY {
     }
     key_map_t::const_iterator get_key_bl_end() const {
       return this->key_bl.end();
+    }
+
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
     }
 
   private:

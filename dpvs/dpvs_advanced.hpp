@@ -12,7 +12,7 @@
 #include <iostream>
 
 extern "C" {
-  #include "../serial/serial.h"
+  #include "serial.h"
 }
 
 typedef enum {
@@ -44,6 +44,7 @@ class G1_VECTOR {
     G1_VECTOR operator*(const bn_t k) const; // scalar multiplication
 
     void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
 
     static const GROUP_VECTOR_TYPE vect_type = G1_VECT;
 
@@ -77,6 +78,7 @@ class G2_VECTOR {
     G2_VECTOR operator*(const bn_t k) const; // scalar multiplication
 
     void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
 
     static const GROUP_VECTOR_TYPE vect_type = G2_VECT;
 
@@ -88,11 +90,6 @@ class G2_VECTOR {
     G2_VS_VECT vect;
     uint8_t dim;
 };
-
-
-G1_VECTOR* deserialize_g1_vect(std::istream& is);
-G2_VECTOR* deserialize_g2_vect(std::istream& is);
-
 
 void inner_product(gt_t result, const G1_VECTOR& vect1, const G2_VECTOR& vect2);
 

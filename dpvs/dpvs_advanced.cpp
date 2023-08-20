@@ -90,7 +90,7 @@ G1_VECTOR G1_VECTOR::operator*(const bn_t k) const {
 /**
  * @brief Serialize the G1 vector to the output stream
  * 
- * @param os The output stream
+ * @param[in] os The output stream
  */
 void G1_VECTOR::serialize(std::ostream &os) const {
   GROUP_VECTOR_TYPE type = this->vect_type;
@@ -107,26 +107,26 @@ void G1_VECTOR::serialize(std::ostream &os) const {
 /**
  * @brief Deserialize the G1 vector from the input stream
  * 
- * @param is The input stream, the vector type should be read before calling this function
- * @return G1_VECTOR* The deserialized G1 vector, nullptr if an error occured
+ * @param[in] is The input stream
  */
-G1_VECTOR* deserialize_g1_vect(std::istream &is) {
-  G1_VS_VECT g1_vect = nullptr;
-  G1_VECTOR* result;
-
+void G1_VECTOR::deserialize(std::istream &is) {
   int buffer_size = 0;
+  G1_VS_VECT vs_vect = nullptr;
+  uint8_t type = is.get();
   is.read(reinterpret_cast<char*>(&buffer_size), sizeof(buffer_size));
-  if (is && buffer_size > 0) {
+  if (type == G1_VECT && buffer_size > 0 && is) {
     uint8_t* buffer = new uint8_t[buffer_size];
     is.read(reinterpret_cast<char*>(buffer), buffer_size);
-    if (is && !deserialize_g1_vector(buffer, buffer_size, &g1_vect)) {
-      result = new G1_VECTOR(g1_vect);
-      dpvs_clear_g1_vect(g1_vect);
+    if (is && !deserialize_g1_vector(buffer, buffer_size, &vs_vect)) {
+      // Clear the current vector
+      dpvs_clear_g1_vect(this->vect);
+
+      this->dim = vs_vect->dim;
+      this->vect = vs_vect;
+
       delete [] buffer;
     }
   }
-
-  return result;
 }
 
 
@@ -192,7 +192,7 @@ G2_VECTOR G2_VECTOR::operator*(const bn_t k) const {
 /**
  * @brief Serialize the G2 vector to the output stream
  * 
- * @param os The output stream
+ * @param[in] os The output stream
  */
 void G2_VECTOR::serialize(std::ostream &os) const {
   GROUP_VECTOR_TYPE type = this->vect_type;
@@ -209,26 +209,26 @@ void G2_VECTOR::serialize(std::ostream &os) const {
 /**
  * @brief Deserialize the G2 vector from the input stream
  * 
- * @param is The input stream, the vector type should be read before calling this function
- * @return G2_VECTOR* The deserialized G2 vector, nullptr if failed
+ * @param[in] is The input stream
  */
-G2_VECTOR* deserialize_g2_vect(std::istream &is) {
-  G2_VS_VECT g2_vect = nullptr;
-  G2_VECTOR* result;
-
+void G2_VECTOR::deserialize(std::istream &is) {
   int buffer_size = 0;
+  G2_VS_VECT vs_vect = nullptr;
+  uint8_t type = is.get();
   is.read(reinterpret_cast<char*>(&buffer_size), sizeof(buffer_size));
-  if (is && buffer_size > 0) {
+  if (type == G2_VECT && buffer_size > 0 && is) {
     uint8_t* buffer = new uint8_t[buffer_size];
     is.read(reinterpret_cast<char*>(buffer), buffer_size);
-    if (is && !deserialize_g2_vector(buffer, buffer_size, &g2_vect)) {
-      result = new G2_VECTOR(g2_vect);
-      dpvs_clear_g2_vect(g2_vect);
+    if (is && !deserialize_g2_vector(buffer, buffer_size, &vs_vect)) {
+      // Clear the current vector
+      dpvs_clear_g2_vect(this->vect);
+
+      this->dim = vs_vect->dim;
+      this->vect = vs_vect;
+
       delete [] buffer;
     }
   }
-
-  return result;
 }
 
 void inner_product(gt_t result, const G1_VECTOR &vect1, const G2_VECTOR &vect2)

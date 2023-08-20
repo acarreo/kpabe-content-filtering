@@ -30,6 +30,11 @@ class KPABE_DPVS_CIPHERTEXT {
       this->url = url;
     };
 
+    KPABE_DPVS_CIPHERTEXT(const std::string filename) {
+      if (access(filename.c_str(), F_OK) != -1)
+        this->loadFromFile(filename);
+    };
+
     ~KPABE_DPVS_CIPHERTEXT() {};
 
     // Setters for attributes and url
@@ -57,6 +62,25 @@ class KPABE_DPVS_CIPHERTEXT {
     }
 
     bool cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public_key);
+
+    void serialize(std::ostream& os) const;
+    void deserialize(std::istream& is);
+
+    void saveToFile(const std::string& filename) const {
+      std::ofstream ofs(filename, std::ios::binary);
+      if (ofs.is_open()) {
+        this->serialize(ofs);
+        ofs.close();
+      }
+    }
+
+    void loadFromFile(const std::string& filename) {
+      std::ifstream ifs(filename, std::ios::binary);
+      if (ifs.is_open()) {
+        this->deserialize(ifs);
+        ifs.close();
+      }
+    }
 
   private:
     std::string attributes;
@@ -96,6 +120,16 @@ class KPABE_DPVS {
 
     // Getter for public key
     KPABE_DPVS_PUBLIC_KEY get_public_key() const { return this->public_key; }
+
+    // Export public key to file
+    void export_public_key(const std::string& filename) const {
+      this->public_key.saveToFile(filename);
+    }
+
+    // Export master key to file
+    void export_master_key(const std::string& filename) const {
+      this->master_key.saveToFile(filename);
+    }
 
   private:
     std::vector<std::string> white_list;
