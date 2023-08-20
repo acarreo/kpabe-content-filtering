@@ -121,6 +121,16 @@ class KPABE_DPVS {
     // Getter for public key
     KPABE_DPVS_PUBLIC_KEY get_public_key() const { return this->public_key; }
 
+    // Export public key to file
+    void export_public_key(const std::string& filename) const {
+      this->public_key.saveToFile(filename);
+    }
+
+    // Export master key to file
+    void export_master_key(const std::string& filename) const {
+      this->master_key.saveToFile(filename);
+    }
+
   private:
     std::vector<std::string> white_list;
     std::vector<std::string> black_list;
