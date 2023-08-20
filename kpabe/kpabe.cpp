@@ -167,6 +167,7 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
     this->ctx_bl.deserialize(is);
 
     // Read ctx_att.size() and ctx_att
+    this->attributes.clear();
     uint ctx_att_size = 0;
     is.read(reinterpret_cast<char*>(&ctx_att_size), sizeof(uint));
     for (uint i = 0; i < ctx_att_size; i++) {
@@ -174,7 +175,12 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
       std::string att; att.resize(att_size);
       is.read(&att[0], att_size);
       this->ctx_att[att].deserialize(is);
+      this->attributes += att + "|";
     }
+    this->attributes.pop_back(); // Delete last '|' character from attributes
+
+    /* The attribute order may differ from the original order during
+     * serialization, but this difference does not impact functionality. */
   }
 }
 
