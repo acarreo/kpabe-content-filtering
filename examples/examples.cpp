@@ -90,15 +90,19 @@ void encrypt_and_export(uint8_t* session_key, string url, string attributes,
 
   // Generate a session key
   bn_t phi; bn_null(phi); bn_new(phi);
-  bn_rand_mod(phi, Fq);
+  bn_rand_mod(phi, Fq);                 // a random seed for the session key
   derive_session_key(session_key, phi);
 
-  auto ciphertext = encrypt(phi, url, attributes, public_key);
-  if (!ciphertext) {
-    cout << "Error during the encryption" << endl;
-    return;
+  /* Set the attributes and url, to the KPABE_DPVS_CIPHERTEXT object, and
+   * then encrypt the random seed `phi` */
+  KPABE_DPVS_CIPHERTEXT ciphertext(attributes, url);
+  bool is_encrypt = ciphertext.encrypt(phi, public_key);
+  if (is_encrypt) {
+    ciphertext.saveToFile(ciphertext_file);
   }
-  ciphertext->saveToFile(ciphertext_file);
+  else {
+    cout << "Encryption failed" << endl;
+  }
 
   bn_free(rand);
 }
@@ -119,9 +123,12 @@ void decrypt(uint8_t* session_key, string ciphertext_file, string dec_key_file) 
   KPABE_DPVS_DECRYPTION_KEY dec_key(dec_key_file);
 
   // Decryption
-  if (!decrypt(session_key, ciphertext, dec_key)) {
-    cout << "Decryption FAIL for: " << ciphertext.get_url() << endl;
-    return;
+  bool is_decrypt = ciphertext.decrypt(session_key, dec_key);
+  if (is_decrypt) {
+    cout << "Decryption success" << endl;
+  }
+  else {
+    cout << "Decryption failed" << endl;
   }
 }
 
