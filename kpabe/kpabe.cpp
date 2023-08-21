@@ -182,9 +182,8 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
  * @param[in]  dec_key The decryption key
  * @return true if the decryption is successful, false otherwise 
  */
-bool decrypt(uint8_t* session_key,
-             const KPABE_DPVS_CIPHERTEXT &ciphertext,
-             const KPABE_DPVS_DECRYPTION_KEY &dec_key)
+bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
+                                    const KPABE_DPVS_DECRYPTION_KEY &dec_key) const
 {
   // TODO : clear memory at the end of the function, even in case of error
 
@@ -202,13 +201,13 @@ bool decrypt(uint8_t* session_key,
   gt_null(ip_root); gt_new(ip_root);
   gt_null(phi);     gt_new(phi);
 
-  std::string url = ciphertext.get_url();
+  std::string url = this->url;
 
   auto key_wl_url = dec_key.get_key_wl(url);
   if (key_wl_url) {
     std::cout << "URL is in WHITE_LIST: " << url << std::endl;
-    inner_product(ip, ciphertext.get_ctx_wl(), *key_wl_url);
-    inner_product(ip_root, ciphertext.get_ctx_root(), dec_key.get_key_root());
+    inner_product(ip, this->ctx_wl, *key_wl_url);
+    inner_product(ip_root, this->ctx_root, dec_key.get_key_root());
     gt_mul(phi, ip, ip_root);
     gt_md_map(session_key, phi);
 
@@ -226,7 +225,7 @@ bool decrypt(uint8_t* session_key,
 
   BPGroup group(OpenABE_NONE_ID);
   auto policy = createPolicyTree(dec_key.get_policy());
-  auto attribute_list = createAttributeList(ciphertext.get_attributes());
+  auto attribute_list = createAttributeList(this->attributes);
 
   if (policy == nullptr || attribute_list == nullptr) {
     std::cerr << "Error: Could not create policy tree or attribute list" << std::endl;
@@ -247,7 +246,7 @@ bool decrypt(uint8_t* session_key,
     ZP cj = coeff.element();
     std::string att = coeff.label();
 
-    auto ctx_att__ = ciphertext.get_ctx_att(att);
+    auto ctx_att__ = this->get_ctx_att(att);
     auto key_att__ = dec_key.get_key_att(att);
 
     inner_product(ip, *ctx_att__, *key_att__ * cj.m_ZP);
@@ -262,12 +261,12 @@ bool decrypt(uint8_t* session_key,
     bn_mod_sub(bn, bn_bl, bn_url, group.order);
     bn_mod_inv(bn, bn, group.order);
 
-    inner_product(ip, ciphertext.get_ctx_bl(), it->second);
+    inner_product(ip, this->ctx_bl, it->second);
     gt_exp(ip, ip, bn);
     gt_mul(ip_bl, ip_bl, ip);
   }
 
-  inner_product(ip_root, ciphertext.get_ctx_root(), dec_key.get_key_root());
+  inner_product(ip_root, this->ctx_root, dec_key.get_key_root());
 
   gt_mul(phi, ip_lsss, ip_bl);
   gt_mul(phi, phi, ip_root);

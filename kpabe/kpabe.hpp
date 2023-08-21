@@ -63,6 +63,9 @@ class KPABE_DPVS_CIPHERTEXT {
 
     bool encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key);
 
+    bool decrypt(uint8_t* session_key,
+                 const KPABE_DPVS_DECRYPTION_KEY& dec_key) const;
+
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
@@ -138,9 +141,5 @@ class KPABE_DPVS {
     KPABE_DPVS_PUBLIC_KEY public_key;
     KPABE_DPVS_MASTER_KEY master_key;
 };
-
-bool decrypt(uint8_t* session_key,
-             const KPABE_DPVS_CIPHERTEXT& ciphertext,
-             const KPABE_DPVS_DECRYPTION_KEY& dec_key);
 
 #endif // __KPABE_HPP__
