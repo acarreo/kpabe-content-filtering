@@ -195,6 +195,19 @@ void example_decryption() {
   else {
     cout << "Session key 02: FAIL" << endl;
   }
+
+  // Attempt to decrypt ciphertext_02 using dec_key_02
+  // The decryption is expected to fail as the policy associated with dec_key_02
+  // is not satisfied by the set of attributes linked to ciphertext_02
+  uint8_t sess_key_02_02[RLC_MD_LEN];
+  decrypt(sess_key_02_02, ciphertext_file_02, dec_key_file_02); // UNRECOVER (expected)
+  if (memcmp(sess_key_02_02, session_key_02, RLC_MD_LEN) != 0) {
+    cout << "Session key 02: NOT RECOVERED" << endl;
+  }
+  else {
+    cout << "Session key 02: FAILED" << endl;
+  }
+  cout << endl;
 }
 
 
