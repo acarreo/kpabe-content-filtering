@@ -172,28 +172,6 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
 }
 
 /**
- * @brief This encryption method generates the ephemeral session key, using the
- *        public key, url and set of attributes. Before calling this function,
- *        the psi must be initialized. The ciphertext is also generated.
- * 
- * @param[in] phi The ephemeral session key. It is the message to encrypt
- * @param[in] url The url requested by the user
- * @param[in] attributes Set of attributes associated to the  requested url
- * @param[in] public_key The user public key
- * @return std::optional<KPABE_DPVS_CIPHERTEXT> 
- */
-std::optional<KPABE_DPVS_CIPHERTEXT> encrypt(bn_t phi,
-                                             const std::string& url,
-                                             const std::string& attributes,
-                                             const KPABE_DPVS_PUBLIC_KEY& public_key) {
-  KPABE_DPVS_CIPHERTEXT ciphertext(attributes, url);
-  if (ciphertext.encrypt(phi, public_key)) {
-    return ciphertext;
-  }
-  return std::nullopt;
-}
-
-/**
  * @brief This method try to decrypt the ciphertext, using the decryption key.
  *        The decryption fails if the url is in the black list or if the policy
  *        is not satisfied. If the decryption is successful, the session key is

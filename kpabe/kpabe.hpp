@@ -139,11 +139,6 @@ class KPABE_DPVS {
     KPABE_DPVS_MASTER_KEY master_key;
 };
 
-std::optional<KPABE_DPVS_CIPHERTEXT> encrypt(bn_t phi,
-                                             const std::string& url,
-                                             const std::string& attributes,
-                                             const KPABE_DPVS_PUBLIC_KEY& public_key);
-
 bool decrypt(uint8_t* session_key,
              const KPABE_DPVS_CIPHERTEXT& ciphertext,
              const KPABE_DPVS_DECRYPTION_KEY& dec_key);
