@@ -57,7 +57,7 @@ bool KPABE_DPVS::setup() {
  * @param[in] public_key The public key
  * @return true if the encryption is successful, false otherwise
  */
-bool KPABE_DPVS_CIPHERTEXT::encrypt(bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
+bool KPABE_DPVS_CIPHERTEXT::encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
 {
   bn_t sigma, omega, bn_url, tmp, sigma_att;
   BPGroup group(OpenABE_NONE_ID);

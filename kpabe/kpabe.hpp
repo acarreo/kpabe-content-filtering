@@ -61,7 +61,7 @@ class KPABE_DPVS_CIPHERTEXT {
       return std::nullopt;
     }
 
-    bool encrypt(bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key);
+    bool encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key);
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
