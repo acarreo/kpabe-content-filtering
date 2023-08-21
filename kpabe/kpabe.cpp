@@ -249,6 +249,11 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
     auto ctx_att__ = this->get_ctx_att(att);
     auto key_att__ = dec_key.get_key_att(att);
 
+    if (!ctx_att__ || !key_att__) {
+      std::cerr << "Error: Could not get ctx_att or key_att" << std::endl;
+      return false;
+    }
+
     inner_product(ip, *ctx_att__, *key_att__ * cj.m_ZP);
     gt_mul(ip_lsss, ip_lsss, ip);
   }
