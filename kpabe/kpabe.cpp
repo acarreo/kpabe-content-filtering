@@ -238,7 +238,7 @@ bool decrypt(gt_t phi,
 
   auto key_wl_url = dec_key.get_key_wl(url);
   if (key_wl_url) {
-    std::cout << "URL is in WHITE_LIST" << std::endl;
+    std::cout << "URL is in WHITE_LIST: " << url << std::endl;
     inner_product(ip, ciphertext.get_ctx_wl(), *key_wl_url);
     inner_product(ip_root, ciphertext.get_ctx_root(), dec_key.get_key_root());
     gt_mul(phi, ip, ip_root);
@@ -247,7 +247,7 @@ bool decrypt(gt_t phi,
   }
 
   if (dec_key.is_in_black_list(url)) {
-    std::cout << "URL is blacklisted" << std::endl;
+    std::cout << "URL is blacklisted: " << url << std::endl;
     return false;
   }
 
@@ -269,6 +269,7 @@ bool decrypt(gt_t phi,
     std::cout << "Policy not satisfied, could not recover LSSS coefficients." << std::endl;
     return false;
   }
+  std::cout << "Policy satisfied, LSSS coefficients recovered successfully." << std::endl;
 
   auto recover_coeff = lsss.getRows();
 
