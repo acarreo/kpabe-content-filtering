@@ -25,6 +25,19 @@ void gt_md_map(uint8_t* hash, gt_t gt) {
   md_map(hash, buf, l);
 }
 
+void derive_session_key(uint8_t* session_key, bn_t sk) {
+  g1_t g1; g1_null(g1); g1_new(g1);
+  g2_t g2; g2_null(g2); g2_new(g2);
+  gt_t gt; gt_null(gt); gt_new(gt);
+
+  g1_get_gen(g1); g2_get_gen(g2); pc_map(gt, g1, g2);
+  gt_exp(gt, gt, sk);
+
+  gt_md_map(session_key, gt);
+
+  g1_free(g1); g2_free(g2); gt_free(gt);
+}
+
 void clean_libraries(void) {
   bn_free(Fq);
   core_clean();
