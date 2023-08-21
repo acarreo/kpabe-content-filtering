@@ -88,21 +88,19 @@ void encrypt_and_export(uint8_t* session_key, string url, string attributes,
   // Load the public key
   KPABE_DPVS_PUBLIC_KEY public_key(public_key_file);
 
-  // Encryption: `psi` serves as the ephemeral session key, used to derive the
-  // session key for symmetric data encryption.
-  gt_t psi; gt_null(psi); gt_new(psi);
-  auto ciphertext = encrypt(psi, url, attributes, public_key);
+  // Generate a session key
+  bn_t phi; bn_null(phi); bn_new(phi);
+  bn_rand_mod(phi, Fq);
+  derive_session_key(session_key, phi);
+
+  auto ciphertext = encrypt(phi, url, attributes, public_key);
   if (!ciphertext) {
     cout << "Error during the encryption" << endl;
     return;
   }
-
   ciphertext->saveToFile(ciphertext_file);
 
-  // Derive the session key from the ephemeral session key `psi`
-  gt_md_map(session_key, psi);
-
-  gt_free(psi);
+  bn_free(rand);
 }
 
 /**
@@ -121,16 +119,10 @@ void decrypt(uint8_t* session_key, string ciphertext_file, string dec_key_file) 
   KPABE_DPVS_DECRYPTION_KEY dec_key(dec_key_file);
 
   // Decryption
-  gt_t phi; gt_null(phi); gt_new(phi);
-  if (!decrypt(phi, ciphertext, dec_key)) {
+  if (!decrypt(session_key, ciphertext, dec_key)) {
     cout << "Decryption FAIL for: " << ciphertext.get_url() << endl;
     return;
   }
-
-  // Export the session key
-  gt_md_map(session_key, phi);
-
-  gt_free(phi);
 }
 
 
