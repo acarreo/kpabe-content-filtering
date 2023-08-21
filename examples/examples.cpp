@@ -147,7 +147,7 @@ void example_generate_keys() {
 void example_encryption() {
   
   // URL in white list
-  encrypt_and_export(session_key_00, wl[1], "A3|A4|A5",
+  encrypt_and_export(session_key_00, wl[1], "A1|A2|A5",
                      public_key_file, ciphertext_file_00);
 
   // URL in black list
@@ -155,8 +155,8 @@ void example_encryption() {
                      public_key_file, ciphertext_file_01);
 
   // URL is not in white list nor in black list.
-  // The set of attributes satisfies the policy_00 and the policy_02
-  encrypt_and_export(session_key_02, "www.url.com", "A1|A2|A5",
+  // The set of attributes satisfies the policy_00 and the policy_01
+  encrypt_and_export(session_key_02, "www.url.com", "A3|A4|A5",
                      public_key_file, ciphertext_file_02);
 
 }
@@ -170,31 +170,32 @@ void example_decryption() {
   decrypt(sess_key_00, ciphertext_file_00, dec_key_file_00); // SUCCESS (expected)
   // Check if the session keys are equal
   if (memcmp(sess_key_00, session_key_00, RLC_MD_LEN) == 0) {
-    cout << "Session key 00: RECOVER" << endl;
+    cout << "Session key 00: RECOVERED" << endl;
   }
   else {
-    cout << "Session key 00: FAIL" << endl;
+    cout << "Session key 00: FAILED" << endl;
   }
   cout << endl;
 
   decrypt(sess_key_01, ciphertext_file_01, dec_key_file_01); // UNRECOVER (expected)
   // Check if the session keys are equal
   if (memcmp(sess_key_01, session_key_01, RLC_MD_LEN) != 0) {
-    cout << "Session key 01: NOT RECOVER" << endl;
+    cout << "Session key 01: NOT RECOVERED" << endl;
   }
   else {
-    cout << "Session key 01: FAIL" << endl;
+    cout << "Session key 01: FAILED" << endl;
   }
   cout << endl;
 
-  decrypt(sess_key_02, ciphertext_file_02, dec_key_file_02); // SUCCESS (expected)
+  decrypt(sess_key_02, ciphertext_file_02, dec_key_file_01); // SUCCESS (expected)
   // Check if the session keys are equal
   if (memcmp(sess_key_02, session_key_02, RLC_MD_LEN) == 0) {
     cout << "Session key 02: RECOVER" << endl;
   }
   else {
-    cout << "Session key 02: FAIL" << endl;
+    cout << "Session key 02: FAILED" << endl;
   }
+  cout << endl;
 
   // Attempt to decrypt ciphertext_02 using dec_key_02
   // The decryption is expected to fail as the policy associated with dec_key_02

@@ -2,6 +2,7 @@
 *test*
 *.bin
 *.o
+*.d
 *~
 *.vscode*
 .gitignore
