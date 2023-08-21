@@ -49,21 +49,17 @@ bool KPABE_DPVS::setup() {
 }
 
 /**
- * @brief This method generates an ephemeral session key, using the public key,
+ * @brief This method encrypts an ephemeral session key, using the public key,
  *        url and set of attributes. Before calling this function, the url and
  *        the attributes must be set. The ciphertext is also generated.
  *
- * @param psi The ephemeral session key. [Use this key to generate the
- *            symmetric key for the message.
- * @param public_key The public key 
+ * @param[in] phi Seed for the ephemeral session key, it is the message to encrypt
+ * @param[in] public_key The public key
  * @return true if the encryption is successful, false otherwise
  */
-bool KPABE_DPVS_CIPHERTEXT::cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public_key)
+bool KPABE_DPVS_CIPHERTEXT::encrypt(bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
 {
-  g1_t g1;
-  g2_t g2;
-  gt_t gt;
-  bn_t sigma, omega, bn_url, tmp, sigma_att, bn_psi;
+  bn_t sigma, omega, bn_url, tmp, sigma_att;
   BPGroup group(OpenABE_NONE_ID);
 
   if (this->url.empty() || this->attributes.empty()) {
@@ -71,21 +67,16 @@ bool KPABE_DPVS_CIPHERTEXT::cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public
     return false;
   }
 
-  g1_null(g1); g1_new(g1); g1_get_gen(g1);
-  g2_null(g2); g2_new(g2); g2_get_gen(g2);
-  gt_null(gt); gt_new(gt); pc_map(gt, g1, g2);
-
   bn_null(sigma);  bn_new(sigma);  bn_rand_mod(sigma, group.order);
   bn_null(omega);  bn_new(omega);  bn_rand_mod(omega, group.order);
-  bn_null(bn_psi); bn_new(bn_psi); bn_rand_mod(bn_psi, group.order);
 
   bn_null(sigma_att); bn_new(sigma_att);
   bn_null(bn_url);    bn_new(bn_url);
   bn_null(tmp);       bn_new(tmp);
 
-  /* set ctx_root : pk->d1 * omega + pk->d3 * bn_psi */
+  /* set ctx_root : pk->d1 * omega + pk->d3 * phi */
   this->ctx_root = public_key.get_d1() * omega +
-                   public_key.get_d3() * bn_psi;
+                   public_key.get_d3() * phi;
 
   /* set ctx_wl : pk->f1 * sigma + pk->f2 * (sigma * bn_url) + pk->f3 * omega */
   str_to_bn(bn_url, this->url.c_str(), this->url.size(), group.order);
@@ -115,12 +106,8 @@ bool KPABE_DPVS_CIPHERTEXT::cipher(gt_t psi, const KPABE_DPVS_PUBLIC_KEY& public
                          h3_times_omega;
   }
 
-  /* Ephemeral session key : psi = e(g1, g2) ^ bn_psi = gt ^ bn_psi */
-  gt_exp(psi, gt, bn_psi);
-
   // Clear memory
-  g1_free(g1); g2_free(g2); gt_free(gt);
-  bn_free(sigma); bn_free(omega); bn_free(bn_psi);
+  bn_free(sigma); bn_free(omega);
   bn_free(sigma_att); bn_free(bn_url); bn_free(tmp);
 
   return true;
@@ -189,18 +176,18 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
  *        public key, url and set of attributes. Before calling this function,
  *        the psi must be initialized. The ciphertext is also generated.
  * 
- * @param[out] psi The ephemeral session key. 
- * @param[in]  url The url requested by the user
- * @param[in]  attributes Set of attributes associated to the  requested url
- * @param[in]  public_key The user public key
+ * @param[in] phi The ephemeral session key. It is the message to encrypt
+ * @param[in] url The url requested by the user
+ * @param[in] attributes Set of attributes associated to the  requested url
+ * @param[in] public_key The user public key
  * @return std::optional<KPABE_DPVS_CIPHERTEXT> 
  */
-std::optional<KPABE_DPVS_CIPHERTEXT> encrypt(gt_t psi,
+std::optional<KPABE_DPVS_CIPHERTEXT> encrypt(bn_t phi,
                                              const std::string& url,
                                              const std::string& attributes,
                                              const KPABE_DPVS_PUBLIC_KEY& public_key) {
   KPABE_DPVS_CIPHERTEXT ciphertext(attributes, url);
-  if (ciphertext.cipher(psi, public_key)) {
+  if (ciphertext.encrypt(phi, public_key)) {
     return ciphertext;
   }
   return std::nullopt;
@@ -209,14 +196,15 @@ std::optional<KPABE_DPVS_CIPHERTEXT> encrypt(gt_t psi,
 /**
  * @brief This method try to decrypt the ciphertext, using the decryption key.
  *        The decryption fails if the url is in the black list or if the policy
- *        is not satisfied.
+ *        is not satisfied. If the decryption is successful, the session key is
+ *        recovered.
  *
- * @param[out] phi The ephemeral session key
+ * @param[out] session_key The recovered session key
  * @param[in]  ciphertext The ciphertext to decrypt
  * @param[in]  dec_key The decryption key
  * @return true if the decryption is successful, false otherwise 
  */
-bool decrypt(gt_t phi,
+bool decrypt(uint8_t* session_key,
              const KPABE_DPVS_CIPHERTEXT &ciphertext,
              const KPABE_DPVS_DECRYPTION_KEY &dec_key)
 {
@@ -224,6 +212,7 @@ bool decrypt(gt_t phi,
 
   bn_t bn, bn_bl, bn_url;
   gt_t ip, ip_lsss, ip_bl, ip_root;
+  gt_t phi;
 
   bn_null(bn);     bn_new(bn);
   bn_null(bn_bl);  bn_new(bn_bl);
@@ -233,6 +222,7 @@ bool decrypt(gt_t phi,
   gt_null(ip_bl);   gt_new(ip_bl);
   gt_null(ip_lsss); gt_new(ip_lsss);
   gt_null(ip_root); gt_new(ip_root);
+  gt_null(phi);     gt_new(phi);
 
   std::string url = ciphertext.get_url();
 
@@ -242,6 +232,7 @@ bool decrypt(gt_t phi,
     inner_product(ip, ciphertext.get_ctx_wl(), *key_wl_url);
     inner_product(ip_root, ciphertext.get_ctx_root(), dec_key.get_key_root());
     gt_mul(phi, ip, ip_root);
+    gt_md_map(session_key, phi);
 
     return true;
   }
@@ -303,10 +294,12 @@ bool decrypt(gt_t phi,
   gt_mul(phi, ip_lsss, ip_bl);
   gt_mul(phi, phi, ip_root);
 
+  gt_md_map(session_key, phi);
 
   // Clear memory
   bn_free(bn); bn_free(bn_bl); bn_free(bn_url);
   gt_free(ip); gt_free(ip_bl); gt_free(ip_lsss); gt_free(ip_root);
+  gt_free(phi);
 
   return true;
 }
