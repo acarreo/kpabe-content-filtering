@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <optional>
 #include <iostream>
+#include <unistd.h>
 #include <fstream>
 #include <vector>
 #include <string>
