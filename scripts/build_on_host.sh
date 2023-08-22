@@ -1,10 +1,12 @@
+#!/bin/bash
+
 export RELIC_TAG="0.6.0"
 export CURVE="bls12-381"
 export RELIC_INCLUDE="/usr/local/include/relic"
 WORKDIR=$(pwd)
 
 sudo apt-get update
-sudo apt-get install -y cmake make g++ ca-certificates libgmp-dev libmsgpack-dev flex libfl-dev pkg-config
+sudo apt-get install -y cmake make g++ ca-certificates git libgmp-dev libmsgpack-dev flex libfl-dev pkg-config
 
 # Upgrade gcc/g++ to 11 if necessary
 gcc_version=$(gcc --version 2>&1 | grep -o '([0-9]+\.[0-9]+\.[0-9]+)' | head -1)
@@ -19,15 +21,16 @@ fi
 # Build RELIC
 git clone https://github.com/relic-toolkit/relic /tmp/relic
 cd /tmp/relic
-#git switch --detach ${RELIC_TAG}
+git checkout -b compile-temp ${RELIC_TAG}
 mkdir "target_${CURVE}"
 cd "target_${CURVE}"
 ../preset/x64-pbc-${CURVE}.sh ..
 make -j
 sudo make install
+make clean
 
 # Build LSSS
-cd $WORKDIR
-make -j -C ../lsss
-sudo mv ../lsss/liblsss.a /usr/local/lib/
-make -C ../lsss clean
+cd $WORKDIR/lsss
+make -j
+sudo make install
+make clean
