@@ -1,7 +1,7 @@
 .PHONY: local docker
 
 local:
-	sudo ./build_on_host.sh
+	./build_on_host.sh
 
 docker:
 	tar -czvf lsss.tar.gz --exclude='*.o' --exclude='*.a' ../lsss
