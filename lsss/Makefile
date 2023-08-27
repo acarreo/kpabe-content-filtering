@@ -20,10 +20,9 @@ $(LIB_LSSS): $(OBJ) zparser.tab.o
 	ar rcs $@ $^
 
 install: $(LIB_LSSS)
-	mkdir -p $(INSTALL_DIR)/include/lsss
-	cp *.h $(INSTALL_DIR)/include/lsss/
-	cp zparser.yy zparser.tab.hh zscanner.ll $(INSTALL_DIR)/include/lsss/
-	cp $(LIB_LSSS) $(INSTALL_DIR)/lib
+	sudo mkdir -p $(INSTALL_DIR)/include/lsss
+	sudo cp *.h zparser.yy zparser.tab.hh zscanner.ll $(INSTALL_DIR)/include/lsss/
+	sudo mv $(LIB_LSSS) $(INSTALL_DIR)/lib
 
 clean:
-	rm -f *.o *~ $(LIB_LSSS)
+	rm -f *.o *~
