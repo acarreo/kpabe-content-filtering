@@ -3,7 +3,7 @@
 export RELIC_TAG="0.6.0"
 export CURVE="bls12-381"
 export RELIC_INCLUDE="/usr/local/include/relic"
-WORKDIR=$(pwd)
+WORKDIR=$PWD
 
 sudo apt-get update
 sudo apt-get install -y cmake make g++ ca-certificates git libgmp-dev libmsgpack-dev flex libfl-dev pkg-config
@@ -30,7 +30,7 @@ sudo make install
 make clean
 
 # Build LSSS
-cd $WORKDIR/lsss
+cd $WORKDIR && cd ../lsss
 make -j
 sudo make install
 make clean
