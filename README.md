@@ -5,8 +5,8 @@ This project implements the KP-ABE (Key-Policy Attribute-Based Encryption) using
 ## Prerequisites
 The project utilizes the [RELIC](https://github.com/relic-toolkit/relic) library
 for cryptographic operations, the GMP library for arbitrary precision
-arithmetic, and the LSSS library, which is a part of the
-[OpenABE](https://github.com/zeutro/openabe) project.
+arithmetic, and the LSSS (Linear Secret Sharing Schemes) library, which is
+a part of the [OpenABE](https://github.com/zeutro/openabe) project.
 
 ## Installation
 
