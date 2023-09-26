@@ -1,14 +1,5 @@
-#include <unistd.h>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <algorithm>
 
-#include "../kpabe/kpabe.hpp"
+#include "bench.hpp"
 
 using namespace std;
 
@@ -56,9 +47,9 @@ const vector<string> list_policies({
   "(A_07 or A_08) and (A_09 or A_06) and (A_01 or A_02)",
 });
 
-const list_decryption_key_file({ "/tmp/decryption_key_1",
-        "/tmp/decryption_key_2", "/tmp/decryption_key_3",
-        "/tmp/decryption_key_4", "/tmp/decryption_key_5",
+const vector<string> list_decryption_key_file({
+  "/tmp/decryption_key_1", "/tmp/decryption_key_2", "/tmp/decryption_key_3",
+  "/tmp/decryption_key_4", "/tmp/decryption_key_5",
 });
 
 vector<string> list_ciphertext_file;
@@ -72,7 +63,8 @@ KPABE_DPVS_MASTER_KEY master_key;
 
 void generate_decryption_key(string policy, string dec_key_file) {
   KPABE_DPVS_DECRYPTION_KEY dec_key(policy, white_list, black_list);
-  dec_key.generate(master_key).saveToFile(dec_key_file);
+  dec_key.generate(master_key);
+  dec_key.saveToFile(dec_key_file);
 }
 
 void encrypt(string &attr, string &url) {
@@ -94,7 +86,8 @@ void encrypt(string &attr, string &url) {
   bn_t phi; bn_null(phi); bn_new(phi); bn_rand_mod(phi, Fq);
 
   KPABE_DPVS_CIPHERTEXT ciphertext(attr, url);
-  ciphertext.encrypt(phi, public_key).saveToFile(ciphertext_filename);
+  ciphertext.encrypt(phi, public_key);
+  ciphertext.saveToFile(ciphertext_filename);
 
   bn_free(phi);
 }
@@ -112,7 +105,7 @@ bool decrypt(string ciphertext_filename, string dec_key_file) {
   // A voir plus tard. Il faut penser à sauvegarder le session key dans un
   // fichier de ciphertext pour pouvoir le verifier.
 
-  return ciphertext.decrypt(session_key, dec_key)
+  return ciphertext.decrypt(session_key, dec_key);
 }
 
 void test_encrypt(void) {
@@ -134,9 +127,9 @@ void test_encrypt(void) {
 }
 
 void try_decrypt(void) {
-  for (string& ciphertext_filename : list_ciphertext_file) {
+  for (string ciphertext_filename : list_ciphertext_file) {
     KPABE_DPVS_CIPHERTEXT ciphertext(ciphertext_filename);
-    for (string& dec_key_file : list_decryption_key_file) {
+    for (string dec_key_file : list_decryption_key_file) {
       KPABE_DPVS_DECRYPTION_KEY dec_key(dec_key_file);
       uint8_t tmp_sess_key[32];
       if (ciphertext.decrypt(tmp_sess_key, dec_key)) {
@@ -149,6 +142,8 @@ void try_decrypt(void) {
   }
 }
 
+
+bn_t Fq;
 
 int main(int argc, char **argv) {
   if (!init_libraries()) return 1; // Initialize the libraries
@@ -164,6 +159,11 @@ int main(int argc, char **argv) {
     generate_decryption_key(list_policies[i], list_decryption_key_file[i]);
   }
 
+  // Encrypt and store ciphertext in list_ciphertext_file
+  test_encrypt();
+
+  // Try to decrypt ciphertext
+  try_decrypt();
 
 
   clean_libraries();
