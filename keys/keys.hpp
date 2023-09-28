@@ -75,6 +75,17 @@ class KPABE_DPVS_PUBLIC_KEY {
       }
     }
 
+    // Randomize the public key, the random scalar k is generated in the method
+    KPABE_DPVS_PUBLIC_KEY randomize(bn_t k) {
+      bn_rand_mod(k, Fq);
+      KPABE_DPVS_PUBLIC_KEY result;
+      result.d1 = this->d1 * k; result.d3 = this->d3 * k;
+      result.f1 = this->f1 * k; result.f2 = this->f2 * k; result.f3 = this->f3 * k;
+      result.g1 = this->g1 * k; result.g2 = this->g2 * k;
+      result.h1 = this->h1 * k; result.h2 = this->h2 * k; result.h3 = this->h3 * k;
+      return result;
+    }
+
     // Compare two public keys, temporary function for testing
     bool operator==(const KPABE_DPVS_PUBLIC_KEY& other) const {
       return (this->d1 == other.d1 && this->d3 == other.d3 &&
