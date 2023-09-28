@@ -56,3 +56,10 @@ void print_vect_dual_base(const G2_VS_VECT dvect) {
     printf("\n");
   }
 }
+
+void print_session_key(uint8_t* session_key) {
+  for (int i = 0; i < RLC_MD_LEN; i++) {
+    printf("%02X", session_key[i]);
+  }
+  printf("\n");
+}
