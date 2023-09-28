@@ -203,12 +203,12 @@ int main(int argc, char **argv) {
     generate_decryption_key(list_policies[i], list_decryption_key_file[i]);
   }
 
-  // Encrypt and store ciphertext in list_ciphertext_file
+  // Encrypt and try to decrypt
   test_encrypt();
-
-  // Try to decrypt ciphertext
   try_decrypt();
 
+  // Encrypt and decrypt using randomized public key
+  unlinkable_public_key();
 
   clean_libraries();
   return 0;
