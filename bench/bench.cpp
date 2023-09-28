@@ -143,6 +143,50 @@ void try_decrypt(void) {
 }
 
 
+// Encrypt and decrypt using randomized public key
+void unlinkable_public_key(void) {
+  KPABE_DPVS kpabe(white_list, black_list);
+  kpabe.setup();
+
+  KPABE_DPVS_MASTER_KEY mk = kpabe.get_master_key();
+  KPABE_DPVS_PUBLIC_KEY pk = kpabe.get_public_key();
+
+  auto decKey = kpabe.keygen("A_05 and (A_01 and A_02)");
+
+  uint8_t session_key[RLC_MD_LEN];
+  uint8_t session_key_2[RLC_MD_LEN];
+
+  bn_t rand; bn_null(rand); bn_new(rand);
+  KPABE_DPVS_PUBLIC_KEY pk_rand = pk.randomize(rand);
+
+  bn_t phi; bn_null(phi); bn_new(phi); bn_rand_mod(phi, Fq);
+  derive_session_key(session_key, phi);
+  print_session_key(session_key);
+
+  KPABE_DPVS_CIPHERTEXT ciphertext_2("A_00|A_01|A_02|A_03|A_04|A_05|A_06", "example.com");
+  ciphertext_2.encrypt(phi, pk_rand);
+
+  bn_t inv_rand; bn_null(inv_rand); bn_new(inv_rand);
+  bn_mod_inv(inv_rand, rand, Fq);
+
+  KPABE_DPVS_DECRYPTION_KEY decKey_2 = *decKey * inv_rand;
+
+  if (ciphertext_2.decrypt(session_key_2, decKey_2) &&
+      memcmp(session_key, session_key_2, RLC_MD_LEN) == 0) {
+    cout << "Decryption success" << endl;
+  }
+  else {
+    cout << "Decryption failed" << endl;
+  }
+
+  print_session_key(session_key_2);
+
+  bn_free(inv_rand);
+  bn_free(rand);
+  bn_free(phi);
+}
+
+
 bn_t Fq;
 
 int main(int argc, char **argv) {
