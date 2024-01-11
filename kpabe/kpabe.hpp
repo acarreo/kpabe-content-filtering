@@ -124,6 +124,9 @@ class KPABE_DPVS {
     // Getter for public key
     KPABE_DPVS_PUBLIC_KEY get_public_key() const { return this->public_key; }
 
+    // Getter for master key
+    KPABE_DPVS_MASTER_KEY get_master_key() const { return this->master_key; }
+
     // Export public key to file
     void export_public_key(const std::string& filename) const {
       this->public_key.saveToFile(filename);

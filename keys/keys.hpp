@@ -75,6 +75,17 @@ class KPABE_DPVS_PUBLIC_KEY {
       }
     }
 
+    // Randomize the public key, the random scalar k is generated in the method
+    KPABE_DPVS_PUBLIC_KEY randomize(bn_t k) {
+      bn_rand_mod(k, Fq);
+      KPABE_DPVS_PUBLIC_KEY result;
+      result.d1 = this->d1 * k; result.d3 = this->d3 * k;
+      result.f1 = this->f1 * k; result.f2 = this->f2 * k; result.f3 = this->f3 * k;
+      result.g1 = this->g1 * k; result.g2 = this->g2 * k;
+      result.h1 = this->h1 * k; result.h2 = this->h2 * k; result.h3 = this->h3 * k;
+      return result;
+    }
+
     // Compare two public keys, temporary function for testing
     bool operator==(const KPABE_DPVS_PUBLIC_KEY& other) const {
       return (this->d1 == other.d1 && this->d3 == other.d3 &&
@@ -203,6 +214,22 @@ class KPABE_DPVS_DECRYPTION_KEY {
     }
     key_map_t::const_iterator get_key_bl_end() const {
       return this->key_bl.end();
+    }
+
+    // overload operator * for scalar multiplication
+    KPABE_DPVS_DECRYPTION_KEY operator*(const bn_t k) const {
+      KPABE_DPVS_DECRYPTION_KEY result(this->policy, this->white_list, this->black_list);
+      result.key_root = this->key_root * k;
+      for (auto it = this->key_wl.begin(); it != this->key_wl.end(); ++it) {
+        result.key_wl[it->first] = it->second * k;
+      }
+      for (auto it = this->key_bl.begin(); it != this->key_bl.end(); ++it) {
+        result.key_bl[it->first] = it->second * k;
+      }
+      for (auto it = this->key_att.begin(); it != this->key_att.end(); ++it) {
+        result.key_att[it->first] = it->second * k;
+      }
+      return result;
     }
 
     void serialize(std::ostream& os) const;
