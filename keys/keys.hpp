@@ -18,9 +18,7 @@
 #include <string>
 #include <map>
 
-#include "../lsss/zpolicy.h"
-#include "../lsss/zlsss.h"
-#include "../lsss/zattributelist.h"
+#include <zlsss.h>
 
 #include "../dpvs/dpvs_advanced.hpp"
 

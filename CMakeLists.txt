@@ -5,8 +5,12 @@ set(CMAKE_C_COMPILER cc)
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 
-# Specify RELIC include directory
-include_directories(/usr/local/include/relic)
+# Specify RELIC and LSSS include directories
+include_directories(
+    /usr/local/include/relic
+    /usr/local/include/lsss
+)
+
 
 file(
     GLOB_RECURSE

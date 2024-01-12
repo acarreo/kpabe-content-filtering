@@ -30,7 +30,7 @@ sudo make install
 make clean
 
 # Build LSSS
-cd $WORKDIR && cd ../lsss
-make -j
+cd $WORKDIR && cd ../abe-lsss
+make
 sudo make install
 make clean

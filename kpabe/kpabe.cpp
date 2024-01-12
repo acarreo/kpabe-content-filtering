@@ -60,7 +60,7 @@ bool KPABE_DPVS::setup() {
 bool KPABE_DPVS_CIPHERTEXT::encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
 {
   bn_t sigma, omega, bn_url, tmp, sigma_att;
-  BPGroup group(OpenABE_NONE_ID);
+  BPGroup group;
 
   if (this->url.empty() || this->attributes.empty()) {
     std::cerr << "Error: URL or attributes are empty" << std::endl;
@@ -223,7 +223,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   // std::cout << "URL is not in WHITE_LIST and not in BLACK_LIST: " << url << std::endl;
 
 
-  BPGroup group(OpenABE_NONE_ID);
+  BPGroup group;
   auto policy = createPolicyTree(dec_key.get_policy());
   auto attribute_list = createAttributeList(this->attributes);
 

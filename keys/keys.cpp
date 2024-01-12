@@ -106,7 +106,7 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   bn_vect_t ri;
   bn_t y0, y1, y2, tmp1, tmp2;
 
-  BPGroup group(OpenABE_NONE_ID);
+  BPGroup group;
   OpenABELSSS lsss;
 
 
