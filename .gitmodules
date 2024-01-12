@@ -1,0 +1,3 @@
+[submodule "abe-lsss"]
+	path = abe-lsss
+	url = https://github.com/acarreo/abe-lsss.git
