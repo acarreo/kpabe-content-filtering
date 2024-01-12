@@ -30,7 +30,9 @@ sudo make install
 make clean
 
 # Build LSSS
-cd $WORKDIR && cd ../abe-lsss
+cd $WORKDIR
+git submodule update --init --remote ../abe-lsss
+cd ../abe-lsss
 make
 sudo make install
 make clean
