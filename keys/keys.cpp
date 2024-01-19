@@ -51,6 +51,20 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
   }
 }
 
+void KPABE_DPVS_PUBLIC_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string str = ss.str();
+  buffer.resize(str.size());
+  std::copy(str.begin(), str.end(), buffer.begin());
+}
+
+void KPABE_DPVS_PUBLIC_KEY::deserialize(const std::vector<uint8_t> &buffer) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+  this->deserialize(ss);
+}
+
 void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
                                       const G2_VS_BASE base_FF,
                                       const G2_VS_BASE base_GG,
@@ -91,6 +105,20 @@ void KPABE_DPVS_MASTER_KEY::deserialize(std::istream &is) {
     this->gg1.deserialize(is); this->gg2.deserialize(is);
     this->hh1.deserialize(is); this->hh2.deserialize(is); this->hh3.deserialize(is);
   }
+}
+
+void KPABE_DPVS_MASTER_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string str = ss.str();
+  buffer.resize(str.size());
+  std::copy(str.begin(), str.end(), buffer.begin());
+}
+
+void KPABE_DPVS_MASTER_KEY::deserialize(const std::vector<uint8_t> &buffer) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+  this->deserialize(ss);
 }
 
 /**
@@ -299,4 +327,18 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
       this->key_att[key].deserialize(is);
     }
   }
+}
+
+void KPABE_DPVS_DECRYPTION_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string str = ss.str();
+  buffer.resize(str.size());
+  std::copy(str.begin(), str.end(), buffer.begin());
+}
+
+void KPABE_DPVS_DECRYPTION_KEY::deserialize(const std::vector<uint8_t> &buffer) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+  this->deserialize(ss);
 }
