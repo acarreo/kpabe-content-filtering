@@ -159,8 +159,8 @@ void unlinkable_public_key(void) {
   bn_t rand; bn_null(rand); bn_new(rand);
   KPABE_DPVS_PUBLIC_KEY pk_rand = pk.randomize(rand);
 
-  bn_t phi; bn_null(phi); bn_new(phi); bn_rand_mod(phi, Fq);
-  derive_session_key(session_key, phi);
+  bn_t phi;
+  generate_session_key(session_key, phi);
   print_session_key(session_key);
 
   KPABE_DPVS_CIPHERTEXT ciphertext_2("A_00|A_01|A_02|A_03|A_04|A_05|A_06", "example.com");

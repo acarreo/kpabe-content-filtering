@@ -18,9 +18,7 @@
 #include <string>
 #include <map>
 
-#include "../lsss/zpolicy.h"
-#include "../lsss/zlsss.h"
-#include "../lsss/zattributelist.h"
+#include <zlsss.h>
 
 #include "../dpvs/dpvs_advanced.hpp"
 
@@ -58,6 +56,9 @@ class KPABE_DPVS_PUBLIC_KEY {
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
+
+    void serialize(std::vector<uint8_t>& buffer) const;
+    void deserialize(const std::vector<uint8_t>& buffer);
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
@@ -129,6 +130,9 @@ class KPABE_DPVS_MASTER_KEY {
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
+
+    void serialize(std::vector<uint8_t>& buffer) const;
+    void deserialize(const std::vector<uint8_t>& buffer);
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
@@ -234,6 +238,9 @@ class KPABE_DPVS_DECRYPTION_KEY {
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
+
+    void serialize(std::vector<uint8_t>& buffer) const;
+    void deserialize(const std::vector<uint8_t>& buffer);
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);

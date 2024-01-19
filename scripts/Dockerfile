@@ -15,9 +15,8 @@ WORKDIR /tmp/relic/build-${CURVE}
 RUN ../preset/x64-pbc-${CURVE}.sh ..
 RUN make -j && make install
 
-WORKDIR /tmp
-COPY lsss.tar.gz .
-RUN tar -xzvf lsss.tar.gz && rm -f lsss.tar.gz
-RUN make -C lsss && make install -C lsss
+RUN git clone https://github.com/acarreo/abe-lsss.git /tmp/abe-lsss
+WORKDIR /tmp/abe-lsss
+RUN make && make install
 
 WORKDIR /root

@@ -7,6 +7,7 @@
  */
 
 #include "examples.hpp"
+#include <iomanip>
 
 using namespace std;
 
@@ -89,9 +90,8 @@ void encrypt_and_export(uint8_t* session_key, string url, string attributes,
   KPABE_DPVS_PUBLIC_KEY public_key(public_key_file);
 
   // Generate a session key
-  bn_t phi; bn_null(phi); bn_new(phi);
-  bn_rand_mod(phi, Fq);                 // a random seed for the session key
-  derive_session_key(session_key, phi);
+  bn_t phi;
+  generate_session_key(session_key, phi);
 
   /* Set the attributes and url, to the KPABE_DPVS_CIPHERTEXT object, and
    * then encrypt the random seed `phi` */
@@ -211,6 +211,67 @@ void example_decryption() {
   cout << endl;
 }
 
+void example_serialization() {
+
+  // Encryption and decryption
+  uint8_t sess_key_0[RLC_MD_LEN];
+  uint8_t sess_key_1[RLC_MD_LEN];
+  uint8_t sess_key_2[RLC_MD_LEN];
+
+  bn_t phi;
+
+  // Create the KP-ABE scheme and setup it
+  KPABE_DPVS kpabe(wl, bl);
+  kpabe.setup();
+
+  // Generate a decryption key from kpabe object
+  auto dec_key_2 = kpabe.keygen(policy_00);
+
+
+  /**************************************************************************/
+
+  // Export public and master keys to buffer
+  vector<uint8_t> buffer_public_key, buffer_master_key;
+  kpabe.export_public_key(buffer_public_key);
+  kpabe.export_master_key(buffer_master_key);
+
+  // Load public and master keys from buffer
+  KPABE_DPVS_PUBLIC_KEY public_key;
+  KPABE_DPVS_MASTER_KEY master_key;
+  public_key.deserialize(buffer_public_key);
+  master_key.deserialize(buffer_master_key);
+
+  // Generate a decryption key for the policy_00, using the master key from buffer
+  KPABE_DPVS_DECRYPTION_KEY dec_key_1(policy_00, wl, bl);
+  dec_key_1.generate(master_key);
+
+  KPABE_DPVS_CIPHERTEXT ciphertext("A1|A2|A5", "url");
+  generate_session_key(sess_key_0, phi);
+  ciphertext.encrypt(phi, public_key);
+  ciphertext.decrypt(sess_key_1, dec_key_1);
+
+  std::vector<uint8_t> buffer_ciphertext;
+  ciphertext.serialize(buffer_ciphertext);
+
+  KPABE_DPVS_CIPHERTEXT ciphertext_2;
+  ciphertext_2.deserialize(buffer_ciphertext);
+  ciphertext_2.decrypt(sess_key_2, *dec_key_2);
+
+
+  /**************************************************************************/
+
+  // Check if the session keys are equal
+  if (memcmp(sess_key_0, sess_key_1, RLC_MD_LEN) == 0) {
+    cout << "session_key_0 = session_key_1" << endl;
+  }
+
+  if (memcmp(sess_key_0, sess_key_2, RLC_MD_LEN) == 0) {
+    cout << "session_key_0 = session_key_2" << endl;
+    return;
+  }
+
+  cout << "Session key 0: FAILED" << endl;
+}
 
 
 bn_t Fq;
@@ -225,6 +286,7 @@ int main(int argc, char const *argv[])
 
   example_decryption();
 
+  example_serialization();
 
   clean_libraries(); // Clean the libraries
 

@@ -60,7 +60,7 @@ bool KPABE_DPVS::setup() {
 bool KPABE_DPVS_CIPHERTEXT::encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
 {
   bn_t sigma, omega, bn_url, tmp, sigma_att;
-  BPGroup group(OpenABE_NONE_ID);
+  BPGroup group;
 
   if (this->url.empty() || this->attributes.empty()) {
     std::cerr << "Error: URL or attributes are empty" << std::endl;
@@ -171,6 +171,20 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
   }
 }
 
+void KPABE_DPVS_CIPHERTEXT::serialize(std::vector<uint8_t>& bytes) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string s = ss.str();
+  bytes.resize(s.size());
+  std::copy(s.begin(), s.end(), bytes.begin());
+}
+
+void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+  this->deserialize(ss);
+}
+
 /**
  * @brief This method try to decrypt the ciphertext, using the decryption key.
  *        The decryption fails if the url is in the black list or if the policy
@@ -223,7 +237,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   // std::cout << "URL is not in WHITE_LIST and not in BLACK_LIST: " << url << std::endl;
 
 
-  BPGroup group(OpenABE_NONE_ID);
+  BPGroup group;
   auto policy = createPolicyTree(dec_key.get_policy());
   auto attribute_list = createAttributeList(this->attributes);
 

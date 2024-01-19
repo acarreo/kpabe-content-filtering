@@ -1,4 +1,4 @@
-# KP-ABE scheme for Content Filtering Use Case
+# KP-ABE Scheme for Content Filtering Use Case
 
 This project implements the KP-ABE (Key-Policy Attribute-Based Encryption) using the DPVS (Dual Pairing Vector Spaces) scheme for the Content Filtering Use Case.
 
@@ -22,9 +22,7 @@ To install and run this project, follow these steps:
    cmake ..
    ```
 
-2. **Install Dependencies**
-
-   Two way to install dependencies __locally__ (for the host machine) or in a [Docker](https://docs.docker.com/engine/install/) environment, follow one of the following instructions:
+2. **Install Dependencies*Two ways to install dependencies __locally__ (for the host machine) or in a [Docker](https://docs.docker.com/engine/install/) environment, follow one of the following instructions:
    ```bash
    make install_dependencies_local
    make install_dependencies_docker

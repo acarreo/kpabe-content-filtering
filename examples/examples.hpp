@@ -34,4 +34,6 @@ void example_generate_keys();
 
 void example_encryption();
 
+void example_serialization();
+
 #endif // __EXAMPLES_HPP__

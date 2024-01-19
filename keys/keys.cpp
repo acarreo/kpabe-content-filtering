@@ -51,6 +51,20 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
   }
 }
 
+void KPABE_DPVS_PUBLIC_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string str = ss.str();
+  buffer.resize(str.size());
+  std::copy(str.begin(), str.end(), buffer.begin());
+}
+
+void KPABE_DPVS_PUBLIC_KEY::deserialize(const std::vector<uint8_t> &buffer) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+  this->deserialize(ss);
+}
+
 void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
                                       const G2_VS_BASE base_FF,
                                       const G2_VS_BASE base_GG,
@@ -93,6 +107,20 @@ void KPABE_DPVS_MASTER_KEY::deserialize(std::istream &is) {
   }
 }
 
+void KPABE_DPVS_MASTER_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string str = ss.str();
+  buffer.resize(str.size());
+  std::copy(str.begin(), str.end(), buffer.begin());
+}
+
+void KPABE_DPVS_MASTER_KEY::deserialize(const std::vector<uint8_t> &buffer) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+  this->deserialize(ss);
+}
+
 /**
  * @brief This method generates the decryption key, given the master key.
  *        Before calling this function, the policy, the white list and the
@@ -106,7 +134,7 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   bn_vect_t ri;
   bn_t y0, y1, y2, tmp1, tmp2;
 
-  BPGroup group(OpenABE_NONE_ID);
+  BPGroup group;
   OpenABELSSS lsss;
 
 
@@ -299,4 +327,18 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
       this->key_att[key].deserialize(is);
     }
   }
+}
+
+void KPABE_DPVS_DECRYPTION_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::stringstream ss;
+  this->serialize(ss);
+  std::string str = ss.str();
+  buffer.resize(str.size());
+  std::copy(str.begin(), str.end(), buffer.begin());
+}
+
+void KPABE_DPVS_DECRYPTION_KEY::deserialize(const std::vector<uint8_t> &buffer) {
+  std::stringstream ss;
+  ss.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+  this->deserialize(ss);
 }
