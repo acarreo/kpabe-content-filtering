@@ -42,8 +42,8 @@ int main(int argc, char **argv) {
   uint8_t session_key2[32];
 
   // Derive session key and encrypt
-  bn_null(psi); bn_new(psi); bn_rand_mod(psi, Fq);
-  derive_session_key(session_key, psi);
+  bn_null(psi);
+  generate_session_key(session_key, psi);
 
   KPABE_DPVS_CIPHERTEXT ciphertext(attributes, url);
   ciphertext.encrypt(psi, public_key);
