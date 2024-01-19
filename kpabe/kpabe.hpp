@@ -69,8 +69,8 @@ class KPABE_DPVS_CIPHERTEXT {
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
-    void serialize(std::vector<uint8_t> bytes) const;
-    void deserialize( const std::vector<uint8_t>& bytes);
+    void serialize(std::vector<uint8_t>& bytes) const;
+    void deserialize(const std::vector<uint8_t>& bytes);
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
@@ -138,6 +138,14 @@ class KPABE_DPVS {
     // Export master key to file
     void export_master_key(const std::string& filename) const {
       this->master_key.saveToFile(filename);
+    }
+
+    void export_public_key(std::vector<uint8_t>& bytes) const {
+      this->public_key.serialize(bytes);
+    }
+
+    void export_master_key(std::vector<uint8_t>& bytes) const {
+      this->master_key.serialize(bytes);
     }
 
   private:

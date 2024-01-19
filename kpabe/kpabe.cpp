@@ -172,7 +172,7 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
 }
 
 void KPABE_DPVS_CIPHERTEXT::serialize(std::vector<uint8_t>& bytes) const {
-  std::stringstream ss(std::ios::binary);
+  std::stringstream ss;
   this->serialize(ss);
   std::string s = ss.str();
   bytes.resize(s.size());
@@ -180,7 +180,7 @@ void KPABE_DPVS_CIPHERTEXT::serialize(std::vector<uint8_t>& bytes) const {
 }
 
 void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
-  std::stringstream ss(std::ios::binary);
+  std::stringstream ss;
   ss.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
   this->deserialize(ss);
 }
