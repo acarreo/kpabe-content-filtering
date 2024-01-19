@@ -69,6 +69,9 @@ class KPABE_DPVS_CIPHERTEXT {
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
+    void serialize(std::vector<uint8_t> bytes) const;
+    void deserialize( const std::vector<uint8_t>& bytes);
+
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
       if (ofs.is_open()) {
