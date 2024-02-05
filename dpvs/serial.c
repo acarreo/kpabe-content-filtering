@@ -21,9 +21,9 @@ int serialize_g1_element(const g1_t g1, uint8_t buf[]) {
 
 	if (buf == NULL) return 0;
 
-	uint8_t size = g1_size_bin(g1, 0);
+	uint8_t size = g1_size_bin(g1, COMPRESSION);
 	memcpy(buf, &size, sizeof(uint8_t));
-	g1_write_bin(buf + sizeof(uint8_t), size, g1, 0);
+	g1_write_bin(buf + sizeof(uint8_t), size, g1, 1);
 	
 	return (sizeof(uint8_t) + size);
 }
@@ -59,9 +59,9 @@ int serialize_g2_element(const g2_t g2, uint8_t buf[]) {
 
   if (buf == NULL) return 0;
 
-  uint8_t size = g2_size_bin(g2, 0);
+  uint8_t size = g2_size_bin(g2, COMPRESSION);
   memcpy(buf, &size, sizeof(uint8_t));
-  g2_write_bin(buf + sizeof(uint8_t), size, g2, 0);
+  g2_write_bin(buf + sizeof(uint8_t), size, g2, 1);
 
   return (sizeof(uint8_t) + size);
 }
@@ -105,7 +105,7 @@ int serialize_g1_vector(const G1_VS_VECT vect, uint8_t** buf, int* size) {
 		// Calculate total size needed for serialization
 		total_size = vect->dim;
 		for (uint8_t i = 0; i < vect->dim; i++)
-			total_size += g1_size_bin(vect->coord[i], 0);
+			total_size += g1_size_bin(vect->coord[i], COMPRESSION);
 
     if ((buf_tmp = (uint8_t*) malloc(total_size)) == NULL) {
       fprintf(stderr, "Error in serialize_g1_vector: malloc failed\n");
@@ -224,7 +224,7 @@ int serialize_g2_vector(const G2_VS_VECT vect, uint8_t **buf_serialized, int *si
     // Calculate total size needed for serialization
     total_size = vect->dim;
     for (uint8_t i = 0; i < vect->dim; i++)
-      total_size += g2_size_bin(vect->coord[i], 0);
+      total_size += g2_size_bin(vect->coord[i], COMPRESSION);
 
     if ((buf_tmp = (uint8_t*) malloc(total_size)) == NULL) {
       fprintf(stderr, "Error in serialize_g2_vector: malloc failed\n");

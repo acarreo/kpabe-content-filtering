@@ -15,6 +15,11 @@
 #define G1_SIZE_BIN     (RLC_PC_BYTES * 2 + 1)
 #define G2_SIZE_BIN     (RLC_PC_BYTES * 4 + 1)
 
+#define G1_SIZE_BIN_COMPRESSED     ((RLC_PC_BYTES) + 1)
+#define G2_SIZE_BIN_COMPRESSED     ((RLC_PC_BYTES) * 2 + 1)
+
+#define COMPRESSION       1
+#define NO_COMPRESSION    0
 
 int serialize_g1_element(const g1_t g1, uint8_t buf[]);
 int deserialize_g1_element(const uint8_t buf[], g1_t g1);
