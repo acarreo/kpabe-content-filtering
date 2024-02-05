@@ -1,7 +1,9 @@
+#include <chrono>
 
 #include "bench.hpp"
 
 using namespace std;
+using namespace std::chrono;
 
 const vector<string> white_list({
   "wl_00", "wl_01", "wl_02", "wl_03", "wl_04", "wl_05", "wl_06", "wl_07", "wl_08", "wl_09",
@@ -186,6 +188,59 @@ void unlinkable_public_key(void) {
   bn_free(phi);
 }
 
+void test_sizeof_serial_keys (int round) {
+
+  duration<double, std::micro> duration_pk(0);
+  duration<double, std::micro> duration_mk(0);
+
+  for (int i = 0; i < round; i++) {
+    KPABE_DPVS kpabe;
+    kpabe.setup();
+
+    auto start_time_pk = high_resolution_clock::now();
+    int size_pk = kpabe.get_public_key().bytes_size();
+    auto end_time_pk = high_resolution_clock::now();
+    duration_pk += duration_cast<microseconds>(end_time_pk - start_time_pk);
+
+    auto start_time_mk = high_resolution_clock::now();
+    int size_mk = kpabe.get_master_key().bytes_size();
+    auto end_time_mk = high_resolution_clock::now();
+    duration_mk += duration_cast<microseconds>(end_time_mk - start_time_mk);
+  }
+
+  cout << "Average time taken to compute size of public key: " << duration_pk.count() / round << " microseconds" << endl; // ~ 2.15 microseconds
+  cout << "Average time taken to compute size of master key: " << duration_mk.count() / round << " microseconds" << endl; // ~ 3.05 microseconds
+}
+
+void verif_size_of_serial_keys(void) {
+  KPABE_DPVS kpabe;
+  kpabe.setup();
+
+  auto pk = kpabe.get_public_key();
+  auto mk = kpabe.get_master_key();
+
+  stringstream ss_pk, ss_mk;
+  pk.serialize(ss_pk);
+  mk.serialize(ss_mk);
+
+  int size_pk = pk.bytes_size();
+  int size_mk = mk.bytes_size();
+
+  if (ss_pk.str().size() == size_pk) {
+    cout << "Size of public key is correct: " << size_pk << endl;
+  }
+  else {
+    cout << "Error: size of public key is not correct" << endl;
+    cout << "pk.bytes_size() = " << size_pk << " and ss_pk.str().size() = " << ss_pk.str().size() << endl;
+  }
+
+  if (ss_mk.str().size() == size_mk) {
+    cout << "Size of master key is correct: " << size_mk << endl;
+  }
+  else {
+    cout << "Error: size of master key is not correct" << endl;
+  }
+}
 
 bn_t Fq;
 
@@ -209,6 +264,13 @@ int main(int argc, char **argv) {
 
   // Encrypt and decrypt using randomized public key
   unlinkable_public_key();
+
+
+  // Time taken to compute size of public and master keys
+  test_sizeof_serial_keys(100); // time taken pk ~= 1.5 microseconds, time taken mk ~= 2.0 microseconds
+
+  // Verif size of public and master keys
+  verif_size_of_serial_keys();
 
   clean_libraries();
   return 0;
