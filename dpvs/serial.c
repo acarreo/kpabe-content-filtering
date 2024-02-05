@@ -153,6 +153,38 @@ int serialize_g1_vector(const G1_VS_VECT vect, uint8_t** buf, int* size) {
 }
 
 /**
+ * @brief Calculate the size of the buffer needed to serialize a vector of G1 elements
+ *
+ * @param vect the vector to serialize
+ * @param size size of the serialized vector in bytes
+ * @return 0 if success, an error code otherwise
+ */
+int sizeof_g1_vector(const G1_VS_VECT vect, int *size) {
+  int total_size = 0;
+
+  if (vect && vect->coord) {
+    total_size = vect->dim * (sizeof(uint8_t) + G1_SIZE_BIN_COMPRESSED);
+
+    // The right way to compute the size of the buffer representing the g1 vector
+    // is to use the function g1_size_bin
+    // total_size = vect->dim;
+    // for (uint8_t i = 0; i < vect->dim; i++)
+    //   total_size += g1_size_bin(vect->coord[i], COMPRESSION);
+
+    // sizeof(int) for the size of the buffer representing the g1 vector
+    // sizeof(uint8_t) for the dimension of the g1 vector
+    total_size += sizeof(int) + sizeof(uint8_t);
+    *size = total_size;
+  }
+  else {
+    fprintf(stderr, "Error in sizeof_g1_vector: the g1 vector is NULL\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+/**
  * @brief Deserialize a vector of G1 elements : G1_VS_VECT element
  * 
  * @param buf buffer to deserialize
@@ -321,4 +353,33 @@ int deserialize_g2_vector(const uint8_t* buf, const int size, g2_vect_t** dest_v
   }
 
   return ret;
+}
+
+/**
+ * @brief Calculate the size of the buffer needed to serialize a vector of G2 elements
+ *
+ * @param vect the vector to serialize
+ * @param size size of the serialized vector in bytes
+ * @return 0 if success, an error code otherwise
+*/
+int sizeof_g2_vector(const G2_VS_VECT vect, int *size) {
+  int total_size = 0;
+
+  if (vect && vect->coord) {
+    total_size = vect->dim * (sizeof(uint8_t) + G2_SIZE_BIN_COMPRESSED);
+
+    // See the comment in sizeof_g1_vector
+    // total_size = vect->dim;
+    // for (uint8_t i = 0; i < vect->dim; i++)
+    //   total_size += g2_size_bin(vect->coord[i], COMPRESSION);
+
+    total_size += sizeof(int) + sizeof(uint8_t);
+    *size = total_size;
+  }
+  else {
+    fprintf(stderr, "Error in sizeof_g2_vector: the g2 vector is NULL\n");
+    return 1;
+  }
+
+  return 0;
 }
