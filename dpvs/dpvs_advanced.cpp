@@ -129,6 +129,20 @@ void G1_VECTOR::deserialize(std::istream &is) {
   }
 }
 
+/**
+ * @brief Get the size of the vector in bytes
+ *
+ * @return int The size of the vector in bytes, including the type and the size of the buffer.
+ *         If the vector is empty, or an error occurs, the size is 0.
+ */
+int G1_VECTOR::bytes_size() const
+{
+  int size = 0;
+  if (!sizeof_g1_vector(this->vect, &size))
+    size += sizeof(uint8_t) + sizeof(int);
+
+  return size;
+}
 
 /****************************************************************************/
 /*                                G2_VECTOR                                 */
@@ -229,6 +243,21 @@ void G2_VECTOR::deserialize(std::istream &is) {
       delete [] buffer;
     }
   }
+}
+
+/**
+ * @brief Get the size of the vector in bytes
+ *
+ * @return int The size of the vector in bytes, including the type and the size of the buffer.
+ *         If the vector is empty, or an error occurs, the size is 0.
+ */
+int G2_VECTOR::bytes_size() const
+{
+  int size = 0;
+  if (!sizeof_g2_vector(this->vect, &size))
+    size += sizeof(uint8_t) + sizeof(int);
+
+  return size;
 }
 
 void inner_product(gt_t result, const G1_VECTOR &vect1, const G2_VECTOR &vect2)

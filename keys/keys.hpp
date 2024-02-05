@@ -60,6 +60,11 @@ class KPABE_DPVS_PUBLIC_KEY {
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
 
+    int bytes_size() const {
+      return (this->d1.bytes_size() * 2 + this->f1.bytes_size() * 3 +
+              this->g1.bytes_size() * 2 + this->h1.bytes_size() * 3);
+    }
+
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
       if (ofs.is_open()) {
@@ -133,6 +138,11 @@ class KPABE_DPVS_MASTER_KEY {
 
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
+
+    int bytes_size() const {
+      return (this->dd1.bytes_size() * 2 + this->ff1.bytes_size() * 3 +
+              this->gg1.bytes_size() * 2 + this->hh1.bytes_size() * 3);
+    }
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);

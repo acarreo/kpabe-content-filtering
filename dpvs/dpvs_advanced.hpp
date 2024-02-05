@@ -46,6 +46,8 @@ class G1_VECTOR {
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
+    int bytes_size() const;
+
     static const GROUP_VECTOR_TYPE vect_type = G1_VECT;
 
     // Temporary function for testing
@@ -79,6 +81,8 @@ class G2_VECTOR {
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
+
+    int bytes_size() const;
 
     static const GROUP_VECTOR_TYPE vect_type = G2_VECT;
 
