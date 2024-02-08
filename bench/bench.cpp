@@ -161,6 +161,14 @@ void unlinkable_public_key(void) {
   bn_t rand; bn_null(rand); bn_new(rand);
   KPABE_DPVS_PUBLIC_KEY pk_rand = pk.randomize(rand);
 
+  cout << "Randomized public key -- Check if the new public key is derived from the original public key" << endl;
+  if (pk.validate_derived_key(pk_rand, rand)) {
+    cout << "Derived public key is valid" << endl;
+  }
+  else {
+    cout << "Derived public key is not valid" << endl;
+  }
+
   bn_t phi;
   generate_session_key(session_key, phi);
   print_session_key(session_key);
@@ -168,12 +176,13 @@ void unlinkable_public_key(void) {
   KPABE_DPVS_CIPHERTEXT ciphertext_2("A_00|A_01|A_02|A_03|A_04|A_05|A_06", "example.com");
   ciphertext_2.encrypt(phi, pk_rand);
 
-  bn_t inv_rand; bn_null(inv_rand); bn_new(inv_rand);
-  bn_mod_inv(inv_rand, rand, Fq);
+  // bn_t inv_rand; bn_null(inv_rand); bn_new(inv_rand);
+  // bn_mod_inv(inv_rand, rand, Fq);
 
-  KPABE_DPVS_DECRYPTION_KEY decKey_2 = *decKey * inv_rand;
+  // KPABE_DPVS_DECRYPTION_KEY decKey_2 = *decKey * inv_rand;
 
-  if (ciphertext_2.decrypt(session_key_2, decKey_2) &&
+  ciphertext_2.remove_scalar(rand);
+  if (ciphertext_2.decrypt(session_key_2, *decKey) &&
       memcmp(session_key, session_key_2, RLC_MD_LEN) == 0) {
     cout << "Decryption success" << endl;
   }
@@ -197,13 +206,15 @@ void test_sizeof_serial_keys (int round) {
     KPABE_DPVS kpabe;
     kpabe.setup();
 
+    auto pk = kpabe.get_public_key();
     auto start_time_pk = high_resolution_clock::now();
-    int size_pk = kpabe.get_public_key().bytes_size();
+    int size_pk = pk.bytes_size();
     auto end_time_pk = high_resolution_clock::now();
     duration_pk += duration_cast<microseconds>(end_time_pk - start_time_pk);
 
+    auto mk = kpabe.get_master_key();
     auto start_time_mk = high_resolution_clock::now();
-    int size_mk = kpabe.get_master_key().bytes_size();
+    int size_mk = mk.bytes_size();
     auto end_time_mk = high_resolution_clock::now();
     duration_mk += duration_cast<microseconds>(end_time_mk - start_time_mk);
   }
@@ -259,15 +270,16 @@ int main(int argc, char **argv) {
   }
 
   // Encrypt and try to decrypt
-  test_encrypt();
-  try_decrypt();
+  // test_encrypt();
+  // try_decrypt();
 
   // Encrypt and decrypt using randomized public key
+  cout << "-------------------------<< Unlinkable public key >>---------------------------" << endl;
   unlinkable_public_key();
 
 
   // Time taken to compute size of public and master keys
-  test_sizeof_serial_keys(100); // time taken pk ~= 1.5 microseconds, time taken mk ~= 2.0 microseconds
+  // test_sizeof_serial_keys(100);
 
   // Verif size of public and master keys
   verif_size_of_serial_keys();
