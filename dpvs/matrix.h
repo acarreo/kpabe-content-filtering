@@ -1,7 +1,7 @@
 #ifndef _MATRICES_
 #define _MATRICES_
 
-#include <relic.h>
+#include <relic/relic.h>
 #include <inttypes.h>
 #include <stdbool.h>
 
