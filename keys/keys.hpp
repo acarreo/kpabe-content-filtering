@@ -92,6 +92,14 @@ class KPABE_DPVS_PUBLIC_KEY {
       return result;
     }
 
+    // Check that a public key is derived from the current key
+    KPABE_DPVS_PUBLIC_KEY validate_derived_key(const KPABE_DPVS_PUBLIC_KEY& other, const bn_t k) {
+      return (this->d1 * k == other.d1 && this->d2 * k == other.d2 &&
+              this->f1 * k == other.f1 && this->f2 * k == other.f2 && this->f3 * k == other.f3 &&
+              this->g1 * k == other.g1 && this->g2 * k == other.g2 &&
+              this->h1 * k == other.h1 && this->h2 * k == other.h2 && this->h3 * k == other.h3)
+    }
+
     // Compare two public keys, temporary function for testing
     bool operator==(const KPABE_DPVS_PUBLIC_KEY& other) const {
       return (this->d1 == other.d1 && this->d3 == other.d3 &&
