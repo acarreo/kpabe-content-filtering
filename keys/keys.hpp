@@ -82,24 +82,10 @@ class KPABE_DPVS_PUBLIC_KEY {
     }
 
     // Randomize the public key, the random scalar k is generated in the method
-    KPABE_DPVS_PUBLIC_KEY randomize(bn_t k) {
-      bn_rand_mod(k, Fq);
-      KPABE_DPVS_PUBLIC_KEY result;
-      result.d1 = this->d1 * k; result.d3 = this->d3 * k;
-      result.f1 = this->f1 * k; result.f2 = this->f2 * k; result.f3 = this->f3 * k;
-      result.g1 = this->g1 * k; result.g2 = this->g2 * k;
-      result.h1 = this->h1 * k; result.h2 = this->h2 * k; result.h3 = this->h3 * k;
-      return result;
-    }
+    KPABE_DPVS_PUBLIC_KEY randomize(bn_t k) const;
 
-    // Check that a public key is derived from the current key
-    KPABE_DPVS_PUBLIC_KEY validate_derived_key(const KPABE_DPVS_PUBLIC_KEY& other, const bn_t k) {
-      return (this->d1 * k == other.d1 && this->d2 * k == other.d2 &&
-              this->f1 * k == other.f1 && this->f2 * k == other.f2 && this->f3 * k == other.f3 &&
-              this->g1 * k == other.g1 && this->g2 * k == other.g2 &&
-              this->h1 * k == other.h1 && this->h2 * k == other.h2 && this->h3 * k == other.h3)
-    }
-
+    // Check that a public key is derived from the current key: k * this == other ?
+    bool validate_derived_key(const KPABE_DPVS_PUBLIC_KEY& other, const bn_t k) const;
 
   private:
     G1_VECTOR d1, d3;
