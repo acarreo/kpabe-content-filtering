@@ -100,13 +100,6 @@ class KPABE_DPVS_PUBLIC_KEY {
               this->h1 * k == other.h1 && this->h2 * k == other.h2 && this->h3 * k == other.h3)
     }
 
-    // Compare two public keys, temporary function for testing
-    bool operator==(const KPABE_DPVS_PUBLIC_KEY& other) const {
-      return (this->d1 == other.d1 && this->d3 == other.d3 &&
-              this->f1 == other.f1 && this->f2 == other.f2 && this->f3 == other.f3 &&
-              this->g1 == other.g1 && this->g2 == other.g2 &&
-              this->h1 == other.h1 && this->h2 == other.h2 && this->h3 == other.h3);
-    }
 
   private:
     G1_VECTOR d1, d3;
