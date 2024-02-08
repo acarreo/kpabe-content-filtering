@@ -36,4 +36,7 @@ void example_encryption();
 
 void example_serialization();
 
+void example_unlinkability_public_keys();
+void example_unlinkability_decryption();
+
 #endif // __EXAMPLES_HPP__

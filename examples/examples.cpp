@@ -273,6 +273,108 @@ void example_serialization() {
   cout << "Session key 0: FAILED" << endl;
 }
 
+void example_unlinkability_public_keys() {
+  cout << "\n----------------> START : " << __func__ << endl;
+
+  KPABE_DPVS kpabe(wl, bl);
+  kpabe.setup();
+
+  bn_t rand_1, rand_2;
+
+  auto public_key  = kpabe.get_public_key();
+  auto pk_unlink_1 = public_key.randomize(rand_1);
+  auto pk_unlink_2 = public_key.randomize(rand_2);
+
+  // Check validity of the derived public keys
+  if (public_key.validate_derived_key(pk_unlink_1, rand_1) &&
+      !public_key.validate_derived_key(pk_unlink_1, rand_2)) {
+    cout << "First derived public key is valid" << endl;
+  }
+  else {
+    cout << "Errors : the derived public key is invalid" << endl;
+  }
+
+  if (public_key.validate_derived_key(pk_unlink_2, rand_2) &&
+      !public_key.validate_derived_key(pk_unlink_2, rand_1)) {
+    cout << "Second derived public key is valid" << endl;
+  }
+  else {
+    cout << "Errors : the derived public key is invalid" << endl;
+  }
+
+  bn_free(rand_1);
+  bn_free(rand_2);
+}
+
+void example_unlinkability_decryption() {
+
+  cout << "\n----------------> START : " << __func__ << endl;
+
+  KPABE_DPVS kpabe(wl, bl);
+  kpabe.setup();
+
+  auto public_key = kpabe.get_public_key();
+  auto master_key = kpabe.get_master_key();
+  auto dec_key_00 = kpabe.keygen(policy_00);
+
+  bn_t rand;
+  auto pk_unlink = public_key.randomize(rand);
+
+  // Generate two ciphertexts using public_key and pk_unlink
+  KPABE_DPVS_CIPHERTEXT ciphertext("A1|A2|A5", "url");
+  KPABE_DPVS_CIPHERTEXT ctx_unlink("A1|A2|A5", "url");
+
+  // Generate a session key
+  bn_t phi;
+  uint8_t session_key[RLC_MD_LEN];
+  generate_session_key(session_key, phi);
+
+  // Encrypt the ciphertext using public_key and ctx_unlink using pk_unlink
+  ciphertext.encrypt(phi, public_key);
+  ctx_unlink.encrypt(phi, pk_unlink);
+
+  // Verification : Decryption using dec_key_00
+  uint8_t session_key_1[RLC_MD_LEN];
+  uint8_t session_key_2[RLC_MD_LEN];
+  uint8_t session_key_3[RLC_MD_LEN];
+
+  bool b1, b2, b3;
+
+  // 1. Decrypt the ciphertext --> must be successful
+  b1 = ciphertext.decrypt(session_key_1, *dec_key_00);
+  if (b1 == true) cout << "SUCCESS"; else cout << "FAILED";
+  if (memcmp(session_key, session_key_1, RLC_MD_LEN) == 0) {
+    cout << " --> Decryption of the ciphertext" << endl;
+  }
+  else {
+    cout << " --> Errors: Decryption of the ciphertext" << endl;
+  }
+
+  // 2. Decrypt the ctx_unlink --> must be failed (sess_key_2 != sess_key)
+  b2 = ctx_unlink.decrypt(session_key_2, *dec_key_00);
+  if (b2 != true) cout << "FAILED"; else cout << "SUCCESS";
+  if (memcmp(session_key, session_key_2, RLC_MD_LEN) != 0) {
+    cout << " --> Decryption of the ctx_unlink, the recovered session key is different from original one" << endl;
+  }
+  else {
+    cout << " --> Errors: Decryption of the ctx_unlink" << endl;
+  }
+
+  // 3. Decrypt the ctx_unlink after removing the randomization --> must be successful
+  ctx_unlink.remove_scalar(rand);
+  b3 = ctx_unlink.decrypt(session_key_3, *dec_key_00);
+  if (b3 == true) cout << "SUCCESS"; else cout << "FAILED";
+  if (memcmp(session_key, session_key_3, RLC_MD_LEN) == 0) {
+    cout << " --> Decryption of the ctx_unlink after removing the randomization" << endl;
+  }
+  else {
+    cout << " --> Errors: Decryption of the ctx_unlink after removing the randomization" << endl;
+  }
+
+  bn_free(rand);
+  bn_free(phi);
+}
+
 
 bn_t Fq;
 
@@ -287,6 +389,10 @@ int main(int argc, char const *argv[])
   example_decryption();
 
   example_serialization();
+
+  example_unlinkability_public_keys();
+
+  example_unlinkability_decryption();
 
   clean_libraries(); // Clean the libraries
 
