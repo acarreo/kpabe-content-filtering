@@ -66,6 +66,9 @@ class KPABE_DPVS_CIPHERTEXT {
     bool decrypt(uint8_t* session_key,
                  const KPABE_DPVS_DECRYPTION_KEY& dec_key) const;
 
+    // Remove k from the ciphertext : this = this * inverse(k)
+    void remove_scalar(const bn_t k);
+
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
@@ -116,7 +119,7 @@ class KPABE_DPVS {
     bool setup();
 
     // Key generation, this method returns a decryption key
-    std::optional<KPABE_DPVS_DECRYPTION_KEY> keygen(const std::string& policy) {
+    std::optional<KPABE_DPVS_DECRYPTION_KEY> keygen(const std::string& policy) const {
       KPABE_DPVS_DECRYPTION_KEY dec_key(policy, this->white_list, this->black_list);
       if (dec_key.generate(this->master_key)) {
         return dec_key;

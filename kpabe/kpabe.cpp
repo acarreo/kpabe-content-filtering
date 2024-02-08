@@ -299,3 +299,28 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   return true;
 }
+
+
+/**
+ * @brief This method removes the scalar `k` from the ciphertext, modifying it
+ *        in place. It is used when the public key is randomized with the scalar `k`.
+ *
+ * @param k the scalar to remove from the ciphertext
+ */
+void KPABE_DPVS_CIPHERTEXT::remove_scalar(const bn_t k)
+{
+  BPGroup group;
+  bn_t inv_k;
+  bn_null(inv_k); bn_new(inv_k);
+  bn_mod_inv(inv_k, k, group.order);
+
+  this->ctx_root = this->ctx_root * inv_k;
+  this->ctx_wl = this->ctx_wl * inv_k;
+  this->ctx_bl = this->ctx_bl * inv_k;
+
+  for (auto& [_, ctx] : this->ctx_att) {
+    ctx = ctx * inv_k;
+  }
+
+  bn_free(inv_k);
+}

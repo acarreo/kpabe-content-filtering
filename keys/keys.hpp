@@ -238,22 +238,6 @@ class KPABE_DPVS_DECRYPTION_KEY {
       return this->key_bl.end();
     }
 
-    // overload operator * for scalar multiplication
-    KPABE_DPVS_DECRYPTION_KEY operator*(const bn_t k) const {
-      KPABE_DPVS_DECRYPTION_KEY result(this->policy, this->white_list, this->black_list);
-      result.key_root = this->key_root * k;
-      for (auto it = this->key_wl.begin(); it != this->key_wl.end(); ++it) {
-        result.key_wl[it->first] = it->second * k;
-      }
-      for (auto it = this->key_bl.begin(); it != this->key_bl.end(); ++it) {
-        result.key_bl[it->first] = it->second * k;
-      }
-      for (auto it = this->key_att.begin(); it != this->key_att.end(); ++it) {
-        result.key_att[it->first] = it->second * k;
-      }
-      return result;
-    }
-
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
