@@ -1,7 +1,7 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-#include <relic.h>
+#include <relic/relic.h>
 #include "dpvs/dpvs.h"
 
 bool init_libraries(void);

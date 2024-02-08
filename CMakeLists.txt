@@ -6,10 +6,10 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 
 # Specify RELIC and LSSS include directories
-include_directories(
-    /usr/local/include/relic
-    /usr/local/include/lsss
-)
+# include_directories(
+#     /usr/local/include/relic
+#     /usr/local/include/lsss
+# )
 
 
 file(
