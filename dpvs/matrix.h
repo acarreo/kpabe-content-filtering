@@ -24,7 +24,7 @@ typedef struct
 
 typedef struct
 {
-  bn_t* coord;
+  bn_t* elements;
   uint8_t dim;
 } bn_vect_st;
 
