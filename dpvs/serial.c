@@ -6,6 +6,8 @@
  *
  */
 
+#if 0
+
 #include "serial.h"
 
 
@@ -383,3 +385,4 @@ int sizeof_g2_vector(const G2_VS_VECT vect, int *size) {
 
   return 0;
 }
+#endif
