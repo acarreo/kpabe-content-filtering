@@ -2,7 +2,7 @@
 
 export RELIC_TAG="0.6.0"
 export CURVE="bls12-381"
-export RELIC_INCLUDE="/usr/local/include/relic"
+# export RELIC_INCLUDE="/usr/local/include/relic"
 WORKDIR=$PWD
 
 sudo apt-get update
@@ -31,7 +31,7 @@ make clean
 
 # Build LSSS
 cd $WORKDIR
-git submodule update --init --remote ../abe-lsss
+# git submodule update --init --remote ../abe-lsss
 cd ../abe-lsss
 make
 sudo make install
