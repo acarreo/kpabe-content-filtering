@@ -148,9 +148,6 @@ GT innerProduct(const G1_VECTOR &x, const G2_VECTOR &y);
 void clear_g1_vector(g1_vector_ptr &g1_vector);
 void clear_g2_vector(g2_vector_ptr &g2_vector);
 
-uint16_t unpack16bits(ByteString &bytes, size_t *index);
-
-
 template <typename Map>
 bool map_compare (Map const &lhs, Map const &rhs) {
   return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());

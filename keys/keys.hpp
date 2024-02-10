@@ -20,12 +20,24 @@
 
 #include <lsss/zlsss.h>
 
-#include "../dpvs/dpvs_advanced.hpp"
+// #include "../dpvs/dpvs_advanced.hpp"
+#include "../dpvs/vector_ec.hpp"
+
+extern "C" {
+  #include "../dpvs/dpvs.h"
+  #include "../utils.h"
+}
 
 #define ND  3
 #define NG  4
 #define NF  6
 #define NH  8
+
+typedef enum KPABE_KEY_TYPE {
+  KPABE_PUBLIC_KEY      = 0xFA,
+  KPABE_MASTER_KEY      = 0xFB,
+  KPABE_DECRYPTION_KEY  = 0xFC,
+} KPABE_KEY_TYPE;
 
 
 class KPABE_DPVS_PUBLIC_KEY {
@@ -60,9 +72,11 @@ class KPABE_DPVS_PUBLIC_KEY {
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
 
-    int bytes_size() const {
-      return (this->d1.bytes_size() * 2 + this->f1.bytes_size() * 3 +
-              this->g1.bytes_size() * 2 + this->h1.bytes_size() * 3);
+    void serialize(ByteString &result, CompressionType compress) const;
+    void deserialize(ByteString &input);
+
+    size_t bytes_size() const {
+      return 0; // TODO
     }
 
     void saveToFile(const std::string& filename) const {
@@ -82,10 +96,18 @@ class KPABE_DPVS_PUBLIC_KEY {
     }
 
     // Randomize the public key, the random scalar k is generated in the method
-    KPABE_DPVS_PUBLIC_KEY randomize(bn_t k) const;
+    KPABE_DPVS_PUBLIC_KEY randomize(ZP k) const;
 
     // Check that a public key is derived from the current key: k * this == other ?
-    bool validate_derived_key(const KPABE_DPVS_PUBLIC_KEY& other, const bn_t k) const;
+    bool validate_derived_key(const KPABE_DPVS_PUBLIC_KEY& other, const ZP k) const;
+
+    // operator==
+    bool operator==(const KPABE_DPVS_PUBLIC_KEY& other) const {
+      return (this->d1 == other.d1 && this->d3 == other.d3 &&
+              this->f1 == other.f1 && this->f2 == other.f2 && this->f3 == other.f3 &&
+              this->g1 == other.g1 && this->g2 == other.g2 &&
+              this->h1 == other.h1 && this->h2 == other.h2 && this->h3 == other.h3);
+    }
 
   private:
     G1_VECTOR d1, d3;
@@ -123,12 +145,14 @@ class KPABE_DPVS_MASTER_KEY {
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
+    void serialize(ByteString &result, CompressionType compress) const;
+    void deserialize(ByteString &input);
+
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
 
-    int bytes_size() const {
-      return (this->dd1.bytes_size() * 2 + this->ff1.bytes_size() * 3 +
-              this->gg1.bytes_size() * 2 + this->hh1.bytes_size() * 3);
+    size_t bytes_size() const {
+      return 0; // TODO
     }
 
     void saveToFile(const std::string& filename) const {
@@ -145,6 +169,14 @@ class KPABE_DPVS_MASTER_KEY {
         this->deserialize(ifs);
         ifs.close();
       }
+    }
+
+    // operator==
+    bool operator==(const KPABE_DPVS_MASTER_KEY& other) const {
+      return (this->dd1 == other.dd1 && this->dd3 == other.dd3 &&
+              this->ff1 == other.ff1 && this->ff2 == other.ff2 && this->ff3 == other.ff3 &&
+              this->gg1 == other.gg1 && this->gg2 == other.gg2 &&
+              this->hh1 == other.hh1 && this->hh2 == other.hh2 && this->hh3 == other.hh3);
     }
 
   private:
@@ -220,6 +252,9 @@ class KPABE_DPVS_DECRYPTION_KEY {
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
 
+    void serialize(ByteString &result, CompressionType compress) const;
+    void deserialize(ByteString &input);
+
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
 
@@ -238,6 +273,9 @@ class KPABE_DPVS_DECRYPTION_KEY {
         ifs.close();
       }
     }
+
+    // operator==
+    bool operator==(const KPABE_DPVS_DECRYPTION_KEY& other) const;
 
   private:
     std::string policy;
