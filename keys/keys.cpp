@@ -37,16 +37,19 @@ void KPABE_DPVS_PUBLIC_KEY::set_bases(const G1_VS_BASE base_D,
   }
 }
 
-KPABE_DPVS_PUBLIC_KEY KPABE_DPVS_PUBLIC_KEY::randomize(ZP k) const
+std::pair<KPABE_DPVS_PUBLIC_KEY, ZP> KPABE_DPVS_PUBLIC_KEY::randomize() const
 {
-  BPGroup group;
-  k.setRandom(group.order);
   KPABE_DPVS_PUBLIC_KEY result;
-  result.d1 = this->d1 * k; result.d3 = this->d3 * k;
-  result.f1 = this->f1 * k; result.f2 = this->f2 * k; result.f3 = this->f3 * k;
-  result.g1 = this->g1 * k; result.g2 = this->g2 * k;
-  result.h1 = this->h1 * k; result.h2 = this->h2 * k; result.h3 = this->h3 * k;
-  return result;
+  BPGroup group;
+  ZP rand;
+  rand.setRandom(group.order);
+
+  result.d1 = this->d1 * rand; result.d3 = this->d3 * rand;
+  result.f1 = this->f1 * rand; result.f2 = this->f2 * rand; result.f3 = this->f3 * rand;
+  result.g1 = this->g1 * rand; result.g2 = this->g2 * rand;
+  result.h1 = this->h1 * rand; result.h2 = this->h2 * rand; result.h3 = this->h3 * rand;
+
+  return std::make_pair(result, rand);
 }
 
 bool KPABE_DPVS_PUBLIC_KEY::validate_derived_key(const KPABE_DPVS_PUBLIC_KEY &other, const ZP k) const

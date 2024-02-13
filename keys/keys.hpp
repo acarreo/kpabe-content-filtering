@@ -96,7 +96,7 @@ class KPABE_DPVS_PUBLIC_KEY {
     }
 
     // Randomize the public key, the random scalar k is generated in the method
-    KPABE_DPVS_PUBLIC_KEY randomize(ZP k) const;
+    std::pair<KPABE_DPVS_PUBLIC_KEY, ZP> randomize() const;
 
     // Check that a public key is derived from the current key: k * this == other ?
     bool validate_derived_key(const KPABE_DPVS_PUBLIC_KEY& other, const ZP k) const;
