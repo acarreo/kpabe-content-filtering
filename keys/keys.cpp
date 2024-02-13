@@ -276,14 +276,10 @@ void KPABE_DPVS_MASTER_KEY::deserialize(const std::vector<uint8_t> &buffer) {
  */
 bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key)
 {
-  // bn_vect_t ri;
-  // bn_t y0, y1, y2, tmp1, tmp2;
-  bn_t tmp;
-
   BPGroup group;
   OpenABELSSS lsss;
 
-  ZP url_j, aj, att_j, theta_j;
+  ZP url, aj, att_j, theta_j;
   ZP r;
   std::vector<ZP> ri;
 
@@ -324,11 +320,10 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
 
   /* set key_wl : msk->ff1 * (theta_j * url_j) + msk->ff2 * (-theta_j) + msk->ff3 * y0 */
   for (const auto& url_wl : this->white_list) {
-    str_to_bn(tmp, url_wl.c_str(), url_wl.size(), group.order);
-    url_j = ZP(tmp);
+    url = hashToZP(url_wl, group.order);
     theta_j.setRandom(group.order);
 
-    this->key_wl[url_wl] = master_key.get_ff1() * (theta_j * url_j) +
+    this->key_wl[url_wl] = master_key.get_ff1() * (theta_j * url) +
                            master_key.get_ff2() * (-theta_j) +
                            master_key.get_ff3() * y0;
   }
@@ -336,10 +331,9 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   /* set key_bl : msk->gg1 * (url_bl[i] * ri[i]) + msk->gg2 * (-ri[i]) */
   uint i = 0;
   for (const auto &url_bl : this->black_list) {
-    str_to_bn(tmp, url_bl.c_str(), url_bl.size(), group.order);
-    url_j = ZP(tmp);
+    url = hashToZP(url_bl, group.order);
 
-    this->key_bl[url_bl] = master_key.get_gg1() * (url_j * ri.at(i)) +
+    this->key_bl[url_bl] = master_key.get_gg1() * (url * ri.at(i)) +
                            master_key.get_gg2() * (-ri.at(i));
 
     i++;
@@ -348,20 +342,16 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   /* set key_att : for all secret in secret_shares,
    * msk->hh1 * (att_j * theta_j) + msk->hh2 * (-theta_j) + msk->hh3 * aj */
   for (const auto& [_, secret] : secret_shares) {
-    aj = secret.element(); // check if order is set
+    aj = secret.element(); aj.setOrder(group.order);
     std::string att = secret.label();
 
-    str_to_bn(tmp, att.c_str(), att.size(), group.order);
-    att_j = ZP(tmp);
+    att_j = hashToZP(att, group.order);
     theta_j.setRandom(group.order);
 
     this->key_att[att] = master_key.get_hh1() * (att_j * theta_j) +
                          master_key.get_hh2() * (-theta_j) +
                          master_key.get_hh3() * aj;
   }
-
-  // Clear memory
-  bn_free(tmp);
 
   return true;
 }
