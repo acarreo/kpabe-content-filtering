@@ -18,15 +18,17 @@
 #include "../keys/keys.hpp"
 
 
+#define KPABE_CIPHERTEXT_TYPE   0xFF
+
 // Ciphertext class
 class KPABE_DPVS_CIPHERTEXT {
   public:
     typedef std::map<std::string, G1_VECTOR> ctx_map_t;
 
-    KPABE_DPVS_CIPHERTEXT() : attributes(""), url("") {};
+    KPABE_DPVS_CIPHERTEXT() : attributes_list(nullptr), url("") {};
 
     KPABE_DPVS_CIPHERTEXT(const std::string& attributes, const std::string& url) {
-      this->attributes = attributes;
+      this->attributes_list = createAttributeList(attributes);
       this->url = url;
     };
 
@@ -39,13 +41,9 @@ class KPABE_DPVS_CIPHERTEXT {
 
     // Setters for attributes and url
     void set_attributes(const std::string& attributes) {
-      this->attributes = attributes;
+      this->attributes_list = createAttributeList(attributes);
     }
     void set_url(const std::string& url) { this->url = url; }
-
-    // Getters for attributes and url
-    std::string get_attributes() const { return this->attributes; }
-    std::string get_url() const { return this->url; }
 
     // Getters for G1 vectors members
     G1_VECTOR get_ctx_root() const { return this->ctx_root; }
@@ -61,13 +59,14 @@ class KPABE_DPVS_CIPHERTEXT {
       return std::nullopt;
     }
 
-    bool encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key);
+    // session_key is the output : it must be allocated before calling this method
+    bool encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLIC_KEY& public_key);
 
     bool decrypt(uint8_t* session_key,
                  const KPABE_DPVS_DECRYPTION_KEY& dec_key) const;
 
     // Remove k from the ciphertext : this = this * inverse(k)
-    void remove_scalar(const bn_t k);
+    void remove_scalar(const ZP& k);
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
@@ -92,7 +91,7 @@ class KPABE_DPVS_CIPHERTEXT {
     }
 
   private:
-    std::string attributes;
+    std::unique_ptr<OpenABEAttributeList> attributes_list;
     std::string url;
 
     G1_VECTOR ctx_root;   // D

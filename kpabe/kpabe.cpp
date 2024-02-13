@@ -57,58 +57,57 @@ bool KPABE_DPVS::setup() {
  * @param[in] public_key The public key
  * @return true if the encryption is successful, false otherwise
  */
-bool KPABE_DPVS_CIPHERTEXT::encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
+bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLIC_KEY& public_key)
 {
-  bn_t sigma, omega, bn_url, tmp, sigma_att;
   BPGroup group;
+  ZP phi, sigma, omega;
 
-  if (this->url.empty() || this->attributes.empty()) {
+  if (this->url.empty() || this->attributes_list == nullptr) {
     std::cerr << "Error: URL or attributes are empty" << std::endl;
     return false;
   }
 
-  bn_null(sigma);  bn_new(sigma);  bn_rand_mod(sigma, group.order);
-  bn_null(omega);  bn_new(omega);  bn_rand_mod(omega, group.order);
-
-  bn_null(sigma_att); bn_new(sigma_att);
-  bn_null(bn_url);    bn_new(bn_url);
-  bn_null(tmp);       bn_new(tmp);
+  phi.setRandom(group.order);
+  sigma.setRandom(group.order);
+  omega.setRandom(group.order);
 
   /* set ctx_root : pk->d1 * omega + pk->d3 * phi */
   this->ctx_root = public_key.get_d1() * omega +
                    public_key.get_d3() * phi;
 
-  /* set ctx_wl : pk->f1 * sigma + pk->f2 * (sigma * bn_url) + pk->f3 * omega */
-  str_to_bn(bn_url, this->url.c_str(), this->url.size(), group.order);
-  bn_mod_mul(tmp, sigma, bn_url, group.order);
+  /* set ctx_wl : pk->f1 * sigma + pk->f2 * (sigma * url_zp) + pk->f3 * omega */
+  ZP url_zp = hashToZP(this->url, group.order);
   this->ctx_wl = public_key.get_f1() * sigma +
-                 public_key.get_f2() * tmp +
+                 public_key.get_f2() * (sigma * url_zp) +
                  public_key.get_f3() * omega;
 
-  /* set ctx_bl : pk->g1 * omega + (omega * bn_url) * pk->g2 */
-  bn_mod_mul(tmp, omega, bn_url, group.order);
-  this->ctx_bl = public_key.get_g1() * omega + public_key.get_g2() * tmp;
+  /* set ctx_bl : pk->g1 * omega + (omega * url_zp) * pk->g2 */
+  this->ctx_bl = public_key.get_g1() * omega +
+                 public_key.get_g2() * (omega * url_zp);
 
   // Create attribute list
-  std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(this->attributes);
-  const std::vector<std::string>* attributes_list = attrList->getAttributeList();
+  // std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(this->attributes);
+  const std::vector<std::string>* attrList = this->attributes_list->getAttributeList();
 
   /* set ctx_att: for all att in attributes_list,
    *  pk->h1 * sigma_att + pk->h2 * (sigma_att * att) + omega * pk->h3 */
   G1_VECTOR h3_times_omega = public_key.get_h3() * omega;
-  for (const auto& att : *attributes_list) {
-    bn_rand_mod(sigma_att, group.order);
-    str_to_bn(tmp, att.c_str(), att.size(), group.order);
-    bn_mod_mul(tmp, tmp, sigma_att, group.order);
+  for (const auto& att : *attrList) {
+    ZP att_zp = hashToZP(att, group.order);
+    sigma.setRandom(group.order); // sigma_att
 
-    this->ctx_att[att] = public_key.get_h1() * sigma_att +
-                         public_key.get_h2() * tmp +
+    this->ctx_att[att] = public_key.get_h1() * sigma +
+                         public_key.get_h2() * (sigma * att_zp) +
                          h3_times_omega;
   }
 
-  // Clear memory
-  bn_free(sigma); bn_free(omega);
-  bn_free(sigma_att); bn_free(bn_url); bn_free(tmp);
+  // ---------------------------------> Generate session key
+  G1 g1;  g1.setGenerator();
+  G2 g2;  g2.setGenerator();
+
+  GT gt = pairing(g1, g2).exp(phi);  // Ephemeral key : gt = e(g1, g2)^phi
+  gt_md_map(session_key, gt.m_GT);
+  // ---------------------------------> END Generate session key
 
   return true;
 }
@@ -199,31 +198,19 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
 bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
                                     const KPABE_DPVS_DECRYPTION_KEY &dec_key) const
 {
-  // TODO : clear memory at the end of the function, even in case of error
-
-  bn_t bn, bn_bl, bn_url;
-  gt_t ip, ip_lsss, ip_bl, ip_root;
-  gt_t phi;
-
-  bn_null(bn);     bn_new(bn);
-  bn_null(bn_bl);  bn_new(bn_bl);
-  bn_null(bn_url); bn_new(bn_url);
-
-  gt_null(ip);      gt_new(ip);
-  gt_null(ip_bl);   gt_new(ip_bl);
-  gt_null(ip_lsss); gt_new(ip_lsss);
-  gt_null(ip_root); gt_new(ip_root);
-  gt_null(phi);     gt_new(phi);
+  ZP zp, zp_bl, zp_url;
+  GT ip, ip_lsss, ip_bl, ip_root;
+  GT phi;
 
   std::string url = this->url;
 
   auto key_wl_url = dec_key.get_key_wl(url);
   if (key_wl_url) {
     std::cout << "URL is in WHITE_LIST: " << url << std::endl;
-    inner_product(ip, this->ctx_wl, *key_wl_url);
-    inner_product(ip_root, this->ctx_root, dec_key.get_key_root());
-    gt_mul(phi, ip, ip_root);
-    gt_md_map(session_key, phi);
+    ip = innerProduct(this->ctx_wl, *key_wl_url);
+    ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
+    phi = ip * ip_root;
+    gt_md_map(session_key, phi.m_GT);
 
     return true;
   }
@@ -239,15 +226,15 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   BPGroup group;
   auto policy = createPolicyTree(dec_key.get_policy());
-  auto attribute_list = createAttributeList(this->attributes);
+  // auto attribute_list = createAttributeList(this->attributes);
 
-  if (policy == nullptr || attribute_list == nullptr) {
+  if (policy == nullptr || this->attributes_list == nullptr) {
     std::cerr << "Error: Could not create policy tree or attribute list" << std::endl;
     return false;
   }
 
   OpenABELSSS lsss;
-  if (!lsss.recoverCoefficients(policy.get(), attribute_list.get())) {
+  if (!lsss.recoverCoefficients(policy.get(), attributes_list.get())) {
     std::cout << "Policy not satisfied, could not recover LSSS coefficients." << std::endl;
     return false;
   }
@@ -255,7 +242,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   auto recover_coeff = lsss.getRows();
 
-  gt_set_unity(ip_lsss);
+  ip_lsss.setIdentity();
   for (const auto& [_, coeff] : recover_coeff) {
     ZP cj = coeff.element();
     std::string att = coeff.label();
@@ -268,34 +255,26 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
       return false;
     }
 
-    inner_product(ip, *ctx_att__, *key_att__ * cj.m_ZP);
-    gt_mul(ip_lsss, ip_lsss, ip);
+    ip = innerProduct(*ctx_att__, *key_att__ * cj);
+    ip_lsss = ip_lsss * ip;
   }
 
-  str_to_bn(bn_url, url.c_str(), url.size(), group.order);
-  gt_set_unity(ip_bl);
+  zp_url = hashToZP(url, group.order);
+  ip_bl.setIdentity();
   for (auto it = dec_key.get_key_bl_begin(); it != dec_key.get_key_bl_end(); it++) {
     std::string bl = it->first;
-    str_to_bn(bn_bl, bl.c_str(), bl.size(), group.order);
-    bn_mod_sub(bn, bn_bl, bn_url, group.order);
-    bn_mod_inv(bn, bn, group.order);
+    zp_bl = hashToZP(bl, group.order);
+    zp = zp_bl - zp_url;
+    zp.multInverse();
 
-    inner_product(ip, this->ctx_bl, it->second);
-    gt_exp(ip, ip, bn);
-    gt_mul(ip_bl, ip_bl, ip);
+    ip = innerProduct(this->ctx_bl, it->second);
+    ip_bl = ip_bl * ip.exp(zp);
   }
 
-  inner_product(ip_root, this->ctx_root, dec_key.get_key_root());
+  ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
 
-  gt_mul(phi, ip_lsss, ip_bl);
-  gt_mul(phi, phi, ip_root);
-
-  gt_md_map(session_key, phi);
-
-  // Clear memory
-  bn_free(bn); bn_free(bn_bl); bn_free(bn_url);
-  gt_free(ip); gt_free(ip_bl); gt_free(ip_lsss); gt_free(ip_root);
-  gt_free(phi);
+  phi = ip_lsss * ip_bl * ip_root;
+  gt_md_map(session_key, phi.m_GT);
 
   return true;
 }
@@ -307,12 +286,10 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
  *
  * @param k the scalar to remove from the ciphertext
  */
-void KPABE_DPVS_CIPHERTEXT::remove_scalar(const bn_t k)
+void KPABE_DPVS_CIPHERTEXT::remove_scalar(const ZP &k)
 {
-  BPGroup group;
-  bn_t inv_k;
-  bn_null(inv_k); bn_new(inv_k);
-  bn_mod_inv(inv_k, k, group.order);
+  ZP inv_k = ZP(k);
+  inv_k.multInverse();
 
   this->ctx_root = this->ctx_root * inv_k;
   this->ctx_wl = this->ctx_wl * inv_k;
@@ -321,6 +298,4 @@ void KPABE_DPVS_CIPHERTEXT::remove_scalar(const bn_t k)
   for (auto& [_, ctx] : this->ctx_att) {
     ctx = ctx * inv_k;
   }
-
-  bn_free(inv_k);
 }
