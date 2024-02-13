@@ -168,74 +168,42 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
 
 void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os) const {
   if (os.good()) {
-    // Serialize url
-    uint url_size = this->url.size();
-    os.write(reinterpret_cast<const char*>(&url_size), sizeof(uint));
-    os.write(this->url.c_str(), url_size);
+    ByteString temp;
+    size_t size = 0;
 
-    // Write ctx_root, ctx_wl and ctx_bl
-    this->ctx_root.serialize(os);
-    this->ctx_wl.serialize(os);
-    this->ctx_bl.serialize(os);
+    this->serialize(temp, BIN_COMPRESSED);
+    size = temp.size();
 
-    // Write ctx_att.size() and ctx_att
-    uint ctx_att_size = this->ctx_att.size();
-    os.write(reinterpret_cast<const char*>(&ctx_att_size), sizeof(uint));
-    for (const auto& [att, ctx] : this->ctx_att) {
-      uint att_size = att.size();
-      os.write(reinterpret_cast<const char*>(&att_size), sizeof(uint));
-      os.write(att.c_str(), att_size);
-      ctx.serialize(os);
-    }
+    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
   }
 }
 
 void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
   if (is.good()) {
-    uint url_size;
-    uint att_size;
+    ByteString temp;
+    size_t size = 0;
 
-    // Deserialize url
-    is.read(reinterpret_cast<char*>(&url_size), sizeof(uint));
-    std::string url; url.resize(url_size);
-    is.read(&url[0], url_size);
-    this->url = url;
+    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    temp.fillBuffer(0, size);
+    is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
 
-    // Read ctx_root, ctx_wl and ctx_bl
-    this->ctx_root.deserialize(is);
-    this->ctx_wl.deserialize(is);
-    this->ctx_bl.deserialize(is);
-
-    // Read ctx_att.size() and ctx_att
-    this->attributes.clear();
-    uint ctx_att_size = 0;
-    is.read(reinterpret_cast<char*>(&ctx_att_size), sizeof(uint));
-    for (uint i = 0; i < ctx_att_size; i++) {
-      is.read(reinterpret_cast<char*>(&att_size), sizeof(uint));
-      std::string att; att.resize(att_size);
-      is.read(&att[0], att_size);
-      this->ctx_att[att].deserialize(is);
-      this->attributes += att + "|";
-    }
-    this->attributes.pop_back(); // Delete last '|' character from attributes
-
-    /* The attribute order may differ from the original order during
-     * serialization, but this difference does not impact functionality. */
+    this->deserialize(temp);
   }
 }
 
 void KPABE_DPVS_CIPHERTEXT::serialize(std::vector<uint8_t>& bytes) const {
-  std::stringstream ss;
-  this->serialize(ss);
-  std::string s = ss.str();
-  bytes.resize(s.size());
-  std::copy(s.begin(), s.end(), bytes.begin());
+  ByteString temp;
+  this->serialize(temp, BIN_COMPRESSED);
+  bytes.resize(temp.size());
+  std::copy(temp.data(), temp.data() + temp.size(), bytes.begin());
 }
 
 void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
-  std::stringstream ss;
-  ss.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-  this->deserialize(ss);
+  ByteString temp;
+  temp.fillBuffer(0, bytes.size());
+  std::copy(bytes.begin(), bytes.end(), temp.data());
+  this->deserialize(temp);
 }
 
 /**
