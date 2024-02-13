@@ -358,3 +358,21 @@ void clear_g2_vector(g2_vector_ptr &g2_vector) {
     g2_vector = nullptr;
   }
 }
+
+ZP hashToZP(const std::string &str) {
+  ZP result;
+  uint8_t hash[RLC_MD_LEN];
+  md_map(hash, (uint8_t*)str.c_str(), str.length());
+  bn_read_bin(result.m_ZP, hash, RLC_MD_LEN);
+  return result;
+}
+
+ZP hashToZP(const std::string &str, const bn_t order) {
+  ZP result;
+  uint8_t hash[RLC_MD_LEN];
+  md_map(hash, (uint8_t*)str.c_str(), str.length());
+  bn_read_bin(result.m_ZP, hash, RLC_MD_LEN);
+  bn_mod(result.m_ZP, result.m_ZP, order);
+  result.setOrder(order);
+  return result;
+}

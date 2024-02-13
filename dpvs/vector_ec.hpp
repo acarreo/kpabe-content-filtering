@@ -153,4 +153,7 @@ bool map_compare (Map const &lhs, Map const &rhs) {
   return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
+ZP hashToZP(const std::string &str);
+ZP hashToZP(const std::string &str, const bn_t order);
+
 #endif // __VECTOR_EC_H__
