@@ -112,6 +112,60 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
   return true;
 }
 
+void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& result, CompressionType compress) const {
+  ByteString temp;
+
+  result.insertFirstByte(KPABE_CIPHERTEXT_TYPE);
+
+  temp.fromString(this->url);               result.smartPack(temp);
+  this->ctx_root.serialize(temp, compress); result.smartPack(temp);
+  this->ctx_wl.serialize(temp, compress);   result.smartPack(temp);
+  this->ctx_bl.serialize(temp, compress);   result.smartPack(temp);
+
+  uint16_t ctx_att_size = this->ctx_att.size();
+  result.pack16bits(ctx_att_size);
+  for (const auto& [att, ctx] : this->ctx_att) {
+    temp.fromString(att);          result.smartPack(temp);
+    ctx.serialize(temp, compress); result.smartPack(temp);
+  }
+
+  /* No need to serialize the attributes list, it is already serialized
+   * int the ctx_att map.
+  */
+}
+
+void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
+  ByteString temp;
+  size_t index = 0;
+  std::string att;
+
+  uint8_t element_type = input.at(index); index++;
+
+  if (element_type != KPABE_CIPHERTEXT_TYPE) {
+    std::cerr << "Error: Element type is not KPABE_CIPHERTEXT_TYPE" << std::endl;
+    return;
+  }
+
+  temp = input.smartUnpack(&index); this->url = temp.toString();
+
+  temp = input.smartUnpack(&index); this->ctx_root.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ctx_wl.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ctx_bl.deserialize(temp);
+
+  std::string attributes;
+  uint16_t ctx_att_size = input.get16bits(&index);
+  for (uint16_t i = 0; i < ctx_att_size; i++) {
+    temp = input.smartUnpack(&index); att = temp.toString();
+    temp = input.smartUnpack(&index); this->ctx_att[att].deserialize(temp);
+    attributes += att + "|";
+  }
+  attributes.pop_back(); // Delete last '|' character from attributes
+  this->attributes_list = createAttributeList(attributes);
+
+  /* The attribute order may differ from the original order during
+   * serialization, but this difference does not impact functionality. */
+}
+
 void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os) const {
   if (os.good()) {
     // Serialize url
