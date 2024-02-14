@@ -120,6 +120,7 @@ size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
 
   return total_size;
 }
+
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os) const {
   if (os.good()) {
     ByteString temp;
@@ -498,4 +499,12 @@ bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &othe
          map_compare(this->key_wl, other.key_wl) &&
          map_compare(this->key_bl, other.key_bl) &&
          map_compare(this->key_att, other.key_att);
+}
+
+std::string hashAttribute(const std::string &attribute)
+{
+  uint8_t digest[HASH_ATTRIBUTE_SIZE];
+  blake2s(digest, HASH_ATTRIBUTE_SIZE, (uint8_t *)attribute.c_str(), attribute.size(), NULL, 0);
+
+  return std::string((char *)digest, HASH_ATTRIBUTE_SIZE);
 }

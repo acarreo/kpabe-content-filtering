@@ -20,8 +20,8 @@
 
 #include <lsss/zlsss.h>
 
-// #include "../dpvs/dpvs_advanced.hpp"
 #include "../dpvs/vector_ec.hpp"
+#include "blake2.h"
 
 extern "C" {
   #include "../dpvs/dpvs.h"
@@ -38,6 +38,14 @@ typedef enum KPABE_KEY_TYPE {
   KPABE_MASTER_KEY      = 0xFB,
   KPABE_DECRYPTION_KEY  = 0xFC,
 } KPABE_KEY_TYPE;
+
+
+#ifndef HASH_ATTRIBUTE_SIZE
+#define HASH_ATTRIBUTE_SIZE  8
+#endif
+
+// Hash function for attributes and urls
+std::string hashAttribute(const std::string& attribute);
 
 
 class KPABE_DPVS_PUBLIC_KEY {

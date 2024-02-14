@@ -2,7 +2,6 @@
 
 export RELIC_TAG="0.6.0"
 export CURVE="bls12-381"
-# export RELIC_INCLUDE="/usr/local/include/relic"
 WORKDIR=$PWD
 
 sudo apt-get update
@@ -27,11 +26,11 @@ cd "target_${CURVE}"
 ../preset/x64-pbc-${CURVE}.sh ..
 make -j
 sudo make install
+sudo cp /tmp/relic/src/md/blake2.h /usr/local/include/
 make clean
 
 # Build LSSS
 cd $WORKDIR
-# git submodule update --init --remote ../abe-lsss
 cd ../abe-lsss
 make
 sudo make install
