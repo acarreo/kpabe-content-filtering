@@ -105,6 +105,21 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(ByteString &input) {
   }
 }
 
+size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
+  size_t total_size = 0;
+
+  size_t sd1 = this->d1.getSizeInBytes(compress);
+  size_t sf1 = this->f1.getSizeInBytes(compress);
+  size_t sg1 = this->g1.getSizeInBytes(compress);
+  size_t sh1 = this->h1.getSizeInBytes(compress);
+
+  total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
+               (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
+
+  total_size += sizeof(uint8_t); // size of key type  
+
+  return total_size;
+}
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os) const {
   if (os.good()) {
     ByteString temp;
@@ -261,6 +276,21 @@ void KPABE_DPVS_MASTER_KEY::deserialize(const std::vector<uint8_t> &buffer) {
   this->deserialize(temp);
 }
 
+size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
+  size_t total_size = 0;
+
+  size_t sd1 = this->dd1.getSizeInBytes(compress);
+  size_t sf1 = this->ff1.getSizeInBytes(compress);
+  size_t sg1 = this->gg1.getSizeInBytes(compress);
+  size_t sh1 = this->hh1.getSizeInBytes(compress);
+
+  total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
+               (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
+
+  total_size += sizeof(uint8_t); // size of key type  
+
+  return total_size;
+}
 
 /*****************************************************************************/
 /*------------------------ KPABE_DPVS_ENCRYPTION_KEY ------------------------*/

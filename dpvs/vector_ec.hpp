@@ -8,6 +8,8 @@ extern "C" {
   #include "dpvs.h"
 }
 
+#define smart_sizeof(x)   ((((x) > UINT16_MAX) ? sizeof(uint32_t) : (((x) > UINT8_MAX) ? sizeof(uint16_t) : sizeof(uint8_t))))
+
 typedef enum ElementType {
   VECTOR_G1_ELEMENT = 0xF1,
   VECTOR_G2_ELEMENT = 0xF2,

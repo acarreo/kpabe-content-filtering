@@ -68,6 +68,8 @@ class KPABE_DPVS_CIPHERTEXT {
     // Remove k from the ciphertext : this = this * inverse(k)
     void remove_scalar(const ZP& k);
 
+    size_t getSizeInBytes(CompressionType compress) const;
+
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
 

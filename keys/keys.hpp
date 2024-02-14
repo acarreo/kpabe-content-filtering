@@ -75,9 +75,7 @@ class KPABE_DPVS_PUBLIC_KEY {
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
 
-    size_t bytes_size() const {
-      return 0; // TODO
-    }
+    size_t getSizeInBytes(CompressionType compress) const;
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
@@ -151,9 +149,7 @@ class KPABE_DPVS_MASTER_KEY {
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
 
-    size_t bytes_size() const {
-      return 0; // TODO
-    }
+    size_t getSizeInBytes(CompressionType compress) const;
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);

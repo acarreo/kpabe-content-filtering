@@ -43,9 +43,7 @@ size_t G1_VECTOR::getSizeInBytes(CompressionType compress) const {
   total_size = 3 * sizeof(uint8_t);
 
   // ADD : size of G1_VECTOR in bytes
-  total_size += sizeof(uint8_t) +
-                ((buff_size > UINT16_MAX) ? sizeof(uint32_t) :
-                ((buff_size > UINT16_MAX) ? sizeof(uint16_t) : sizeof(uint8_t)));
+  total_size += sizeof(uint8_t) + smart_sizeof(buff_size);
 
   total_size += buff_size; // ADD : buff_size
 
@@ -204,9 +202,7 @@ size_t G2_VECTOR::getSizeInBytes(CompressionType compress) const {
   total_size = 3 * sizeof(uint8_t);
 
   // ADD : size of G2_VECTOR in bytes
-  total_size += sizeof(uint8_t) +
-                ((buff_size > UINT16_MAX) ? sizeof(uint32_t) :
-                ((buff_size > UINT16_MAX) ? sizeof(uint16_t) : sizeof(uint8_t)));
+  total_size += sizeof(uint8_t) + smart_sizeof(buff_size);
 
   total_size += buff_size; // ADD : buff_size
 
