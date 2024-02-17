@@ -39,14 +39,13 @@ typedef enum KPABE_KEY_TYPE {
   KPABE_DECRYPTION_KEY  = 0xFC,
 } KPABE_KEY_TYPE;
 
-
-#ifndef HASH_ATTRIBUTE_SIZE
-#define HASH_ATTRIBUTE_SIZE  8
-#endif
+// Size of the hash of an attribute in base64 plus 2 (See hashAttribute function): "A:" + Base64(HASH(attribute))
+constexpr int SIZEOF_ATTRIBUTE = 9;                                         // in bytes
+constexpr int HASH_ATTRIBUTE_SIZE = ((SIZEOF_ATTRIBUTE + 2) / 3 * 4) + 2;   // in base64
 
 // Hash function for attributes and urls
 std::string hashAttribute(const std::string& attribute);
-
+std::string policyWithHashedAttributes(const std::string& policy);
 
 class KPABE_DPVS_PUBLIC_KEY {
   public:

@@ -501,10 +501,14 @@ bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &othe
          map_compare(this->key_att, other.key_att);
 }
 
-std::string hashAttribute(const std::string &attribute)
-{
-  uint8_t digest[HASH_ATTRIBUTE_SIZE];
-  blake2s(digest, HASH_ATTRIBUTE_SIZE, (uint8_t *)attribute.c_str(), attribute.size(), NULL, 0);
+std::string hashAttribute(const std::string &attribute) {
+  uint8_t digest[SIZEOF_ATTRIBUTE];
+  blake2s(digest, SIZEOF_ATTRIBUTE, (uint8_t *)attribute.c_str(), attribute.size(), NULL, 0);
 
-  return std::string((char *)digest, HASH_ATTRIBUTE_SIZE);
+  return "A:" + Base64Encode(digest, SIZEOF_ATTRIBUTE);
+}
+
+std::string policyWithHashedAttributes(const std::string &policy) {
+  auto pol_tree = createPolicyTree(policy);
+  return pol_tree->getRootNode()->getPolicyWithHashedAttributes();
 }
