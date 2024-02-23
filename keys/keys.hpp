@@ -202,11 +202,7 @@ class KPABE_DPVS_DECRYPTION_KEY {
 
     KPABE_DPVS_DECRYPTION_KEY(const std::string& policy_str,
                               const std::vector<std::string>& white_list,
-                              const std::vector<std::string>& black_list) {
-      this->policy = policy_str;
-      this->white_list = white_list;
-      this->black_list = black_list;
-    };
+                              const std::vector<std::string>& black_list);
 
     ~KPABE_DPVS_DECRYPTION_KEY() {};
 
@@ -260,6 +256,8 @@ class KPABE_DPVS_DECRYPTION_KEY {
 
     void serialize(std::vector<uint8_t>& buffer) const;
     void deserialize(const std::vector<uint8_t>& buffer);
+
+    size_t getSizeInBytes(CompressionType compress) const;
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);

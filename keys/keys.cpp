@@ -297,6 +297,56 @@ size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
 /*------------------------ KPABE_DPVS_ENCRYPTION_KEY ------------------------*/
 /*****************************************************************************/
 
+bool isAttributeHashed(const std::string &attribute) {
+  return attribute.size() >= 6 && attribute.find("A:") != std::string::npos && !Base64Decode(attribute.substr(2)).empty();
+}
+
+KPABE_DPVS_DECRYPTION_KEY::KPABE_DPVS_DECRYPTION_KEY(const std::string &policy_str,
+                                                     const std::vector<std::string> &white_list,
+                                                     const std::vector<std::string> &black_list)
+{
+  bool hased = true;
+
+  // Check if all attributes are hashed, if there exist an attribute that is not
+  // hashed, i.e not start by 'A:' and the rest is base64, then hash all attributes
+  for (const auto &att : white_list) {
+    if (!isAttributeHashed(att)) {
+      hased = false;
+      break;
+    }
+  }
+
+  if (hased) {
+    for (const auto &att : black_list) {
+      if (!isAttributeHashed(att)) {
+        std::cerr << "Errors : white_list is hashed but black_list is not" << std::endl;
+        hased = false;
+        break;
+      }
+    }
+  }
+
+  if (hased) {
+    this->white_list = white_list;
+    this->black_list = black_list;
+  }
+  else {
+    this->white_list.clear();
+    this->black_list.clear();
+
+    for (const auto &att : white_list) {
+      this->white_list.push_back(hashAttribute(att));
+    }
+
+    for (const auto &att : black_list) {
+      this->black_list.push_back(hashAttribute(att));
+    }
+  }
+
+  this->policy = policyWithHashedAttributes(policy_str);
+}
+
+
 /**
  * @brief This method generates the decryption key, given the master key.
  *        Before calling this function, the policy, the white list and the

@@ -8,6 +8,27 @@
 
 #include "kpabe.hpp"
 
+
+/**
+ * @brief Constructs a KPABE_DPVS object with the given white list and black list.
+ *
+ * @param white_list A vector of strings representing the attributes in the white list.
+ * @param black_list A vector of strings representing the attributes in the black list.
+ */
+KPABE_DPVS::KPABE_DPVS(const std::vector<std::string>& white_list, const std::vector<std::string>& black_list)
+{
+  this->white_list.clear();
+  this->black_list.clear();
+
+  for (const auto& att : white_list) {
+    this->white_list.push_back(hashAttribute(att));
+  }
+
+  for (const auto& att : black_list) {
+    this->black_list.push_back(hashAttribute(att));
+  }
+}
+
 /**
  * @brief This method generates the public and master keys.
  * 
@@ -46,6 +67,21 @@ bool KPABE_DPVS::setup() {
   dpvs_clear(base_H);
 
   return is_setup;
+}
+
+void KPABE_DPVS_CIPHERTEXT::set_attributes(const std::string &attributes) {
+  std::vector<std::string> attr_list = split(attributes, '|');
+  std::string hashed_attr = "";
+
+  for (const auto& att : attr_list) {
+    hashed_attr += hashAttribute(att) + "|";
+  }
+
+  this->attributes_list = createAttributeList(hashed_attr);
+}
+
+void KPABE_DPVS_CIPHERTEXT::set_url(const std::string &url) {
+  this->url = hashAttribute(url);
 }
 
 /**
@@ -159,7 +195,6 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
     temp = input.smartUnpack(&index); this->ctx_att[att].deserialize(temp);
     attributes += att + "|";
   }
-  attributes.pop_back(); // Delete last '|' character from attributes
   this->attributes_list = createAttributeList(attributes);
 
   /* The attribute order may differ from the original order during

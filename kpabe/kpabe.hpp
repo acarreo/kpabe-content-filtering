@@ -28,8 +28,8 @@ class KPABE_DPVS_CIPHERTEXT {
     KPABE_DPVS_CIPHERTEXT() : attributes_list(nullptr), url("") {};
 
     KPABE_DPVS_CIPHERTEXT(const std::string& attributes, const std::string& url) {
-      this->attributes_list = createAttributeList(attributes);
-      this->url = url;
+      this->set_attributes(attributes);
+      this->set_url(url);
     };
 
     KPABE_DPVS_CIPHERTEXT(const std::string filename) {
@@ -40,10 +40,8 @@ class KPABE_DPVS_CIPHERTEXT {
     ~KPABE_DPVS_CIPHERTEXT() {};
 
     // Setters for attributes and url
-    void set_attributes(const std::string& attributes) {
-      this->attributes_list = createAttributeList(attributes);
-    }
-    void set_url(const std::string& url) { this->url = url; }
+    void set_attributes(const std::string& attributes);
+    void set_url(const std::string& url);
 
     // Getters for G1 vectors members
     G1_VECTOR get_ctx_root() const { return this->ctx_root; }
@@ -112,11 +110,8 @@ class KPABE_DPVS {
     KPABE_DPVS() {};
 
     KPABE_DPVS(const std::vector<std::string>& white_list,
-               const std::vector<std::string>& black_list) {
-      this->white_list = white_list;
-      this->black_list = black_list;
-    };
-    
+               const std::vector<std::string>& black_list);
+
     ~KPABE_DPVS() {};
 
     // Setup : generate public and master keys
