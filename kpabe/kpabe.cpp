@@ -356,3 +356,24 @@ void KPABE_DPVS_CIPHERTEXT::remove_scalar(const ZP &k)
     ctx = ctx * inv_k;
   }
 }
+
+size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes(CompressionType compress) const
+{
+  size_t total_size = 0;
+
+  size_t surl = this->url.size();
+  size_t sroot= this->ctx_root.getSizeInBytes(compress);
+  size_t swl  = this->ctx_wl.getSizeInBytes(compress);
+  size_t sbl  = this->ctx_bl.getSizeInBytes(compress);
+  size_t satt = this->ctx_att.begin()->second.getSizeInBytes(compress);
+  size_t att_s= HASH_ATTRIBUTE_SIZE + smart_sizeof(HASH_ATTRIBUTE_SIZE);
+
+  total_size = (surl  + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot)) +
+               (swl   + smart_sizeof(swl))  + (sbl   + smart_sizeof(sbl)) +
+               (satt + smart_sizeof(satt) + att_s + 1) * this->ctx_att.size() +
+               sizeof(uint16_t) + sizeof(uint8_t);
+
+  total_size +=1; // I don't know why should I add 1 to get the correct size
+
+  return total_size;
+}

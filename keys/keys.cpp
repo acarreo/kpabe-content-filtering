@@ -543,6 +543,28 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(const std::vector<uint8_t> &buffer) 
   this->deserialize(temp);
 }
 
+size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
+{
+  size_t total_size = 0;
+
+  size_t spol = this->policy.size();
+  size_t skr  = this->key_root.getSizeInBytes(compress);
+  size_t skwl = this->key_wl.begin()->second.getSizeInBytes(compress);
+  size_t skbl = this->key_bl.begin()->second.getSizeInBytes(compress);
+  size_t skatt= this->key_att.begin()->second.getSizeInBytes(compress);
+  size_t s_att= HASH_ATTRIBUTE_SIZE + smart_sizeof(HASH_ATTRIBUTE_SIZE);
+
+  total_size = (spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr)) +
+               (skwl + smart_sizeof(skwl) + s_att + 1) * this->key_wl.size() +
+               (skbl + smart_sizeof(skbl) + s_att + 1) * this->key_bl.size() +
+               (skatt+ smart_sizeof(skatt)+ s_att + 1) * this->key_att.size() +
+                sizeof(uint8_t) + sizeof(uint16_t) * 3;
+
+  total_size += 1; // I don't know why should I add one to get the correct size
+
+  return total_size;
+}
+
 bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &other) const
 {
   return this->key_root == other.key_root &&
