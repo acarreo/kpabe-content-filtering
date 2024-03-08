@@ -18,7 +18,7 @@
 #include <string>
 #include <map>
 
-#include <zlsss.h>
+#include <lsss/zlsss.h>
 
 #include "../dpvs/dpvs_advanced.hpp"
 
