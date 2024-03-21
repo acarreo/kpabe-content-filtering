@@ -28,21 +28,21 @@ add_executable(
     main.cpp
 )
 
-add_executable(
-    example_out
-    ${SOURCE_FILES}
-    examples/examples.cpp
-)
+# add_executable(
+#     example_out
+#     ${SOURCE_FILES}
+#     examples/examples.cpp
+# )
 
-add_executable(
-    bench_out
-    ${SOURCE_FILES}
-    bench/bench.cpp
-)
+# add_executable(
+#     bench_out
+#     ${SOURCE_FILES}
+#     bench/bench.cpp
+# )
 
 target_link_libraries(kpabe_out relic_s lsss gmp)
-target_link_libraries(example_out relic_s lsss gmp)
-target_link_libraries(bench_out relic_s lsss gmp)
+# target_link_libraries(example_out relic_s lsss gmp)
+# target_link_libraries(bench_out relic_s lsss gmp)
 
 add_custom_target(example
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out
