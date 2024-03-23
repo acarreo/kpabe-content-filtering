@@ -25,9 +25,11 @@ class KPABE_DPVS_CIPHERTEXT {
   public:
     typedef std::map<std::string, G1_VECTOR> ctx_map_t;
 
-    KPABE_DPVS_CIPHERTEXT() : attributes_list(nullptr), url("") {};
+    KPABE_DPVS_CIPHERTEXT() : attributes(""), url(""), hash_attributes(false) {};
 
-    KPABE_DPVS_CIPHERTEXT(const std::string& attributes, const std::string& url) {
+    KPABE_DPVS_CIPHERTEXT(const std::string& attributes, const std::string& url,
+                          bool hash_attr = false) {
+      this->hash_attributes = hash_attr;
       this->set_attributes(attributes);
       this->set_url(url);
     };
@@ -94,8 +96,9 @@ class KPABE_DPVS_CIPHERTEXT {
     }
 
   private:
-    std::unique_ptr<OpenABEAttributeList> attributes_list;
+    std::string attributes;
     std::string url;
+    bool hash_attributes;
 
     G1_VECTOR ctx_root;   // D
     G1_VECTOR ctx_wl;     // F
@@ -125,6 +128,12 @@ class KPABE_DPVS {
       }
       return std::nullopt;
     }
+
+    std::optional<KPABE_DPVS_DECRYPTION_KEY> keygen(
+                              const std::string& policy,
+                              const std::vector<std::string>& white_list,
+                              const std::vector<std::string>& black_list,
+                              bool hash_attr = false) const;
 
     // Getter for public key
     KPABE_DPVS_PUBLIC_KEY get_public_key() const { return this->public_key; }

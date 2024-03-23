@@ -297,43 +297,14 @@ size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
 /*------------------------ KPABE_DPVS_ENCRYPTION_KEY ------------------------*/
 /*****************************************************************************/
 
-bool isAttributeHashed(const std::string &attribute) {
-  return attribute.size() >= 6 && attribute.find("A:") != std::string::npos && !Base64Decode(attribute.substr(2)).empty();
-}
-
 KPABE_DPVS_DECRYPTION_KEY::KPABE_DPVS_DECRYPTION_KEY(const std::string &policy_str,
                                                      const std::vector<std::string> &white_list,
-                                                     const std::vector<std::string> &black_list)
+                                                     const std::vector<std::string> &black_list,
+                                                     bool hash_attr)
 {
-  bool hased = true;
+  this->hash_attributes = hash_attr;
 
-  // Check if all attributes are hashed, if there exist an attribute that is not
-  // hashed, i.e not start by 'A:' and the rest is base64, then hash all attributes
-  for (const auto &att : white_list) {
-    if (!isAttributeHashed(att)) {
-      hased = false;
-      break;
-    }
-  }
-
-  if (hased) {
-    for (const auto &att : black_list) {
-      if (!isAttributeHashed(att)) {
-        std::cerr << "Errors : white_list is hashed but black_list is not" << std::endl;
-        hased = false;
-        break;
-      }
-    }
-  }
-
-  if (hased) {
-    this->white_list = white_list;
-    this->black_list = black_list;
-  }
-  else {
-    this->white_list.clear();
-    this->black_list.clear();
-
+  if (this->hash_attributes) {
     for (const auto &att : white_list) {
       this->white_list.push_back(hashAttribute(att));
     }
@@ -341,9 +312,14 @@ KPABE_DPVS_DECRYPTION_KEY::KPABE_DPVS_DECRYPTION_KEY(const std::string &policy_s
     for (const auto &att : black_list) {
       this->black_list.push_back(hashAttribute(att));
     }
-  }
 
-  this->policy = policyWithHashedAttributes(policy_str);
+    this->policy = hashPolicy(policy_str);
+  }
+  else {
+    this->white_list = white_list;
+    this->black_list = black_list;
+    this->policy = policy_str;
+  }
 }
 
 
@@ -571,16 +547,4 @@ bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &othe
          map_compare(this->key_wl, other.key_wl) &&
          map_compare(this->key_bl, other.key_bl) &&
          map_compare(this->key_att, other.key_att);
-}
-
-std::string hashAttribute(const std::string &attribute) {
-  uint8_t digest[SIZEOF_ATTRIBUTE];
-  blake2s(digest, SIZEOF_ATTRIBUTE, (uint8_t *)attribute.c_str(), attribute.size(), NULL, 0);
-
-  return "A:" + Base64Encode(digest, SIZEOF_ATTRIBUTE);
-}
-
-std::string policyWithHashedAttributes(const std::string &policy) {
-  auto pol_tree = createPolicyTree(policy);
-  return pol_tree->getRootNode()->getPolicyWithHashedAttributes();
 }

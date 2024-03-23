@@ -69,19 +69,35 @@ bool KPABE_DPVS::setup() {
   return is_setup;
 }
 
-void KPABE_DPVS_CIPHERTEXT::set_attributes(const std::string &attributes) {
-  std::vector<std::string> attr_list = split(attributes, '|');
-  std::string hashed_attr = "";
-
-  for (const auto& att : attr_list) {
-    hashed_attr += hashAttribute(att) + "|";
+std::optional<KPABE_DPVS_DECRYPTION_KEY> KPABE_DPVS::keygen(
+                    const std::string& policy,
+                    const std::vector<std::string>& white_list,
+                    const std::vector<std::string>& black_list,
+                    bool hash_attr) const
+{
+  KPABE_DPVS_DECRYPTION_KEY dec_key(policy, white_list, black_list, hash_attr);
+  if (dec_key.generate(this->master_key)) {
+    return dec_key;
   }
+  return std::nullopt;
+}
 
-  this->attributes_list = createAttributeList(hashed_attr);
+void KPABE_DPVS_CIPHERTEXT::set_attributes(const std::string &attributes) {
+  if (this->hash_attributes) {
+    this->attributes = hashAttributesList(attributes);
+  }
+  else {
+    this->attributes = attributes;
+  }
 }
 
 void KPABE_DPVS_CIPHERTEXT::set_url(const std::string &url) {
-  this->url = hashAttribute(url);
+  if (this->hash_attributes) {
+    this->url = hashAttribute(url);
+  }
+  else {
+    this->url = url;
+  }
 }
 
 /**
@@ -98,7 +114,7 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
   BPGroup group;
   ZP phi, sigma, omega;
 
-  if (this->url.empty() || this->attributes_list == nullptr) {
+  if (this->url.empty() || this->attributes.empty()) {
     std::cerr << "Error: URL or attributes are empty" << std::endl;
     return false;
   }
@@ -122,8 +138,8 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
                  public_key.get_g2() * (omega * url_zp);
 
   // Create attribute list
-  // std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(this->attributes);
-  const std::vector<std::string>* attrList = this->attributes_list->getAttributeList();
+  std::unique_ptr<OpenABEAttributeList> attributes_list = createAttributeList(this->attributes);
+  const std::vector<std::string>* attrList = attributes_list->getAttributeList();
 
   /* set ctx_att: for all att in attributes_list,
    *  pk->h1 * sigma_att + pk->h2 * (sigma_att * att) + omega * pk->h3 */
@@ -195,7 +211,7 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
     temp = input.smartUnpack(&index); this->ctx_att[att].deserialize(temp);
     attributes += att + "|";
   }
-  this->attributes_list = createAttributeList(attributes);
+  this->attributes = attributes;
 
   /* The attribute order may differ from the original order during
    * serialization, but this difference does not impact functionality. */
@@ -283,9 +299,9 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   BPGroup group;
   auto policy = createPolicyTree(dec_key.get_policy());
-  // auto attribute_list = createAttributeList(this->attributes);
+  auto attributes_list = createAttributeList(this->attributes);
 
-  if (policy == nullptr || this->attributes_list == nullptr) {
+  if (policy == nullptr || attributes_list == nullptr) {
     std::cerr << "Error: Could not create policy tree or attribute list" << std::endl;
     return false;
   }

@@ -21,7 +21,6 @@
 #include <lsss/zlsss.h>
 
 #include "../dpvs/vector_ec.hpp"
-#include "blake2.h"
 
 extern "C" {
   #include "../dpvs/dpvs.h"
@@ -40,12 +39,10 @@ typedef enum KPABE_KEY_TYPE {
 } KPABE_KEY_TYPE;
 
 // Size of the hash of an attribute in base64 plus 2 (See hashAttribute function): "A:" + Base64(HASH(attribute))
-constexpr int SIZEOF_ATTRIBUTE = 9;                                         // in bytes
-constexpr int HASH_ATTRIBUTE_SIZE = ((SIZEOF_ATTRIBUTE + 2) / 3 * 4) + 2;   // in base64
+// constexpr int SIZEOF_ATTRIBUTE = 9;                                         // in bytes
+// constexpr int HASH_ATTRIBUTE_SIZE = ((SIZEOF_ATTRIBUTE + 2) / 3 * 4) + 2;   // in base64
 
-// Hash function for attributes and urls
-std::string hashAttribute(const std::string& attribute);
-std::string policyWithHashedAttributes(const std::string& policy);
+#define HASH_ATTRIBUTE_SIZE   (((SIZEOF_ATTRIBUTE + 2) / 3 * 4) + 2)
 
 class KPABE_DPVS_PUBLIC_KEY {
   public:
@@ -193,7 +190,7 @@ class KPABE_DPVS_DECRYPTION_KEY {
   public:
     typedef std::map<std::string, G2_VECTOR> key_map_t;
 
-    KPABE_DPVS_DECRYPTION_KEY() : policy(""), white_list({}), black_list({}) {};
+    KPABE_DPVS_DECRYPTION_KEY() : policy(""), white_list({}), black_list({}), hash_attributes(false) {};
 
     KPABE_DPVS_DECRYPTION_KEY(const std::string filename) {
       if (access(filename.c_str(), F_OK) != -1)
@@ -202,7 +199,8 @@ class KPABE_DPVS_DECRYPTION_KEY {
 
     KPABE_DPVS_DECRYPTION_KEY(const std::string& policy_str,
                               const std::vector<std::string>& white_list,
-                              const std::vector<std::string>& black_list);
+                              const std::vector<std::string>& black_list,
+                              bool hash_attr=false);
 
     ~KPABE_DPVS_DECRYPTION_KEY() {};
 
@@ -282,6 +280,7 @@ class KPABE_DPVS_DECRYPTION_KEY {
     std::string policy;
     std::vector<std::string> white_list;
     std::vector<std::string> black_list;
+    bool hash_attributes;
 
     G2_VECTOR key_root;   // D*
     key_map_t key_wl;     // F*
