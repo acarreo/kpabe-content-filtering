@@ -40,7 +40,7 @@ add_executable(
 #     bench/bench.cpp
 # )
 
-target_link_libraries(kpabe_out relic_s lsss gmp)
+target_link_libraries(kpabe_out lsss relic_s gmp)
 # target_link_libraries(example_out relic_s lsss gmp)
 # target_link_libraries(bench_out relic_s lsss gmp)
 
