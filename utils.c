@@ -44,16 +44,16 @@ void clean_libraries(void) {
   core_clean();
 }
 
-void print_vect_base(const G1_VS_VECT vect) {
+void print_vect_base(const g1_vector_ptr vect) {
   for (uint8_t i = 0; i < vect->dim; i++) {
-    g1_print(vect->coord[i]);
+    g1_print(vect->elements[i]);
     printf("\n");
   }
 }
 
-void print_vect_dual_base(const G2_VS_VECT dvect) {
+void print_vect_dual_base(const g2_vector_ptr dvect) {
   for (uint8_t i = 0; i < dvect->dim; i++) {
-    g2_print(dvect->coord[i]);
+    g2_print(dvect->elements[i]);
     printf("\n");
   }
 }

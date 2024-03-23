@@ -6,6 +6,8 @@
  *
  */
 
+#if 0
+
 #ifndef __DPVS_HPP__
 #define __DPVS_HPP__
 
@@ -98,3 +100,5 @@ class G2_VECTOR {
 void inner_product(gt_t result, const G1_VECTOR& vect1, const G2_VECTOR& vect2);
 
 #endif // __DPVS_ADVANCED_HPP__
+
+#endif

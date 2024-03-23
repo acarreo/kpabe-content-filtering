@@ -6,10 +6,10 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 
 # Specify RELIC and LSSS include directories
-include_directories(
-    /usr/local/include/relic
-    /usr/local/include/lsss
-)
+# include_directories(
+#     /usr/local/include/relic
+#     /usr/local/include/lsss
+# )
 
 
 file(
@@ -28,24 +28,32 @@ add_executable(
     main.cpp
 )
 
-add_executable(
-    example_out
-    ${SOURCE_FILES}
-    examples/examples.cpp
-)
+# add_executable(
+#     example_out
+#     ${SOURCE_FILES}
+#     examples/examples.cpp
+# )
 
 add_executable(
-    bench_out
+    new_examples
     ${SOURCE_FILES}
-    bench/bench.cpp
+    examples/new_examples.cpp
 )
 
-target_link_libraries(kpabe_out relic_s lsss gmp)
-target_link_libraries(example_out relic_s lsss gmp)
-target_link_libraries(bench_out relic_s lsss gmp)
+# add_executable(
+#     bench_out
+#     ${SOURCE_FILES}
+#     bench/bench.cpp
+# )
+
+target_link_libraries(kpabe_out lsss relic_s gmp)
+target_link_libraries(new_examples lsss relic_s gmp)
+# target_link_libraries(example_out relic_s lsss gmp)
+# target_link_libraries(bench_out relic_s lsss gmp)
 
 add_custom_target(example
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out
+    # COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_examples
     COMMENT "Building example_out executable"
 )
 

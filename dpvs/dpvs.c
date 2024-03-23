@@ -1,11 +1,11 @@
 #include "dpvs.h"
 
-G1_VS_VECT dpvs_create_g1_vect(uint8_t dim) {
-  G1_VS_VECT vect = NULL;
+g1_vector_ptr dpvs_create_g1_vect(uint8_t dim) {
+  g1_vector_ptr vect = NULL;
   
-  if (dim != 0 && (vect = (G1_VS_VECT) malloc(sizeof(g1_vect_t)))) {
+  if (dim != 0 && (vect = (g1_vector_ptr) malloc(sizeof(g1_vector_t)))) {
     vect->dim = dim;
-    if ((vect->coord = (g1_t *) malloc(dim * sizeof(g1_t))) == NULL) {
+    if ((vect->elements = (g1_t *) malloc(dim * sizeof(g1_t))) == NULL) {
       free(vect);
       _error_alloc_fail_();
     }
@@ -13,8 +13,8 @@ G1_VS_VECT dpvs_create_g1_vect(uint8_t dim) {
       int i = 0;
       RLC_TRY {
         for (; i < dim; i++) {
-          g1_null(vect->coord[i]);
-          g1_new(vect->coord[i]);
+          g1_null(vect->elements[i]);
+          g1_new(vect->elements[i]);
         }
       }
       RLC_CATCH_ANY {
@@ -28,12 +28,12 @@ G1_VS_VECT dpvs_create_g1_vect(uint8_t dim) {
   return vect;
 }
 
-G2_VS_VECT dpvs_create_g2_vect(uint8_t dim) {
-  G2_VS_VECT vect = NULL;
+g2_vector_ptr dpvs_create_g2_vect(uint8_t dim) {
+  g2_vector_ptr vect = NULL;
   
-  if (dim != 0 && (vect = (G2_VS_VECT) malloc(sizeof(g2_vect_t)))) {
+  if (dim != 0 && (vect = (g2_vector_ptr) malloc(sizeof(g2_vector_t)))) {
     vect->dim = dim;
-    if ((vect->coord = (g2_t *) malloc(dim * sizeof(g2_t))) == NULL) {
+    if ((vect->elements = (g2_t *) malloc(dim * sizeof(g2_t))) == NULL) {
       free(vect);
       _error_alloc_fail_();
     }
@@ -41,8 +41,8 @@ G2_VS_VECT dpvs_create_g2_vect(uint8_t dim) {
       int i = 0;
       RLC_TRY {
         for (; i < dim; i++) {
-          g2_null(vect->coord[i]);
-          g2_new(vect->coord[i]);
+          g2_null(vect->elements[i]);
+          g2_new(vect->elements[i]);
         }
       }
       RLC_CATCH_ANY {
@@ -60,7 +60,7 @@ G1_VS_BASE dpvs_create_g1_base(uint8_t dim)
 {
   G1_VS_BASE vect = NULL;
 
-  if ((vect = (G1_VS_BASE) malloc(dim * sizeof(G1_VS_VECT)))) {
+  if ((vect = (G1_VS_BASE) malloc(dim * sizeof(g1_vector_ptr)))) {
     for (uint8_t i = 0; i < dim; i++) {
       if ((vect[i] = dpvs_create_g1_vect(dim)) == NULL) {
         for (; i > 0; i--) free(vect[i-1]);
@@ -78,7 +78,7 @@ G2_VS_BASE dpvs_create_g2_base(uint8_t dim)
 {
   G2_VS_BASE vect = NULL;
 
-  if ((vect = (G2_VS_BASE) malloc(dim * sizeof(G2_VS_VECT)))) {
+  if ((vect = (G2_VS_BASE) malloc(dim * sizeof(g2_vector_ptr)))) {
     for (uint8_t i = 0; i < dim; i++) {
       if ((vect[i] = dpvs_create_g2_vect(dim)) == NULL) {
         for (; i > 0; i--) free(vect[i-1]);
@@ -131,8 +131,8 @@ dpvs_t* dpvs_generate_bases(uint8_t dim)
         dpvs_get_mat_row(row, mat, i);
         dpvs_get_mat_row(drow, dual_mat, i);
         for (uint8_t j = 0; j < dim; j++) {
-          g1_mul_gen(dpvs->base[i]->coord[j], row->coord[j]);
-          g2_mul_gen(dpvs->dual_base[i]->coord[j], drow->coord[j]);
+          g1_mul_gen(dpvs->base[i]->elements[j], row->elements[j]);
+          g2_mul_gen(dpvs->dual_base[i]->elements[j], drow->elements[j]);
         }
       }
     }
@@ -154,57 +154,57 @@ dpvs_t* dpvs_generate_bases(uint8_t dim)
   return dpvs;
 }
 
-void dpvs_k_mul_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src, const bn_t k)
+void dpvs_k_mul_g1_vect(g1_vector_ptr dest, const g1_vector_ptr src, const bn_t k)
 {
   if (dest && src && dest->dim == src->dim) {
     for (uint8_t i = 0; i < dest->dim; i++)
-      g1_mul(dest->coord[i], src->coord[i], k);
+      g1_mul(dest->elements[i], src->elements[i], k);
   }
 }
 
-void dpvs_k_mul_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src, const bn_t k)
+void dpvs_k_mul_g2_vect(g2_vector_ptr dest, const g2_vector_ptr src, const bn_t k)
 {
   if (dest && src && dest->dim == src->dim) {
     for (uint8_t i = 0; i < dest->dim; i++)
-      g2_mul(dest->coord[i], src->coord[i], k);
+      g2_mul(dest->elements[i], src->elements[i], k);
   }
 }
 
-void dpvs_add_g1_vect(G1_VS_VECT dest, const G1_VS_VECT src1, const G1_VS_VECT src2)
+void dpvs_add_g1_vect(g1_vector_ptr dest, const g1_vector_ptr src1, const g1_vector_ptr src2)
 {
   if (dest && src1 && src2) {
     if (src1->dim == src2->dim && dest->dim == src2->dim) {
       for (uint8_t i = 0; i < dest->dim; i++) {
-        g1_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+        g1_add(dest->elements[i], src1->elements[i], src2->elements[i]);
       }
     }
   }
 }
 
-void dpvs_add_g2_vect(G2_VS_VECT dest, const G2_VS_VECT src1, const G2_VS_VECT src2)
+void dpvs_add_g2_vect(g2_vector_ptr dest, const g2_vector_ptr src1, const g2_vector_ptr src2)
 {
   if (dest && src1 && src2) {
     if (src1->dim == src2->dim && dest->dim == src2->dim) {
       for (uint8_t i = 0; i < dest->dim; i++) {
-        g2_add(dest->coord[i], src1->coord[i], src2->coord[i]);
+        g2_add(dest->elements[i], src1->elements[i], src2->elements[i]);
       }
     }
   }
 }
 
-void dpvs_copy_g1_vect (G1_VS_VECT dest, G1_VS_VECT src) {
+void dpvs_copy_g1_vect (g1_vector_ptr dest, g1_vector_ptr src) {
   if (dest && src && dest->dim == src->dim)
     for (uint8_t i = 0; i < src->dim; i++)
-      g1_copy(dest->coord[i], src->coord[i]);
+      g1_copy(dest->elements[i], src->elements[i]);
 }
 
-void dpvs_copy_g2_vect (G2_VS_VECT dest, G2_VS_VECT src) {
+void dpvs_copy_g2_vect (g2_vector_ptr dest, g2_vector_ptr src) {
   if (dest && src && dest->dim == src->dim)
     for (uint8_t i = 0; i < src->dim; i++)
-      g2_copy(dest->coord[i], src->coord[i]);
+      g2_copy(dest->elements[i], src->elements[i]);
 }
 
-bool dpvs_compare_g1_vect(const G1_VS_VECT vect1, const G1_VS_VECT vect2) {
+bool dpvs_compare_g1_vect(const g1_vector_ptr vect1, const g1_vector_ptr vect2) {
   if (!vect1 || !vect2)
     return (vect1 == vect2);
 
@@ -212,13 +212,13 @@ bool dpvs_compare_g1_vect(const G1_VS_VECT vect1, const G1_VS_VECT vect2) {
     return false;
 
   for (uint8_t i = 0; i < vect1->dim; i++)
-    if (g1_cmp(vect1->coord[i], vect2->coord[i]) != RLC_EQ)
+    if (g1_cmp(vect1->elements[i], vect2->elements[i]) != RLC_EQ)
       return false;
 
   return true;
 }
 
-bool dpvs_compare_g2_vect(const G2_VS_VECT vect1, const G2_VS_VECT vect2) {
+bool dpvs_compare_g2_vect(const g2_vector_ptr vect1, const g2_vector_ptr vect2) {
   if (!vect1 || !vect2)
     return (vect1 == vect2);
 
@@ -226,31 +226,31 @@ bool dpvs_compare_g2_vect(const G2_VS_VECT vect1, const G2_VS_VECT vect2) {
     return false;
 
   for (uint8_t i = 0; i < vect1->dim; i++)
-    if (g2_cmp(vect1->coord[i], vect2->coord[i]) != RLC_EQ)
+    if (g2_cmp(vect1->elements[i], vect2->elements[i]) != RLC_EQ)
       return false;
 
   return true;
 }
 
-void dpvs_clear_g1_vect(G1_VS_VECT vect)
+void dpvs_clear_g1_vect(g1_vector_ptr vect)
 {
   if (vect) {
-    if (vect->coord) {
-      for (uint8_t i = 0; i < vect->dim; i++) g1_free(vect->coord[i]);
+    if (vect->elements) {
+      for (uint8_t i = 0; i < vect->dim; i++) g1_free(vect->elements[i]);
 
-      free(vect->coord);
+      free(vect->elements);
     }
     free(vect);
   }
 }
 
-void dpvs_clear_g2_vect(G2_VS_VECT vect)
+void dpvs_clear_g2_vect(g2_vector_ptr vect)
 {
   if (vect) {
-    if (vect->coord) {
-      for (uint8_t i = 0; i < vect->dim; i++) g2_free(vect->coord[i]);
+    if (vect->elements) {
+      for (uint8_t i = 0; i < vect->dim; i++) g2_free(vect->elements[i]);
 
-      free(vect->coord);
+      free(vect->elements);
     }
     free(vect);
   }

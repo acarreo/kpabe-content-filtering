@@ -18,16 +18,20 @@
 #include "../keys/keys.hpp"
 
 
+#define KPABE_CIPHERTEXT_TYPE   0xFF
+
 // Ciphertext class
 class KPABE_DPVS_CIPHERTEXT {
   public:
     typedef std::map<std::string, G1_VECTOR> ctx_map_t;
 
-    KPABE_DPVS_CIPHERTEXT() : attributes(""), url("") {};
+    KPABE_DPVS_CIPHERTEXT() : attributes(""), url(""), hash_attributes(false) {};
 
-    KPABE_DPVS_CIPHERTEXT(const std::string& attributes, const std::string& url) {
-      this->attributes = attributes;
-      this->url = url;
+    KPABE_DPVS_CIPHERTEXT(const std::string& attributes, const std::string& url,
+                          bool hash_attr = false) {
+      this->hash_attributes = hash_attr;
+      this->set_attributes(attributes);
+      this->set_url(url);
     };
 
     KPABE_DPVS_CIPHERTEXT(const std::string filename) {
@@ -38,14 +42,8 @@ class KPABE_DPVS_CIPHERTEXT {
     ~KPABE_DPVS_CIPHERTEXT() {};
 
     // Setters for attributes and url
-    void set_attributes(const std::string& attributes) {
-      this->attributes = attributes;
-    }
-    void set_url(const std::string& url) { this->url = url; }
-
-    // Getters for attributes and url
-    std::string get_attributes() const { return this->attributes; }
-    std::string get_url() const { return this->url; }
+    void set_attributes(const std::string& attributes);
+    void set_url(const std::string& url);
 
     // Getters for G1 vectors members
     G1_VECTOR get_ctx_root() const { return this->ctx_root; }
@@ -61,13 +59,19 @@ class KPABE_DPVS_CIPHERTEXT {
       return std::nullopt;
     }
 
-    bool encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key);
+    // session_key is the output : it must be allocated before calling this method
+    bool encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLIC_KEY& public_key);
 
     bool decrypt(uint8_t* session_key,
                  const KPABE_DPVS_DECRYPTION_KEY& dec_key) const;
 
     // Remove k from the ciphertext : this = this * inverse(k)
-    void remove_scalar(const bn_t k);
+    void remove_scalar(const ZP& k);
+
+    size_t getSizeInBytes(CompressionType compress) const;
+
+    void serialize(ByteString &result, CompressionType compress) const;
+    void deserialize(ByteString &input);
 
     void serialize(std::ostream& os) const;
     void deserialize(std::istream& is);
@@ -94,6 +98,7 @@ class KPABE_DPVS_CIPHERTEXT {
   private:
     std::string attributes;
     std::string url;
+    bool hash_attributes;
 
     G1_VECTOR ctx_root;   // D
     G1_VECTOR ctx_wl;     // F
@@ -108,11 +113,8 @@ class KPABE_DPVS {
     KPABE_DPVS() {};
 
     KPABE_DPVS(const std::vector<std::string>& white_list,
-               const std::vector<std::string>& black_list) {
-      this->white_list = white_list;
-      this->black_list = black_list;
-    };
-    
+               const std::vector<std::string>& black_list);
+
     ~KPABE_DPVS() {};
 
     // Setup : generate public and master keys
@@ -126,6 +128,12 @@ class KPABE_DPVS {
       }
       return std::nullopt;
     }
+
+    std::optional<KPABE_DPVS_DECRYPTION_KEY> keygen(
+                              const std::string& policy,
+                              const std::vector<std::string>& white_list,
+                              const std::vector<std::string>& black_list,
+                              bool hash_attr = false) const;
 
     // Getter for public key
     KPABE_DPVS_PUBLIC_KEY get_public_key() const { return this->public_key; }

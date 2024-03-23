@@ -8,6 +8,27 @@
 
 #include "kpabe.hpp"
 
+
+/**
+ * @brief Constructs a KPABE_DPVS object with the given white list and black list.
+ *
+ * @param white_list A vector of strings representing the attributes in the white list.
+ * @param black_list A vector of strings representing the attributes in the black list.
+ */
+KPABE_DPVS::KPABE_DPVS(const std::vector<std::string>& white_list, const std::vector<std::string>& black_list)
+{
+  this->white_list.clear();
+  this->black_list.clear();
+
+  for (const auto& att : white_list) {
+    this->white_list.push_back(hashAttribute(att));
+  }
+
+  for (const auto& att : black_list) {
+    this->black_list.push_back(hashAttribute(att));
+  }
+}
+
 /**
  * @brief This method generates the public and master keys.
  * 
@@ -48,6 +69,37 @@ bool KPABE_DPVS::setup() {
   return is_setup;
 }
 
+std::optional<KPABE_DPVS_DECRYPTION_KEY> KPABE_DPVS::keygen(
+                    const std::string& policy,
+                    const std::vector<std::string>& white_list,
+                    const std::vector<std::string>& black_list,
+                    bool hash_attr) const
+{
+  KPABE_DPVS_DECRYPTION_KEY dec_key(policy, white_list, black_list, hash_attr);
+  if (dec_key.generate(this->master_key)) {
+    return dec_key;
+  }
+  return std::nullopt;
+}
+
+void KPABE_DPVS_CIPHERTEXT::set_attributes(const std::string &attributes) {
+  if (this->hash_attributes) {
+    this->attributes = hashAttributesList(attributes);
+  }
+  else {
+    this->attributes = attributes;
+  }
+}
+
+void KPABE_DPVS_CIPHERTEXT::set_url(const std::string &url) {
+  if (this->hash_attributes) {
+    this->url = hashAttribute(url);
+  }
+  else {
+    this->url = url;
+  }
+}
+
 /**
  * @brief This method encrypts an ephemeral session key, using the public key,
  *        url and set of attributes. Before calling this function, the url and
@@ -57,132 +109,152 @@ bool KPABE_DPVS::setup() {
  * @param[in] public_key The public key
  * @return true if the encryption is successful, false otherwise
  */
-bool KPABE_DPVS_CIPHERTEXT::encrypt(const bn_t phi, const KPABE_DPVS_PUBLIC_KEY& public_key)
+bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLIC_KEY& public_key)
 {
-  bn_t sigma, omega, bn_url, tmp, sigma_att;
   BPGroup group;
+  ZP phi, sigma, omega;
 
   if (this->url.empty() || this->attributes.empty()) {
     std::cerr << "Error: URL or attributes are empty" << std::endl;
     return false;
   }
 
-  bn_null(sigma);  bn_new(sigma);  bn_rand_mod(sigma, group.order);
-  bn_null(omega);  bn_new(omega);  bn_rand_mod(omega, group.order);
-
-  bn_null(sigma_att); bn_new(sigma_att);
-  bn_null(bn_url);    bn_new(bn_url);
-  bn_null(tmp);       bn_new(tmp);
+  phi.setRandom(group.order);
+  sigma.setRandom(group.order);
+  omega.setRandom(group.order);
 
   /* set ctx_root : pk->d1 * omega + pk->d3 * phi */
   this->ctx_root = public_key.get_d1() * omega +
                    public_key.get_d3() * phi;
 
-  /* set ctx_wl : pk->f1 * sigma + pk->f2 * (sigma * bn_url) + pk->f3 * omega */
-  str_to_bn(bn_url, this->url.c_str(), this->url.size(), group.order);
-  bn_mod_mul(tmp, sigma, bn_url, group.order);
+  /* set ctx_wl : pk->f1 * sigma + pk->f2 * (sigma * url_zp) + pk->f3 * omega */
+  ZP url_zp = hashToZP(this->url, group.order);
   this->ctx_wl = public_key.get_f1() * sigma +
-                 public_key.get_f2() * tmp +
+                 public_key.get_f2() * (sigma * url_zp) +
                  public_key.get_f3() * omega;
 
-  /* set ctx_bl : pk->g1 * omega + (omega * bn_url) * pk->g2 */
-  bn_mod_mul(tmp, omega, bn_url, group.order);
-  this->ctx_bl = public_key.get_g1() * omega + public_key.get_g2() * tmp;
+  /* set ctx_bl : pk->g1 * omega + (omega * url_zp) * pk->g2 */
+  this->ctx_bl = public_key.get_g1() * omega +
+                 public_key.get_g2() * (omega * url_zp);
 
   // Create attribute list
-  std::unique_ptr<OpenABEAttributeList> attrList = createAttributeList(this->attributes);
-  const std::vector<std::string>* attributes_list = attrList->getAttributeList();
+  std::unique_ptr<OpenABEAttributeList> attributes_list = createAttributeList(this->attributes);
+  const std::vector<std::string>* attrList = attributes_list->getAttributeList();
 
   /* set ctx_att: for all att in attributes_list,
    *  pk->h1 * sigma_att + pk->h2 * (sigma_att * att) + omega * pk->h3 */
   G1_VECTOR h3_times_omega = public_key.get_h3() * omega;
-  for (const auto& att : *attributes_list) {
-    bn_rand_mod(sigma_att, group.order);
-    str_to_bn(tmp, att.c_str(), att.size(), group.order);
-    bn_mod_mul(tmp, tmp, sigma_att, group.order);
+  for (const auto& att : *attrList) {
+    ZP att_zp = hashToZP(att, group.order);
+    sigma.setRandom(group.order); // sigma_att
 
-    this->ctx_att[att] = public_key.get_h1() * sigma_att +
-                         public_key.get_h2() * tmp +
+    this->ctx_att[att] = public_key.get_h1() * sigma +
+                         public_key.get_h2() * (sigma * att_zp) +
                          h3_times_omega;
   }
 
-  // Clear memory
-  bn_free(sigma); bn_free(omega);
-  bn_free(sigma_att); bn_free(bn_url); bn_free(tmp);
+  // ---------------------------------> Generate session key
+  G1 g1;  g1.setGenerator();
+  G2 g2;  g2.setGenerator();
+
+  GT gt = pairing(g1, g2).exp(phi);  // Ephemeral key : gt = e(g1, g2)^phi
+  gt_md_map(session_key, gt.m_GT);
+  // ---------------------------------> END Generate session key
 
   return true;
 }
 
+void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& result, CompressionType compress) const {
+  ByteString temp;
+
+  result.insertFirstByte(KPABE_CIPHERTEXT_TYPE);
+
+  temp.fromString(this->url);               result.smartPack(temp);
+  this->ctx_root.serialize(temp, compress); result.smartPack(temp);
+  this->ctx_wl.serialize(temp, compress);   result.smartPack(temp);
+  this->ctx_bl.serialize(temp, compress);   result.smartPack(temp);
+
+  uint16_t ctx_att_size = this->ctx_att.size();
+  result.pack16bits(ctx_att_size);
+  for (const auto& [att, ctx] : this->ctx_att) {
+    temp.fromString(att);          result.smartPack(temp);
+    ctx.serialize(temp, compress); result.smartPack(temp);
+  }
+
+  /* No need to serialize the attributes list, it is already serialized
+   * int the ctx_att map.
+  */
+}
+
+void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
+  ByteString temp;
+  size_t index = 0;
+  std::string att;
+
+  uint8_t element_type = input.at(index); index++;
+
+  if (element_type != KPABE_CIPHERTEXT_TYPE) {
+    std::cerr << "Error: Element type is not KPABE_CIPHERTEXT_TYPE" << std::endl;
+    return;
+  }
+
+  temp = input.smartUnpack(&index); this->url = temp.toString();
+
+  temp = input.smartUnpack(&index); this->ctx_root.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ctx_wl.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ctx_bl.deserialize(temp);
+
+  std::string attributes;
+  uint16_t ctx_att_size = input.get16bits(&index);
+  for (uint16_t i = 0; i < ctx_att_size; i++) {
+    temp = input.smartUnpack(&index); att = temp.toString();
+    temp = input.smartUnpack(&index); this->ctx_att[att].deserialize(temp);
+    attributes += att + "|";
+  }
+  this->attributes = attributes;
+
+  /* The attribute order may differ from the original order during
+   * serialization, but this difference does not impact functionality. */
+}
+
 void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os) const {
   if (os.good()) {
-    // Serialize url
-    uint url_size = this->url.size();
-    os.write(reinterpret_cast<const char*>(&url_size), sizeof(uint));
-    os.write(this->url.c_str(), url_size);
+    ByteString temp;
+    size_t size = 0;
 
-    // Write ctx_root, ctx_wl and ctx_bl
-    this->ctx_root.serialize(os);
-    this->ctx_wl.serialize(os);
-    this->ctx_bl.serialize(os);
+    this->serialize(temp, BIN_COMPRESSED);
+    size = temp.size();
 
-    // Write ctx_att.size() and ctx_att
-    uint ctx_att_size = this->ctx_att.size();
-    os.write(reinterpret_cast<const char*>(&ctx_att_size), sizeof(uint));
-    for (const auto& [att, ctx] : this->ctx_att) {
-      uint att_size = att.size();
-      os.write(reinterpret_cast<const char*>(&att_size), sizeof(uint));
-      os.write(att.c_str(), att_size);
-      ctx.serialize(os);
-    }
+    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
   }
 }
 
 void KPABE_DPVS_CIPHERTEXT::deserialize(std::istream &is) {
   if (is.good()) {
-    uint url_size;
-    uint att_size;
+    ByteString temp;
+    size_t size = 0;
 
-    // Deserialize url
-    is.read(reinterpret_cast<char*>(&url_size), sizeof(uint));
-    std::string url; url.resize(url_size);
-    is.read(&url[0], url_size);
-    this->url = url;
+    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    temp.fillBuffer(0, size);
+    is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
 
-    // Read ctx_root, ctx_wl and ctx_bl
-    this->ctx_root.deserialize(is);
-    this->ctx_wl.deserialize(is);
-    this->ctx_bl.deserialize(is);
-
-    // Read ctx_att.size() and ctx_att
-    this->attributes.clear();
-    uint ctx_att_size = 0;
-    is.read(reinterpret_cast<char*>(&ctx_att_size), sizeof(uint));
-    for (uint i = 0; i < ctx_att_size; i++) {
-      is.read(reinterpret_cast<char*>(&att_size), sizeof(uint));
-      std::string att; att.resize(att_size);
-      is.read(&att[0], att_size);
-      this->ctx_att[att].deserialize(is);
-      this->attributes += att + "|";
-    }
-    this->attributes.pop_back(); // Delete last '|' character from attributes
-
-    /* The attribute order may differ from the original order during
-     * serialization, but this difference does not impact functionality. */
+    this->deserialize(temp);
   }
 }
 
 void KPABE_DPVS_CIPHERTEXT::serialize(std::vector<uint8_t>& bytes) const {
-  std::stringstream ss;
-  this->serialize(ss);
-  std::string s = ss.str();
-  bytes.resize(s.size());
-  std::copy(s.begin(), s.end(), bytes.begin());
+  ByteString temp;
+  this->serialize(temp, BIN_COMPRESSED);
+  bytes.resize(temp.size());
+  std::copy(temp.data(), temp.data() + temp.size(), bytes.begin());
 }
 
 void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
-  std::stringstream ss;
-  ss.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-  this->deserialize(ss);
+  ByteString temp;
+  temp.fillBuffer(0, bytes.size());
+  std::copy(bytes.begin(), bytes.end(), temp.data());
+  this->deserialize(temp);
 }
 
 /**
@@ -199,31 +271,19 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
 bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
                                     const KPABE_DPVS_DECRYPTION_KEY &dec_key) const
 {
-  // TODO : clear memory at the end of the function, even in case of error
-
-  bn_t bn, bn_bl, bn_url;
-  gt_t ip, ip_lsss, ip_bl, ip_root;
-  gt_t phi;
-
-  bn_null(bn);     bn_new(bn);
-  bn_null(bn_bl);  bn_new(bn_bl);
-  bn_null(bn_url); bn_new(bn_url);
-
-  gt_null(ip);      gt_new(ip);
-  gt_null(ip_bl);   gt_new(ip_bl);
-  gt_null(ip_lsss); gt_new(ip_lsss);
-  gt_null(ip_root); gt_new(ip_root);
-  gt_null(phi);     gt_new(phi);
+  ZP zp, zp_bl, zp_url;
+  GT ip, ip_lsss, ip_bl, ip_root;
+  GT phi;
 
   std::string url = this->url;
 
   auto key_wl_url = dec_key.get_key_wl(url);
   if (key_wl_url) {
     std::cout << "URL is in WHITE_LIST: " << url << std::endl;
-    inner_product(ip, this->ctx_wl, *key_wl_url);
-    inner_product(ip_root, this->ctx_root, dec_key.get_key_root());
-    gt_mul(phi, ip, ip_root);
-    gt_md_map(session_key, phi);
+    ip = innerProduct(this->ctx_wl, *key_wl_url);
+    ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
+    phi = ip * ip_root;
+    gt_md_map(session_key, phi.m_GT);
 
     return true;
   }
@@ -239,15 +299,15 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   BPGroup group;
   auto policy = createPolicyTree(dec_key.get_policy());
-  auto attribute_list = createAttributeList(this->attributes);
+  auto attributes_list = createAttributeList(this->attributes);
 
-  if (policy == nullptr || attribute_list == nullptr) {
+  if (policy == nullptr || attributes_list == nullptr) {
     std::cerr << "Error: Could not create policy tree or attribute list" << std::endl;
     return false;
   }
 
   OpenABELSSS lsss;
-  if (!lsss.recoverCoefficients(policy.get(), attribute_list.get())) {
+  if (!lsss.recoverCoefficients(policy.get(), attributes_list.get())) {
     std::cout << "Policy not satisfied, could not recover LSSS coefficients." << std::endl;
     return false;
   }
@@ -255,7 +315,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   auto recover_coeff = lsss.getRows();
 
-  gt_set_unity(ip_lsss);
+  ip_lsss.setIdentity();
   for (const auto& [_, coeff] : recover_coeff) {
     ZP cj = coeff.element();
     std::string att = coeff.label();
@@ -268,34 +328,26 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
       return false;
     }
 
-    inner_product(ip, *ctx_att__, *key_att__ * cj.m_ZP);
-    gt_mul(ip_lsss, ip_lsss, ip);
+    ip = innerProduct(*ctx_att__, *key_att__ * cj);
+    ip_lsss = ip_lsss * ip;
   }
 
-  str_to_bn(bn_url, url.c_str(), url.size(), group.order);
-  gt_set_unity(ip_bl);
+  zp_url = hashToZP(url, group.order);
+  ip_bl.setIdentity();
   for (auto it = dec_key.get_key_bl_begin(); it != dec_key.get_key_bl_end(); it++) {
     std::string bl = it->first;
-    str_to_bn(bn_bl, bl.c_str(), bl.size(), group.order);
-    bn_mod_sub(bn, bn_bl, bn_url, group.order);
-    bn_mod_inv(bn, bn, group.order);
+    zp_bl = hashToZP(bl, group.order);
+    zp = zp_bl - zp_url;
+    zp.multInverse();
 
-    inner_product(ip, this->ctx_bl, it->second);
-    gt_exp(ip, ip, bn);
-    gt_mul(ip_bl, ip_bl, ip);
+    ip = innerProduct(this->ctx_bl, it->second);
+    ip_bl = ip_bl * ip.exp(zp);
   }
 
-  inner_product(ip_root, this->ctx_root, dec_key.get_key_root());
+  ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
 
-  gt_mul(phi, ip_lsss, ip_bl);
-  gt_mul(phi, phi, ip_root);
-
-  gt_md_map(session_key, phi);
-
-  // Clear memory
-  bn_free(bn); bn_free(bn_bl); bn_free(bn_url);
-  gt_free(ip); gt_free(ip_bl); gt_free(ip_lsss); gt_free(ip_root);
-  gt_free(phi);
+  phi = ip_lsss * ip_bl * ip_root;
+  gt_md_map(session_key, phi.m_GT);
 
   return true;
 }
@@ -307,12 +359,10 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
  *
  * @param k the scalar to remove from the ciphertext
  */
-void KPABE_DPVS_CIPHERTEXT::remove_scalar(const bn_t k)
+void KPABE_DPVS_CIPHERTEXT::remove_scalar(const ZP &k)
 {
-  BPGroup group;
-  bn_t inv_k;
-  bn_null(inv_k); bn_new(inv_k);
-  bn_mod_inv(inv_k, k, group.order);
+  ZP inv_k = ZP(k);
+  inv_k.multInverse();
 
   this->ctx_root = this->ctx_root * inv_k;
   this->ctx_wl = this->ctx_wl * inv_k;
@@ -321,6 +371,27 @@ void KPABE_DPVS_CIPHERTEXT::remove_scalar(const bn_t k)
   for (auto& [_, ctx] : this->ctx_att) {
     ctx = ctx * inv_k;
   }
+}
 
-  bn_free(inv_k);
+size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes(CompressionType compress) const
+{
+  size_t total_size = 0;
+
+  size_t surl = this->url.size();
+  size_t sroot= this->ctx_root.getSizeInBytes(compress);
+  size_t swl  = this->ctx_wl.getSizeInBytes(compress);
+  size_t sbl  = this->ctx_bl.getSizeInBytes(compress);
+  size_t satt = this->ctx_att.begin()->second.getSizeInBytes(compress);
+
+  size_t s_att = 0;
+  for (const auto& [ctx_att, _] : this->ctx_att) s_att += ctx_att.size() + smart_sizeof(ctx_att.size());
+
+  total_size = (surl + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot) + 1) +
+               (swl + smart_sizeof(swl) + 1) + (sbl + smart_sizeof(sbl) + 1) +
+               (satt + smart_sizeof(satt) + 1) * this->ctx_att.size() + s_att;
+               sizeof(uint16_t) + sizeof(uint8_t);
+
+  total_size +=1; // I don't know why should I add 1 to get the correct size
+
+  return total_size;
 }

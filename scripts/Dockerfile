@@ -14,6 +14,7 @@ RUN mkdir -p /tmp/relic/build-${CURVE}
 WORKDIR /tmp/relic/build-${CURVE}
 RUN ../preset/x64-pbc-${CURVE}.sh ..
 RUN make -j && make install
+RUN cp /tmp/relic/src/md/blake2.h /usr/local/include/
 
 RUN git clone https://github.com/acarreo/abe-lsss.git /tmp/abe-lsss
 WORKDIR /tmp/abe-lsss

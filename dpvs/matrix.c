@@ -40,15 +40,15 @@ bool bn_vect_init(bn_vect_t vect, uint8_t dim)
 
   if (dim != 0)
   {
-    if ((vect->coord = malloc(dim * sizeof(bn_t))) == NULL)
+    if ((vect->elements = malloc(dim * sizeof(bn_t))) == NULL)
       return _error_alloc_fail_();
 
     int i = 0;
     RLC_TRY {
       for (; i < dim; i++)
       {
-        bn_null(vect->coord[i]);
-        bn_new(vect->coord[i]);
+        bn_null(vect->elements[i]);
+        bn_new(vect->elements[i]);
       }
     } RLC_CATCH_ANY {
       vect->dim = i;
@@ -168,7 +168,7 @@ bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index)
   if (index >= mat_dim(mat) || mat_dim(mat) != row->dim) return false;
 
   for (uint8_t j = 0; j < mat_dim(mat); j++)
-    bn_copy(row->coord[j], GET(mat, index, j));
+    bn_copy(row->elements[j], GET(mat, index, j));
 
   return true;
 }
@@ -187,7 +187,7 @@ void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
     bn_zero(ip);
     for (uint8_t i = 0; i < dim; i++)
     {
-      bn_mod_mul(tmp, vect1->coord[i], vect2->coord[i], Fq);
+      bn_mod_mul(tmp, vect1->elements[i], vect2->elements[i], Fq);
       bn_mod_add(ip, ip, tmp, Fq);
     }
   }
@@ -319,10 +319,10 @@ void bn_vect_clear(bn_vect_t vect)
 {
   if (vect->dim != 0)
   {
-    for (uint8_t i = 0; i < vect->dim; i++) bn_free(vect->coord[i]);
+    for (uint8_t i = 0; i < vect->dim; i++) bn_free(vect->elements[i]);
 
-    free(vect->coord);
-    vect->coord = NULL;
+    free(vect->elements);
+    vect->elements = NULL;
   }
 }
 
@@ -424,7 +424,7 @@ static bool LU_decompose(mat_t mat, uint8_t *P)
         RLC_THROW(ERR_NO_VALID);
       }
 
-      bn_mod_inv(row_norm->coord[i], max_A, Fq);
+      bn_mod_inv(row_norm->elements[i], max_A, Fq);
     }
 
     /* For each of the columns, starting from the left ... */
@@ -448,7 +448,7 @@ static bool LU_decompose(mat_t mat, uint8_t *P)
           bn_mod_sub(GET(mat, i, j), GET(mat, i, j), tmp, Fq);
         }
 
-        bn_mod_mul(max_tmp, GET(mat, i, j), row_norm->coord[i], Fq);
+        bn_mod_mul(max_tmp, GET(mat, i, j), row_norm->elements[i], Fq);
 
         if (bn_cmp(max_tmp, max_A) == RLC_GT || bn_cmp(max_tmp, max_A) == RLC_EQ) {
           bn_copy(max_A, max_tmp);
@@ -467,7 +467,7 @@ static bool LU_decompose(mat_t mat, uint8_t *P)
             bn_copy(GET(mat, imax, k), max_tmp);
           }
 
-          bn_copy(row_norm->coord[imax], row_norm->coord[j]);
+          bn_copy(row_norm->elements[imax], row_norm->elements[j]);
         }
       }
 
@@ -516,24 +516,24 @@ static void LU_substitution(bn_vect_t B, const mat_t mat, const uint8_t *P)
 
     for (int i = 0; i < dim; i++)
     {
-      bn_copy(tmp, B->coord[P[i]]);
-      bn_copy(B->coord[P[i]], B->coord[i]);
+      bn_copy(tmp, B->elements[P[i]]);
+      bn_copy(B->elements[P[i]], B->elements[i]);
 
       for (int j = i-1; j >= 0; j--) {
-        bn_mod_mul(tmp2, GET(mat, i, j), B->coord[j], Fq);
+        bn_mod_mul(tmp2, GET(mat, i, j), B->elements[j], Fq);
         bn_mod_sub(tmp, tmp, tmp2, Fq);
       }
-      bn_copy(B->coord[i], tmp);
+      bn_copy(B->elements[i], tmp);
     }
 
     for (int i = dim-1; i >= 0; i--) {
       for (int j = i+1; j < dim; j++) {
-        bn_mod_mul(tmp, GET(mat, i, j), B->coord[j], Fq);
-        bn_mod_sub(B->coord[i], B->coord[i], tmp, Fq);
+        bn_mod_mul(tmp, GET(mat, i, j), B->elements[j], Fq);
+        bn_mod_sub(B->elements[i], B->elements[i], tmp, Fq);
       }
 
       bn_mod_inv(tmp, GET(mat, i, i), Fq);
-      bn_mod_mul(B->coord[i], B->coord[i], tmp, Fq);
+      bn_mod_mul(B->elements[i], B->elements[i], tmp, Fq);
     }
   }
   RLC_CATCH_ANY {
@@ -567,13 +567,13 @@ static bool LU_invert_matrix(mat_t inv_A, const mat_t A)
     {
       for (uint8_t i = 0; i < dim; i++)
       {
-        for (uint8_t j = 0; j < dim; j++) bn_zero(vect_B->coord[j]);
-        bn_copy(vect_B->coord[i], one);
+        for (uint8_t j = 0; j < dim; j++) bn_zero(vect_B->elements[j]);
+        bn_copy(vect_B->elements[i], one);
 
         LU_substitution(vect_B, A_tmp, P);
 
         for (uint8_t j = 0; j < dim; j++)
-          bn_copy(GET(inv_A, j, i), vect_B->coord[j]);
+          bn_copy(GET(inv_A, j, i), vect_B->elements[j]);
       }
 
       is_inversible = true;
