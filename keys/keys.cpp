@@ -294,7 +294,7 @@ size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
 }
 
 /*****************************************************************************/
-/*------------------------ KPABE_DPVS_ENCRYPTION_KEY ------------------------*/
+/*------------------------ KPABE_DPVS_DECRYPTION_KEY ------------------------*/
 /*****************************************************************************/
 
 KPABE_DPVS_DECRYPTION_KEY::KPABE_DPVS_DECRYPTION_KEY(const std::string &policy_str,
@@ -528,15 +528,17 @@ size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
   size_t skwl = this->key_wl.begin()->second.getSizeInBytes(compress);
   size_t skbl = this->key_bl.begin()->second.getSizeInBytes(compress);
   size_t skatt= this->key_att.begin()->second.getSizeInBytes(compress);
-  size_t s_att= HASH_ATTRIBUTE_SIZE + smart_sizeof(HASH_ATTRIBUTE_SIZE);
 
-  total_size = (spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr)) +
-               (skwl + smart_sizeof(skwl) + s_att + 1) * this->key_wl.size() +
-               (skbl + smart_sizeof(skbl) + s_att + 1) * this->key_bl.size() +
-               (skatt+ smart_sizeof(skatt)+ s_att + 1) * this->key_att.size() +
+  size_t s_wl = 0, s_bl = 0, s_att = 0;
+  for (const auto& [wl, _] : this->key_wl) s_wl += wl.size() + smart_sizeof(wl.size());
+  for (const auto& [bl, _] : this->key_bl) s_bl += bl.size() + smart_sizeof(bl.size());
+  for (const auto& [att, _] : this->key_att) s_att += att.size() + smart_sizeof(att.size());
+
+  total_size = (spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr) + 1) +
+               (skwl + smart_sizeof(skwl) + 1) * this->key_wl.size()  + s_wl +
+               (skbl + smart_sizeof(skbl) + 1) * this->key_bl.size()  + s_bl +
+               (skatt+ smart_sizeof(skatt)+ 1) * this->key_att.size() + s_att +
                 sizeof(uint8_t) + sizeof(uint16_t) * 3;
-
-  total_size += 1; // I don't know why should I add one to get the correct size
 
   return total_size;
 }
