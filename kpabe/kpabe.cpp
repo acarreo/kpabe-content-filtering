@@ -382,11 +382,13 @@ size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes(CompressionType compress) const
   size_t swl  = this->ctx_wl.getSizeInBytes(compress);
   size_t sbl  = this->ctx_bl.getSizeInBytes(compress);
   size_t satt = this->ctx_att.begin()->second.getSizeInBytes(compress);
-  size_t att_s= HASH_ATTRIBUTE_SIZE + smart_sizeof(HASH_ATTRIBUTE_SIZE);
 
-  total_size = (surl  + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot)) +
-               (swl   + smart_sizeof(swl))  + (sbl   + smart_sizeof(sbl)) +
-               (satt + smart_sizeof(satt) + att_s + 1) * this->ctx_att.size() +
+  size_t s_att = 0;
+  for (const auto& [ctx_att, _] : this->ctx_att) s_att += ctx_att.size() + smart_sizeof(ctx_att.size());
+
+  total_size = (surl + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot) + 1) +
+               (swl + smart_sizeof(swl) + 1) + (sbl + smart_sizeof(sbl) + 1) +
+               (satt + smart_sizeof(satt) + 1) * this->ctx_att.size() + s_att;
                sizeof(uint16_t) + sizeof(uint8_t);
 
   total_size +=1; // I don't know why should I add 1 to get the correct size
