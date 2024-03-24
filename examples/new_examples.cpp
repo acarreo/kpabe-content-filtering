@@ -30,6 +30,7 @@ int main()
   example_encrypt_decrypt_old();
   example_encrypt_decrypt();
   example_unlinkability_public_keys();
+  example_serialization();
 
   clean_libraries();
   return 0;
@@ -272,5 +273,94 @@ void example_unlinkability_public_keys() {
     std::cout << "Symmetric key recovered successfully" << std::endl;
   } else {
     std::cerr << "Error: Symmetric key NOT recovered" << std::endl;
+  }
+}
+
+
+// Old serialization methods can be found on examples/examples.cpp
+// Other serialization examples can be found on main.cpp : test_serialization_keys()
+void example_serialization() {
+  std::cout << "\n----------------> START : " << __func__ << std::endl;
+
+  std::cout << "Testing serialization..." << std::endl;
+
+  KPABE_DPVS kpabe;
+  if (!kpabe.setup()) {
+    std::cerr << "Error: Could not setup keys" << std::endl;
+    return;
+  }
+
+  auto public_key = kpabe.get_public_key();
+  auto master_key = kpabe.get_master_key();
+
+  KPABE_DPVS_DECRYPTION_KEY dec_key(policy, wl, bl);
+  if (!dec_key.generate(master_key)) {
+    std::cerr << "Error: Could not generate decryption key" << std::endl;
+    return;
+  }
+
+  uint8_t sym_key[RLC_MD_LEN];
+  uint8_t sym_key_rec[RLC_MD_LEN];
+  uint8_t sym_key_rec_1[RLC_MD_LEN];
+
+  string url("www.perdu.com");
+  string attributes("|A5|A1|A2|AA|BB|CC|");
+
+  /******************************* ENCRYPTION *******************************/
+  KPABE_DPVS_CIPHERTEXT cipher(attributes, url);
+  if (!cipher.encrypt(sym_key, public_key)) {
+    std::cerr << "Error: Could not encrypt" << std::endl;
+    return;
+  }
+
+  size_t sizeof_cipher = cipher.getSizeInBytes();
+  char* buffer_cipher = (char*) malloc(sizeof_cipher * sizeof(char));
+  if (buffer_cipher == NULL) {
+    std::cerr << "Error: Could not allocate memory" << std::endl;
+    return;
+  }
+  std::cout << "\nSize of Ciphertext : getSizeInBytes() --> " << sizeof_cipher << std::endl;
+
+
+  // Serialize the ciphertext
+  vector<uint8_t> cipher_bytes;
+  cipher.serialize(cipher_bytes);
+
+  // Copy the serialized ciphertext to the buffer
+  if (sizeof_cipher != cipher_bytes.size()) {
+    std::cerr << "Error: Size of Ciphertext mismatch" << std::endl;
+    return;
+  }
+  memcpy(buffer_cipher, cipher_bytes.data(), sizeof_cipher);
+
+  // Deserialize the ciphertext from the buffer
+  KPABE_DPVS_CIPHERTEXT cipher_deserialized;
+  vector<uint8_t> bytes_from_buffer(buffer_cipher, buffer_cipher + sizeof_cipher);
+  cipher_deserialized.deserialize(bytes_from_buffer);
+
+  /******************************* DECRYPTION *******************************/
+  std::cout << "\nDecrypting the deserialized ciphertext..." << std::endl;
+  if (!cipher_deserialized.decrypt(sym_key_rec, dec_key)) {
+    std::cerr << "Error: Could not decrypt" << std::endl;
+    return;
+  }
+  if (memcmp(sym_key, sym_key_rec, RLC_MD_LEN) == 0) {
+    std::cout << "Symmetric key recovered successfully" << std::endl;
+  } else {
+    std::cerr << "Error: Symmetric key NOT recovered" << std::endl;
+    return;
+  }
+
+  // The ==operator is not implemented for the ciphertext
+  // In place, we can compare the decrypted symmetric keys from the two ciphertexts
+  std::cout << "\nDecrypting the original ciphertext..." << std::endl;
+  if (!cipher.decrypt(sym_key_rec_1, dec_key)) {
+    std::cerr << "Error: Could not decrypt" << std::endl;
+    return;
+  }
+  if (memcmp(sym_key_rec, sym_key_rec_1, RLC_MD_LEN) == 0) {
+    std::cout << "The serialized and deserialized ciphertexts are equal" << std::endl;
+  } else {
+    std::cerr << "Error: Serialized and deserialized ciphertexts are NOT equal" << std::endl;
   }
 }
