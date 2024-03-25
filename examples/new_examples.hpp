@@ -21,6 +21,8 @@ void example_encrypt_decrypt_old();
 void example_unlinkability_public_keys();
 void example_unlinkability_decryption();
 void example_serialization();
+void example_serialization_zp ();
+void example_serialization_randomized_public_key();
 
 
 #endif // __NEW_EXAMPLES_HPP__

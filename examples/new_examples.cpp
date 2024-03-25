@@ -31,6 +31,8 @@ int main()
   example_encrypt_decrypt();
   example_unlinkability_public_keys();
   example_serialization();
+  example_serialization_zp();
+  example_serialization_randomized_public_key();
 
   clean_libraries();
   return 0;
@@ -362,5 +364,85 @@ void example_serialization() {
     std::cout << "The serialized and deserialized ciphertexts are equal" << std::endl;
   } else {
     std::cerr << "Error: Serialized and deserialized ciphertexts are NOT equal" << std::endl;
+  }
+}
+
+void example_serialization_zp () {
+  std::cout << "\n----------------> START : " << __func__ << std::endl;
+
+  BPGroup group;
+  ZP zp;
+  zp.setRandom(group.order);
+
+  ByteString bytes;
+  zp.serialize(bytes);
+
+  /**************************** with ALLOCATION ****************************/
+  char *zp_char_alloc = (char*)malloc(bytes.size() * sizeof(char));
+  if (zp_char_alloc == nullptr) {
+    cerr << "Failed to allocate memory" << endl;
+    return;
+  }
+  memcpy(zp_char_alloc, bytes.data(), bytes.size());
+
+  // Deserialize the ZP from the char array :zp_char_alloc
+  ZP zp_deserialized_1;
+  vector<uint8_t> vec_from_char_alloc(zp_char_alloc, zp_char_alloc + bytes.size());
+  zp_deserialized_1.deserialize(vec_from_char_alloc);
+
+  if (zp == zp_deserialized_1) {
+    cout << "ZP serialization/deserialization successful" << endl;
+  } else {
+    cerr << "ZP serialization/deserialization failed" << endl;
+  }
+
+
+  /*************************** without ALLOCATION ***************************/
+  char* zp_char = reinterpret_cast<char*>(bytes.data());
+
+  // Deserialize the ZP from the char array : zp_char
+  ZP zp_deserialized_2;
+  vector<uint8_t> vec_bytes(zp_char, zp_char + bytes.size());
+  zp_deserialized_2.deserialize(bytes);
+
+  if (zp == zp_deserialized_2) {
+    cout << "ZP serialization/deserialization successful" << endl;
+  } else {
+    cerr << "ZP serialization/deserialization failed" << endl;
+  }
+}
+
+void example_serialization_randomized_public_key() {
+  std::cout << "\n----------------> START : " << __func__ << std::endl;
+
+  KPABE_DPVS kpabe;
+  if (!kpabe.setup()) {
+    std::cerr << "Error: Could not setup keys" << std::endl;
+    return;
+  }
+
+  auto public_key = kpabe.get_public_key();
+
+  // Randomize the public key
+  auto pk_rand = public_key.randomize();
+
+  // Serialization
+  vector<uint8_t> pk_bytes, zp_bytes;
+
+  pk_rand.first.serialize(pk_bytes);
+  pk_rand.second.serialize(zp_bytes);
+
+  // Deserialization
+  KPABE_DPVS_PUBLIC_KEY pk_deserialized;
+  ZP zp_deserialized;
+
+  pk_deserialized.deserialize(pk_bytes);
+  zp_deserialized.deserialize(zp_bytes);
+
+  // Validate the derived key, which should be valid
+  if (public_key.validate_derived_key(pk_deserialized, zp_deserialized)) {
+    std::cout << "The deserialized randomized public key is valid" << std::endl;
+  } else {
+    std::cerr << "Error: The deserialized randomized public key is NOT valid" << std::endl;
   }
 }
