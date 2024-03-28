@@ -40,16 +40,16 @@ add_executable(
     examples/new_examples.cpp
 )
 
-# add_executable(
-#     bench_out
-#     ${SOURCE_FILES}
-#     bench/bench.cpp
-# )
+add_executable(
+    new_bench
+    ${SOURCE_FILES}
+    bench/new_bench.cpp
+)
 
 target_link_libraries(kpabe_out lsss relic_s gmp)
 target_link_libraries(new_examples lsss relic_s gmp)
 # target_link_libraries(example_out relic_s lsss gmp)
-# target_link_libraries(bench_out relic_s lsss gmp)
+target_link_libraries(new_bench lsss relic_s gmp)
 
 add_custom_target(example
     # COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out
@@ -58,7 +58,7 @@ add_custom_target(example
 )
 
 add_custom_target(bench
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target bench_out
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_bench
     COMMENT "Building bench_out executable"
 )
 
