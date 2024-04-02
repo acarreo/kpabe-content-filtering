@@ -508,7 +508,7 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
 
 void KPABE_DPVS_DECRYPTION_KEY::serialize(std::vector<uint8_t> &buffer) const {
   ByteString temp;
-  this->serialize(temp);
+  this->serialize(temp, BIN_COMPRESSED);
   buffer.resize(temp.size());
   std::copy(temp.data(), temp.data() + temp.size(), buffer.begin());
 }
