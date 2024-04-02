@@ -1,0 +1,28 @@
+
+-------------------------------------------------------------------------------
+| Key Type   | Compress | Operation       | Method     | Time (us) | Size (B) |
+|------------|----------|-----------------|------------|-----------|----------|
+| Public Key | 1        | Serialization   | ByteString |   65      |  2827    |
+|            |          | Deserialization | ByteString | 1492      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | ByteString |  103      |  5523    |
+|            |          | Deserialization | ByteString |  246      |          |
+|-----------------------------------------------------------------------------|
+| Master Key | 1        | Serialization   | ByteString |  108      |  5523    |
+|            |          | Deserialization | ByteString | 3720      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | ByteString |  185      | 10899    |
+|            |          | Deserialization | ByteString |  460      |          |
+|-----------------------------------------------------------------------------|
+| Public Key | 1        | Serialization   | iostream   |   65      |  2827    |
+|            |          | Deserialization | iostream   | 1536      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | iostream   |  104      |  5523    |
+|            |          | Deserialization | iostream   |  324      |          |
+|-----------------------------------------------------------------------------|
+| Master Key | 1        | Serialization   | iostream   |  109      |  5523    |
+|            |          | Deserialization | iostream   | 3676      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | iostream   |  186      | 10899    |
+|            |          | Deserialization | iostream   |  615      |          |
+-------------------------------------------------------------------------------
