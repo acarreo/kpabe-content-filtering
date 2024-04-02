@@ -51,10 +51,16 @@ target_link_libraries(new_examples lsss relic_s gmp)
 # target_link_libraries(example_out relic_s lsss gmp)
 target_link_libraries(new_bench lsss relic_s gmp)
 
-target_compile_options(new_bench
-    PRIVATE
-        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wno-unused-parameter>
-)
+function(set_compiler_options target)
+    target_compile_options(${target}
+        PRIVATE
+            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wno-unused-parameter>
+    )
+endfunction()
+
+set_compiler_options(new_bench)
+set_compiler_options(kpabe_out)
+set_compiler_options(new_examples)
 
 add_custom_target(example
     # COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out
