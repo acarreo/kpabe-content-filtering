@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   bench_serialization_params_iostream();
   bench_serialization_params(BENCH_ROUNDS, BIN_UNCOMPRESSED);
   bench_serialization_params_iostream(BENCH_ROUNDS, BIN_UNCOMPRESSED);
-  // bench_serialization_dec_key();
+  bench_serialization_dec_key(2);
   // bench_encryption();
   // bench_decryption();
 
@@ -157,4 +157,56 @@ void bench_serialization_params_iostream(int rounds, CompressionType compress)
 
   cout << "Size of public key: " << public_key.getSizeInBytes(compress) << " bytes" << endl;
   cout << "Size of master key: " << master_key.getSizeInBytes(compress) << " bytes" << endl;
+}
+
+void bench_serialization_dec_key(int rounds)
+{
+  cout << "\n----------------> START : " << __func__ << endl;
+  cout << "Benchmarking serialization of decryption key\n" << endl;
+
+  KPABE_DPVS kpabe;
+  if (!kpabe.setup()) {
+    std::cerr << "Error: Could not setup keys" << std::endl;
+    return;
+  }
+
+  vector<string> wl = {"facebook", "twitter", "linkedin", "instagram", "snapchat"};
+  vector<string> bl = {"scholar", "researchgate", "academia", "mendeley", "publons"};
+  string policy = "A5 and ((A1 and A2) or (A3 and A4))";
+
+  auto dec_key = kpabe.keygen(policy, wl, bl);
+
+  duration<double, std::micro> ser_dk_duration(0);
+  duration<double, std::micro> des_dk_duration(0);
+
+  chrono::time_point<chrono::high_resolution_clock> t1, t2, t3;
+
+  for (int i = 0; i < rounds; i++) {
+    ByteString dec_key_bytes;
+    // vector<uint8_t> dec_key_bytes;
+
+    KPABE_DPVS_DECRYPTION_KEY dec_key2;
+
+    t1 = high_resolution_clock::now();
+    dec_key->serialize(dec_key_bytes);
+    t2 = high_resolution_clock::now();
+    dec_key2.deserialize(dec_key_bytes);
+    t3 = high_resolution_clock::now();
+
+    ser_dk_duration += duration_cast<microseconds>( t2 - t1 );
+    des_dk_duration += duration_cast<microseconds>( t3 - t2 );
+
+    if (*dec_key != dec_key2) {
+      std::cerr << "Error: Decryption keys are not equal" << std::endl;
+      return;
+    }
+
+    if (i == 0) {
+      cout << "Size of decryption key (from ByteString): " << dec_key_bytes.size() << " bytes" << endl;
+    }
+  }
+  cout << "Serialization of decryption key: " << (int) ser_dk_duration.count() / rounds << " us" << endl;
+  cout << "Deserialization of decryption key: " << (int) des_dk_duration.count() / rounds << " us" << endl;
+
+  cout << "Size of decryption key: " << dec_key->getSizeInBytes() << " bytes" << endl;
 }
