@@ -73,7 +73,7 @@ class KPABE_DPVS_CIPHERTEXT {
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::ostream& os) const;
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const;
     void deserialize(std::istream& is);
 
     void serialize(std::vector<uint8_t>& bytes) const;

@@ -217,12 +217,12 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
    * serialization, but this difference does not impact functionality. */
 }
 
-void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os) const {
+void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
     size_t size = 0;
 
-    this->serialize(temp, BIN_COMPRESSED);
+    this->serialize(temp, compress);
     size = temp.size();
 
     os.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -375,21 +375,22 @@ void KPABE_DPVS_CIPHERTEXT::remove_scalar(const ZP &k)
 
 size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes(CompressionType compress) const
 {
-  size_t total_size = 0;
-
   size_t surl = this->url.size();
   size_t sroot= this->ctx_root.getSizeInBytes(compress);
   size_t swl  = this->ctx_wl.getSizeInBytes(compress);
   size_t sbl  = this->ctx_bl.getSizeInBytes(compress);
   size_t satt = this->ctx_att.begin()->second.getSizeInBytes(compress);
 
-  size_t s_att = 0;
-  for (const auto& [ctx_att, _] : this->ctx_att) s_att += ctx_att.size() + smart_sizeof(ctx_att.size());
+  size_t total_size = sizeof(uint16_t) // ctx_att size
+                    + sizeof(uint8_t); // element type (see serialize method)
 
-  total_size = (surl + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot) + 1) +
-               (swl + smart_sizeof(swl) + 1) + (sbl + smart_sizeof(sbl) + 1) +
-               (satt + smart_sizeof(satt) + 1) * this->ctx_att.size() + s_att;
-               sizeof(uint16_t) + sizeof(uint8_t);
+  for (const auto& [ctx_att, _] : this->ctx_att) {
+    total_size += ctx_att.size() + smart_sizeof(ctx_att.size());
+  }
+
+  total_size += (surl + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot)) +
+                (swl + smart_sizeof(swl)) + (sbl + smart_sizeof(sbl)) +
+                (satt + smart_sizeof(satt) + 1) * this->ctx_att.size();
 
   total_size +=1; // I don't know why should I add 1 to get the correct size
 

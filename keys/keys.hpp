@@ -70,7 +70,7 @@ class KPABE_DPVS_PUBLIC_KEY {
     G1_VECTOR get_h2() const { return this->h2; }
     G1_VECTOR get_h3() const { return this->h3; }
 
-    void serialize(std::ostream& os) const;
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const;
     void deserialize(std::istream& is);
 
     void serialize(std::vector<uint8_t>& buffer) const;
@@ -144,7 +144,7 @@ class KPABE_DPVS_MASTER_KEY {
     G2_VECTOR get_hh2() const { return this->hh2; }
     G2_VECTOR get_hh3() const { return this->hh3; }
 
-    void serialize(std::ostream& os) const;
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const;
     void deserialize(std::istream& is);
 
     void serialize(ByteString &result, CompressionType compress) const;

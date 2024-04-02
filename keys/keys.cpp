@@ -121,12 +121,12 @@ size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
   return total_size;
 }
 
-void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os) const {
+void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
     size_t size = 0;
 
-    this->serialize(temp, BIN_COMPRESSED);
+    this->serialize(temp, compress);
     size = temp.size();
 
     os.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -148,6 +148,7 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
 }
 
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::vector<uint8_t> &buffer) const {
+  std::cout << "Serializing public key" << std::endl;
   ByteString temp;
   this->serialize(temp, BIN_COMPRESSED);
   buffer.resize(temp.size());
@@ -237,12 +238,12 @@ void KPABE_DPVS_MASTER_KEY::deserialize(ByteString &input) {
   }
 }
 
-void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os) const {
+void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
     size_t size = 0;
 
-    this->serialize(temp, BIN_COMPRESSED);
+    this->serialize(temp, compress);
     size = temp.size();
 
     os.write(reinterpret_cast<const char*>(&size), sizeof(size));
