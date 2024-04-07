@@ -59,11 +59,15 @@ int main() {
                   << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us" << std::endl;
         std::cout << "public key size = " << raw_data.size() << std::endl << std::endl;
 
+        // copy raw data with size
+        std::vector<unsigned char> raw_data_with_size = copy_raw_data_with_size(raw_data);
+        std::cout << "public key size with size = " << raw_data_with_size.size() << std::endl << std::endl;
+
         // deserialize via istream
         {
             KPABE_DPVS_PUBLIC_KEY pub_key;
             start = std::chrono::steady_clock::now();
-            IMemStream raw_data_stream(raw_data.data(), raw_data.size());
+            IMemStream raw_data_stream(raw_data_with_size.data(), raw_data_with_size.size());
             pub_key.deserialize(raw_data_stream);
             std::cout << "deserialize public key via istream (no copy) time = "
                       << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -75,7 +79,7 @@ int main() {
             KPABE_DPVS_PUBLIC_KEY pub_key;
             start = std::chrono::steady_clock::now();
             std::stringstream ss;
-            ss.write((char *)raw_data.data(), raw_data.size());
+            ss.write((char *)raw_data_with_size.data(), raw_data_with_size.size());
             pub_key.deserialize(ss);
             std::cout << "deserialize public key via stringstream (with copy) time = "
                       << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -115,11 +119,15 @@ int main() {
                   << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us" << std::endl;
         std::cout << "decryption key size = " << raw_data.size() << std::endl << std::endl;
 
+        // copy raw data with size
+        std::vector<unsigned char> raw_data_with_size = copy_raw_data_with_size(raw_data);
+        std::cout << "decryption key size with size = " << raw_data_with_size.size() << std::endl << std::endl;
+
         // deserialize via istream
         {
             KPABE_DPVS_DECRYPTION_KEY dec_key;
             start = std::chrono::steady_clock::now();
-            IMemStream raw_data_stream(raw_data.data(), raw_data.size());
+            IMemStream raw_data_stream(raw_data_with_size.data(), raw_data_with_size.size());
             dec_key.deserialize(raw_data_stream);
             std::cout << "deserialize decryption key via istream time = "
                       << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -128,7 +136,7 @@ int main() {
         }
         // deserialize via vector
         {
-            KPABE_DPVS_PUBLIC_KEY dec_key;
+            KPABE_DPVS_DECRYPTION_KEY dec_key;
             start = std::chrono::steady_clock::now();
             dec_key.deserialize(raw_data);
             std::cout << "deserialize decryption key via vector time = "
@@ -171,6 +179,10 @@ int main() {
             unsigned char *network_bytes = raw_data.data();
             size_t network_bytes_size = raw_data.size();
 
+            std::vector<unsigned char> raw_data_with_size = copy_raw_data_with_size(raw_data);
+            unsigned char *network_bytes_with_size = raw_data_with_size.data();
+            size_t size = raw_data_with_size.size();
+
             // deserialize via ByteString
             {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
@@ -201,7 +213,7 @@ int main() {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
                 start = std::chrono::steady_clock::now();
                 std::stringstream ss;
-                ss.write((char *)network_bytes, network_bytes_size);
+                ss.write((char *)network_bytes_with_size, size);
                 pub_key2.deserialize(ss);
                 std::cout << "deserialize public key via stringstream (with copy) time = "
                           << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -213,7 +225,7 @@ int main() {
             {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
                 start = std::chrono::steady_clock::now();
-                IMemStream ims(network_bytes, network_bytes_size);
+                IMemStream ims(network_bytes_with_size, size);
                 pub_key2.deserialize(ims);
                 std::cout << "deserialize public key via custom istream (no copy) time = "
                           << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -238,12 +250,16 @@ int main() {
             unsigned char *network_bytes = (unsigned char *)raw_data.data();
             size_t network_bytes_size = raw_data.size();
 
+            size_t size = 0;
+            ss.read((char *)&size, sizeof(size));
+            unsigned char *network_bytes_without_size = (unsigned char *)raw_data.data() + sizeof(size);
+
             // deserialize via ByteString
             {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
                 start = std::chrono::steady_clock::now();
                 ByteString raw_data;
-                raw_data.assign(network_bytes, network_bytes + network_bytes_size);
+                raw_data.assign(network_bytes_without_size, network_bytes_without_size + size);
                 pub_key2.deserialize(raw_data);
                 std::cout << "deserialize public key via ByteString (with copy) time = "
                           << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -255,7 +271,7 @@ int main() {
             {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
                 start = std::chrono::steady_clock::now();
-                std::vector<unsigned char> raw_data(network_bytes, network_bytes + network_bytes_size);
+                std::vector<unsigned char> raw_data(network_bytes_without_size, network_bytes_without_size + size);
                 pub_key2.deserialize(raw_data);
                 std::cout << "deserialize public key via vector (with copy) time = "
                           << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -294,7 +310,7 @@ int main() {
         // serialize public key via custom ogsteam (no addtionnal copy)
         {
             start = std::chrono::steady_clock::now();
-            std::vector<unsigned char> raw_data(pub_key.getSizeInBytes(), 0);
+            std::vector<unsigned char> raw_data(pub_key.getSizeInBytes() + sizeof(size_t), 0);
             OMemStream oms(raw_data.data(), raw_data.size());
             pub_key.serialize(oms);
             std::cout << "serialize public key via custom ostream (no copy) time = "
@@ -305,12 +321,15 @@ int main() {
             unsigned char *network_bytes = raw_data.data();
             size_t network_bytes_size = raw_data.size();
 
+            size_t size = raw_data.size() - sizeof(size_t);
+            unsigned char *network_bytes_without_size = network_bytes + sizeof(size_t);
+
             // deserialize via ByteString
             {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
                 start = std::chrono::steady_clock::now();
                 ByteString raw_data;
-                raw_data.assign(network_bytes, network_bytes + network_bytes_size);
+                raw_data.assign(network_bytes_without_size, network_bytes_without_size + size);
                 pub_key2.deserialize(raw_data);
                 std::cout << "deserialize public key via ByteString (with copy) time = "
                           << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -322,7 +341,7 @@ int main() {
             {
                 KPABE_DPVS_PUBLIC_KEY pub_key2;
                 start = std::chrono::steady_clock::now();
-                std::vector<unsigned char> raw_data(network_bytes, network_bytes + network_bytes_size);
+                std::vector<unsigned char> raw_data(network_bytes_without_size, network_bytes_without_size + size);
                 pub_key2.deserialize(raw_data);
                 std::cout << "deserialize public key via vector (with copy) time = "
                           << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count() << " us"
@@ -425,6 +444,7 @@ int main() {
 
         std::cout << std::endl;
 
+#if 0
         // serialize decryption key via ByteString
         {
             start = std::chrono::steady_clock::now();
@@ -689,6 +709,7 @@ int main() {
                 std::cout << "key size = " << dec_key2.getSizeInBytes() << ", equal = " << (dec_key == dec_key2) << std::endl << std::endl;
             }
         }
+#endif
     }
 
     return 0;
