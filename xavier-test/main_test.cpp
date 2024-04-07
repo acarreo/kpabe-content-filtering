@@ -5,11 +5,15 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <vector>
+#include <iomanip>
 
 // #include "kpabe-content-filtering/dpvs/vector_ec.hpp"
 // #include "kpabe-content-filtering/keys/keys.hpp"
 #include "kpabe_utils.h"
 #include "ssl_utils.h"
+
+std::vector<unsigned char> copy_raw_data_with_size(const std::vector<unsigned char> &raw_data);
+void print_raw_data(const std::vector<unsigned char> &raw_data);
 
 bn_t Fq;
 int main() {
@@ -688,4 +692,23 @@ int main() {
     }
 
     return 0;
+}
+
+
+void print_raw_data(std::vector<uint8_t> &raw_data) {
+    std::cout << "-------------------------------------------------------------------------------" << std::endl;
+    for (const auto &elem : raw_data) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)elem;
+    }
+    std::cout << std::dec << std::endl;
+    std::cout << "-------------------------------------------------------------------------------" << std::endl;
+}
+
+// copy the raw data with a size_t at the beginning
+std::vector<unsigned char> copy_raw_data_with_size(const std::vector<unsigned char> &raw_data) {
+    std::vector<unsigned char> raw_data_with_size(raw_data.size() + sizeof(size_t), 0);
+    size_t size = raw_data.size();
+    memcpy(raw_data_with_size.data(), &size, sizeof(size_t));
+    memcpy(raw_data_with_size.data() + sizeof(size_t), raw_data.data(), raw_data.size());
+    return raw_data_with_size;
 }
