@@ -6,8 +6,8 @@
 #include <sstream>
 #include <vector>
 
-#include "kpabe-content-filtering/dpvs/vector_ec.hpp"
-#include "kpabe-content-filtering/keys/keys.hpp"
+// #include "kpabe-content-filtering/dpvs/vector_ec.hpp"
+// #include "kpabe-content-filtering/keys/keys.hpp"
 #include "kpabe_utils.h"
 #include "ssl_utils.h"
 
@@ -22,6 +22,7 @@ int main() {
 
     std::fstream f("./json.txt");
     if (!f.good()) {
+        std::cerr << "unable to open file" << std::endl;
         return 1;
     }
 

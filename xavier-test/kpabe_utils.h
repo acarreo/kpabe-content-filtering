@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-#include "kpabe-content-filtering/kpabe/kpabe.hpp"
+// #include "kpabe-content-filtering/kpabe/kpabe.hpp"
+#include "../kpabe/kpabe.hpp"
 
 constexpr uint16_t KPABE_PUB_KEY_EXT = 100;
 constexpr uint16_t KPABE_SCALAR_EXT = 101;

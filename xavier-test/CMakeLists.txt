@@ -18,11 +18,11 @@ find_package(nlohmann_json 3.2.0 REQUIRED)
 file(
     GLOB_RECURSE
     kpabe_sources
-    kpabe-content-filtering/dpvs/*
-    kpabe-content-filtering/keys/*
-    kpabe-content-filtering/kpabe/*
-    kpabe-content-filtering/utils.c
-    kpabe-content-filtering/utils.h
+    ../dpvs/*
+    ../keys/*
+    ../kpabe/*
+    ../utils.c
+    ../utils.h
 )
 
 add_executable(
