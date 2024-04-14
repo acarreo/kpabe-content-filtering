@@ -291,4 +291,6 @@ class KPABE_DPVS_DECRYPTION_KEY {
     key_map_t key_att;    // H*
 };
 
+bool getSizeFromStream(std::istream &is, size_t *size, ByteString &size_buf);
+
 #endif // end of __KEYS_HPP__

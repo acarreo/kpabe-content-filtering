@@ -131,26 +131,30 @@ size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
-    size_t size = 0;
-
     this->serialize(temp, compress);
-    size = temp.size();
-
-    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
+    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
   }
 }
 
 void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
   if (is.good()) {
-    ByteString temp;
+    ByteString temp, bytes;
     size_t size = 0;
 
-    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!getSizeFromStream(is, &size, bytes)) {
+      std::cerr << "Error: Could not get size from stream" << std::endl;
+      return;
+    }
+
     temp.fillBuffer(0, size);
     is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
+    if (!is.good()) {
+      std::cerr << "Error: Could not read data" << std::endl;
+      return;
+    }
 
-    this->deserialize(temp);
+    bytes += temp;
+    this->deserialize(bytes);
   }
 }
 
@@ -252,26 +256,30 @@ void KPABE_DPVS_MASTER_KEY::deserialize(ByteString &input) {
 void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
-    size_t size = 0;
-
     this->serialize(temp, compress);
-    size = temp.size();
-
-    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
+    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
   }
 }
 
 void KPABE_DPVS_MASTER_KEY::deserialize(std::istream &is) {
   if (is.good()) {
-    ByteString temp;
+    ByteString temp, bytes;
     size_t size = 0;
 
-    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!getSizeFromStream(is, &size, bytes)) {
+      std::cerr << "Error: Could not get size from stream" << std::endl;
+      return;
+    }
+
     temp.fillBuffer(0, size);
     is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
+    if (!is.good()) {
+      std::cerr << "Error: Could not read data" << std::endl;
+      return;
+    }
 
-    this->deserialize(temp);
+    bytes += temp;
+    this->deserialize(bytes);
   }
 }
 
@@ -501,26 +509,31 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(ByteString &input) {
 void KPABE_DPVS_DECRYPTION_KEY::serialize(std::ostream &os) const {
  if (os.good()) {
   ByteString temp;
-  size_t size = 0;
-
   this->serialize(temp, BIN_COMPRESSED);
-  size = temp.size();
-
-  os.write(reinterpret_cast<const char*>(&size), sizeof(size));
-  os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
+  os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
  }
 }
 
 void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
   if (is.good()) {
-    ByteString temp;
+    ByteString temp, bytes;
     size_t size = 0;
 
-    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!getSizeFromStream(is, &size, bytes)) {
+      std::cerr << "Error: Could not get size from stream" << std::endl;
+      return;
+    }
+
     temp.fillBuffer(0, size);
     is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
+    if (!is.good()) {
+      std::cerr << "Error: Could not read data" << std::endl;
+      return;
+    }
+    // temp.serialize(bytes); // serialize the temp in bytes
 
-    this->deserialize(temp);
+    bytes += temp;
+    this->deserialize(bytes);
   }
 }
 
@@ -568,4 +581,19 @@ bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &othe
          map_compare(this->key_wl, other.key_wl) &&
          map_compare(this->key_bl, other.key_bl) &&
          map_compare(this->key_att, other.key_att);
+}
+
+
+bool getSizeFromStream(std::istream &is, size_t *size, ByteString &size_buf) {
+  size_buf.fillBuffer(0, hdrLen);
+  is.read(reinterpret_cast<char *>(size_buf.getInternalPtr()), static_cast<std::streamsize>(hdrLen));
+  if (!is.good()) {
+    std::cerr << "Error: Could not read pack size" << std::endl;
+    return false;
+  }
+
+  size_t index = 1;
+  *size = size_buf.get32bits(&index);
+
+  return true;
 }
