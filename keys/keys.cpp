@@ -113,17 +113,17 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(ByteString &input) {
 }
 
 size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
-  size_t total_size = 0;
+  size_t total_size = hdrLen;
 
   size_t sd1 = this->d1.getSizeInBytes(compress);
   size_t sf1 = this->f1.getSizeInBytes(compress);
   size_t sg1 = this->g1.getSizeInBytes(compress);
   size_t sh1 = this->h1.getSizeInBytes(compress);
 
-  total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
+  total_size +=(sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
                (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
 
-  total_size += sizeof(uint8_t); // size of key type  
+  total_size += sizeof(uint8_t); // size of key type
 
   return total_size;
 }
@@ -540,7 +540,7 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(const std::vector<uint8_t> &buffer) 
 
 size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
 {
-  size_t total_size = 0;
+  size_t total_size = hdrLen;
 
   size_t spol = this->policy.size();
   size_t skr  = this->key_root.getSizeInBytes(compress);
@@ -553,7 +553,7 @@ size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
   for (const auto& [bl, _] : this->key_bl) s_bl += bl.size() + smart_sizeof(bl.size());
   for (const auto& [att, _] : this->key_att) s_att += att.size() + smart_sizeof(att.size());
 
-  total_size = (spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr) + 1) +
+  total_size +=(spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr) + 1) +
                (skwl + smart_sizeof(skwl) + 1) * this->key_wl.size()  + s_wl +
                (skbl + smart_sizeof(skbl) + 1) * this->key_bl.size()  + s_bl +
                (skatt+ smart_sizeof(skatt)+ 1) * this->key_att.size() + s_att +

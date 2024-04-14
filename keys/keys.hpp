@@ -44,6 +44,9 @@ typedef enum KPABE_KEY_TYPE {
 
 #define HASH_ATTRIBUTE_SIZE   (((SIZEOF_ATTRIBUTE + 2) / 3 * 4) + 2)
 
+#define hdrLen    (sizeof(uint8_t) + sizeof(uint32_t))
+
+
 class KPABE_DPVS_PUBLIC_KEY {
   public:
     KPABE_DPVS_PUBLIC_KEY() {};
