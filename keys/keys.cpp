@@ -60,10 +60,8 @@ bool KPABE_DPVS_PUBLIC_KEY::validate_derived_key(const KPABE_DPVS_PUBLIC_KEY &ot
           this->h1 * k == other.h1 && this->h2 * k == other.h2 && this->h3 * k == other.h3);
 }
 
-void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &result, CompressionType compress) const {
-  ByteString temp;
-
-  // std::cout << "-------------------------> Serial PUBLIC KEY" << std::endl;
+void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &output, CompressionType compress) const {
+  ByteString temp, result;
 
   result.insertFirstByte(KPABE_PUBLIC_KEY);
 
@@ -80,29 +78,38 @@ void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &result, CompressionType compre
   this->h1.serialize(temp, compress); result.smartPack(temp);
   this->h2.serialize(temp, compress); result.smartPack(temp);
   this->h3.serialize(temp, compress); result.smartPack(temp);
+
+  // output.smartPack(result);
+  result.serialize(output);
 }
 
 void KPABE_DPVS_PUBLIC_KEY::deserialize(ByteString &input) {
   ByteString temp;
   size_t index = 0;
 
-  uint8_t element_type = input.at(index); index++;
-
-  if (element_type == KPABE_PUBLIC_KEY) {
-    temp = input.smartUnpack(&index); this->d1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->d3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->f1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->f2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->f3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->g1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->g2.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->h1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->h2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->h3.deserialize(temp);
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
   }
+
+  if (input.at(index++) != KPABE_PUBLIC_KEY) {
+    std::cerr << "Error: Invalid public key type" << std::endl;
+    return;
+  }
+
+  temp = input.smartUnpack(&index); this->d1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->d3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->f1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->f2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->f3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->g1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->g2.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->h1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->h2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->h3.deserialize(temp);
 }
 
 size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
@@ -191,10 +198,8 @@ void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
   }
 }
 
-void KPABE_DPVS_MASTER_KEY::serialize(ByteString &result, CompressionType compress) const {
-  ByteString temp;
-
-  // std::cout << "-------------------------> Serial MASTER KEY" << std::endl;
+void KPABE_DPVS_MASTER_KEY::serialize(ByteString &output, CompressionType compress) const {
+  ByteString temp, result;
 
   result.insertFirstByte(KPABE_MASTER_KEY);
 
@@ -211,31 +216,37 @@ void KPABE_DPVS_MASTER_KEY::serialize(ByteString &result, CompressionType compre
   this->hh1.serialize(temp, compress); result.smartPack(temp);
   this->hh2.serialize(temp, compress); result.smartPack(temp);
   this->hh3.serialize(temp, compress); result.smartPack(temp);
+
+  result.serialize(output);
 }
 
 void KPABE_DPVS_MASTER_KEY::deserialize(ByteString &input) {
   ByteString temp;
   size_t index = 0;
 
-  uint8_t element_type = input.at(index); index++;
-
-  // std::cout << "-------------------------> Deserial MASTER KEY" << std::endl;
-
-  if (element_type == KPABE_MASTER_KEY) {
-    temp = input.smartUnpack(&index); this->dd1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->dd3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->ff1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->ff2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->ff3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->gg1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->gg2.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->hh1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->hh2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->hh3.deserialize(temp);
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
   }
+
+  if (input.at(index++) != KPABE_MASTER_KEY) {
+    std::cerr << "Error: Invalid master key type" << std::endl;
+    return;
+  }
+
+  temp = input.smartUnpack(&index); this->dd1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->dd3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->ff1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ff2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ff3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->gg1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->gg2.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->hh1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->hh2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->hh3.deserialize(temp);
 }
 
 void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os, CompressionType compress) const {
@@ -414,10 +425,9 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   return true;
 }
 
-void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &result, CompressionType compress) const {
-  ByteString temp;
+void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &output, CompressionType compress) const {
+  ByteString temp, result;
 
-  // std::cout << "-------------------------> Serial DECRYPTION KEY" << std::endl;
   result.insertFirstByte(KPABE_DECRYPTION_KEY);
 
   temp.fromString(this->policy);            result.smartPack(temp);
@@ -443,19 +453,27 @@ void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &result, CompressionType co
     temp.fromString(key);            result.smartPack(temp);
     value.serialize(temp, compress); result.smartPack(temp);
   }
+
+  result.serialize(output);
 }
 
 void KPABE_DPVS_DECRYPTION_KEY::deserialize(ByteString &input) {
   ByteString temp;
   size_t index = 0;
-
   std::string key_str;
 
-  uint8_t element_type = input.at(index); index++;
+  // S'il n'y avait pas le cas 'oversized' dans custom stream, on aurait pu faire
+  // bytes.deserialize(input); // deserialize the input in bytes
+  // Et utiliser bytes (à la place de input) pour le reste du code
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
+  }
 
-  // std::cout << "-------------------------> Deserial DECRYPTION KEY" << std::endl;
-
-  if (element_type != KPABE_DECRYPTION_KEY) return;
+  if (input.at(index++) != KPABE_DECRYPTION_KEY) {
+    std::cerr << "Error: Invalid decryption key type" << std::endl;
+    return;
+  }
 
   temp = input.smartUnpack(&index);
   this->policy = temp.toString();
