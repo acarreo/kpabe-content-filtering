@@ -308,7 +308,8 @@ size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
   total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
                (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
 
-  total_size += sizeof(uint8_t); // size of key type  
+  total_size += sizeof(uint8_t); // size of key type
+  total_size += hdrLen;
 
   return total_size;
 }
@@ -577,7 +578,8 @@ size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
 
 bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &other) const
 {
-  return this->key_root == other.key_root &&
+  return this->policy == other.policy &&
+         this->key_root == other.key_root &&
          map_compare(this->key_wl, other.key_wl) &&
          map_compare(this->key_bl, other.key_bl) &&
          map_compare(this->key_att, other.key_att);
