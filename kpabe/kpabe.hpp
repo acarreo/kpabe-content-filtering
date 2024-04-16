@@ -21,7 +21,7 @@
 #define KPABE_CIPHERTEXT_TYPE   0xFF
 
 // Ciphertext class
-class KPABE_DPVS_CIPHERTEXT {
+class KPABE_DPVS_CIPHERTEXT : public Serializer<KPABE_DPVS_CIPHERTEXT> {
   public:
     typedef std::map<std::string, G1_VECTOR> ctx_map_t;
 
@@ -73,11 +73,19 @@ class KPABE_DPVS_CIPHERTEXT {
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const;
-    void deserialize(std::istream& is);
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
+      this->serializeToStream(os, compress);
+    }
+    void deserialize(std::istream& is) {
+      this->deserializeFromStream(is);
+    }
 
-    void serialize(std::vector<uint8_t>& bytes) const;
-    void deserialize(const std::vector<uint8_t>& bytes);
+    void serialize(std::vector<uint8_t>& bytes) const {
+      this->serializeToBuffer(bytes);
+    }
+    void deserialize(const std::vector<uint8_t>& bytes) {
+      this->deserializeFromBuffer(bytes);
+    }
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);

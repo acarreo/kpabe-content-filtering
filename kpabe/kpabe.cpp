@@ -164,8 +164,8 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
   return true;
 }
 
-void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& result, CompressionType compress) const {
-  ByteString temp;
+void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& output, CompressionType compress) const {
+  ByteString temp, result;
 
   result.insertFirstByte(KPABE_CIPHERTEXT_TYPE);
 
@@ -181,9 +181,7 @@ void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& result, CompressionType compre
     ctx.serialize(temp, compress); result.smartPack(temp);
   }
 
-  /* No need to serialize the attributes list, it is already serialized
-   * int the ctx_att map.
-  */
+  result.serialize(output);
 }
 
 void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
@@ -191,10 +189,13 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
   size_t index = 0;
   std::string att;
 
-  uint8_t element_type = input.at(index); index++;
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
+  }
 
-  if (element_type != KPABE_CIPHERTEXT_TYPE) {
-    std::cerr << "Error: Element type is not KPABE_CIPHERTEXT_TYPE" << std::endl;
+  if (input.at(index++) != KPABE_CIPHERTEXT_TYPE) {
+    std::cerr << "Error: Invalid ciphertext type" << std::endl;
     return;
   }
 
@@ -217,6 +218,7 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(ByteString& input) {
    * serialization, but this difference does not impact functionality. */
 }
 
+#if 0
 void KPABE_DPVS_CIPHERTEXT::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
@@ -256,6 +258,7 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
   std::copy(bytes.begin(), bytes.end(), temp.data());
   this->deserialize(temp);
 }
+#endif
 
 /**
  * @brief This method try to decrypt the ciphertext, using the decryption key.
