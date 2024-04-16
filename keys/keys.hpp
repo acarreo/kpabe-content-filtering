@@ -21,6 +21,7 @@
 #include <lsss/zlsss.h>
 
 #include "../dpvs/vector_ec.hpp"
+#include "../serializer/serializer.hpp"
 
 extern "C" {
   #include "../dpvs/dpvs.h"
@@ -44,7 +45,9 @@ typedef enum KPABE_KEY_TYPE {
 
 #define HASH_ATTRIBUTE_SIZE   (((SIZEOF_ATTRIBUTE + 2) / 3 * 4) + 2)
 
-class KPABE_DPVS_PUBLIC_KEY {
+#define hdrLen    (sizeof(uint8_t) + sizeof(uint32_t))
+
+class KPABE_DPVS_PUBLIC_KEY : public Serializer<KPABE_DPVS_PUBLIC_KEY> {
   public:
     KPABE_DPVS_PUBLIC_KEY() {};
 
@@ -70,14 +73,22 @@ class KPABE_DPVS_PUBLIC_KEY {
     G1_VECTOR get_h2() const { return this->h2; }
     G1_VECTOR get_h3() const { return this->h3; }
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const;
-    void deserialize(std::istream& is);
-
-    void serialize(std::vector<uint8_t>& buffer) const;
-    void deserialize(const std::vector<uint8_t>& buffer);
-
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
+
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
+      this->serializeToStream(os, compress);
+    }
+    void deserialize(std::istream& is) {
+      this->deserializeFromStream(is);
+    }
+
+    void serialize(std::vector<uint8_t>& buffer) const {
+      this->serializeToBuffer(buffer);
+    }
+    void deserialize(const std::vector<uint8_t>& buffer) {
+      this->deserializeFromBuffer(buffer);
+    }
 
     size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
 
@@ -118,7 +129,7 @@ class KPABE_DPVS_PUBLIC_KEY {
     G1_VECTOR h1, h2, h3;
 };
 
-class KPABE_DPVS_MASTER_KEY {
+class KPABE_DPVS_MASTER_KEY : public Serializer<KPABE_DPVS_MASTER_KEY> {
   public:
     KPABE_DPVS_MASTER_KEY() {};
 
@@ -144,14 +155,22 @@ class KPABE_DPVS_MASTER_KEY {
     G2_VECTOR get_hh2() const { return this->hh2; }
     G2_VECTOR get_hh3() const { return this->hh3; }
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const;
-    void deserialize(std::istream& is);
-
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::vector<uint8_t>& buffer) const;
-    void deserialize(const std::vector<uint8_t>& buffer);
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
+      this->serializeToStream(os, compress);
+    }
+    void deserialize(std::istream& is) {
+      this->deserializeFromStream(is);
+    }
+
+    void serialize(std::vector<uint8_t>& buffer) const {
+      this->serializeToBuffer(buffer);
+    }
+    void deserialize(const std::vector<uint8_t>& buffer) {
+      this->deserializeFromBuffer(buffer);
+    }
 
     size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
 
@@ -186,7 +205,7 @@ class KPABE_DPVS_MASTER_KEY {
     G2_VECTOR hh1, hh2, hh3;
 };
 
-class KPABE_DPVS_DECRYPTION_KEY {
+class KPABE_DPVS_DECRYPTION_KEY : public Serializer<KPABE_DPVS_DECRYPTION_KEY> {
   public:
     typedef std::map<std::string, G2_VECTOR> key_map_t;
 
@@ -246,14 +265,22 @@ class KPABE_DPVS_DECRYPTION_KEY {
       return this->key_bl.end();
     }
 
-    void serialize(std::ostream& os) const;
-    void deserialize(std::istream& is);
-
     void serialize(ByteString &result, CompressionType compress) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::vector<uint8_t>& buffer) const;
-    void deserialize(const std::vector<uint8_t>& buffer);
+    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
+      this->serializeToStream(os, compress);
+    }
+    void deserialize(std::istream& is) {
+      this->deserializeFromStream(is);
+    }
+
+    void serialize(std::vector<uint8_t>& buffer) const {
+      this->serializeToBuffer(buffer);
+    }
+    void deserialize(const std::vector<uint8_t>& buffer) {
+      this->deserializeFromBuffer(buffer);
+    }
 
     size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
 
@@ -287,5 +314,7 @@ class KPABE_DPVS_DECRYPTION_KEY {
     key_map_t key_bl;     // G*
     key_map_t key_att;    // H*
 };
+
+bool getSizeFromStream(std::istream &is, size_t *size, ByteString &size_buf);
 
 #endif // end of __KEYS_HPP__

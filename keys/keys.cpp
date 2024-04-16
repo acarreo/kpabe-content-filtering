@@ -60,10 +60,8 @@ bool KPABE_DPVS_PUBLIC_KEY::validate_derived_key(const KPABE_DPVS_PUBLIC_KEY &ot
           this->h1 * k == other.h1 && this->h2 * k == other.h2 && this->h3 * k == other.h3);
 }
 
-void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &result, CompressionType compress) const {
-  ByteString temp;
-
-  // std::cout << "-------------------------> Serial PUBLIC KEY" << std::endl;
+void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &output, CompressionType compress) const {
+  ByteString temp, result;
 
   result.insertFirstByte(KPABE_PUBLIC_KEY);
 
@@ -80,75 +78,88 @@ void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &result, CompressionType compre
   this->h1.serialize(temp, compress); result.smartPack(temp);
   this->h2.serialize(temp, compress); result.smartPack(temp);
   this->h3.serialize(temp, compress); result.smartPack(temp);
+
+  // output.smartPack(result);
+  result.serialize(output);
 }
 
 void KPABE_DPVS_PUBLIC_KEY::deserialize(ByteString &input) {
   ByteString temp;
   size_t index = 0;
 
-  uint8_t element_type = input.at(index); index++;
-
-  if (element_type == KPABE_PUBLIC_KEY) {
-    temp = input.smartUnpack(&index); this->d1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->d3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->f1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->f2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->f3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->g1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->g2.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->h1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->h2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->h3.deserialize(temp);
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
   }
+
+  if (input.at(index++) != KPABE_PUBLIC_KEY) {
+    std::cerr << "Error: Invalid public key type" << std::endl;
+    return;
+  }
+
+  temp = input.smartUnpack(&index); this->d1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->d3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->f1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->f2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->f3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->g1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->g2.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->h1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->h2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->h3.deserialize(temp);
 }
 
 size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
-  size_t total_size = 0;
+  size_t total_size = hdrLen;
 
   size_t sd1 = this->d1.getSizeInBytes(compress);
   size_t sf1 = this->f1.getSizeInBytes(compress);
   size_t sg1 = this->g1.getSizeInBytes(compress);
   size_t sh1 = this->h1.getSizeInBytes(compress);
 
-  total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
+  total_size +=(sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
                (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
 
-  total_size += sizeof(uint8_t); // size of key type  
+  total_size += sizeof(uint8_t); // size of key type
 
   return total_size;
 }
 
+#if 0
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
-    size_t size = 0;
-
     this->serialize(temp, compress);
-    size = temp.size();
-
-    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
+    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
   }
 }
 
 void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
   if (is.good()) {
-    ByteString temp;
+    ByteString temp, bytes;
     size_t size = 0;
 
-    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!getSizeFromStream(is, &size, bytes)) {
+      std::cerr << "Error: Could not get size from stream" << std::endl;
+      return;
+    }
+
     temp.fillBuffer(0, size);
     is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
+    if (!is.good()) {
+      std::cerr << "Error: Could not read data" << std::endl;
+      return;
+    }
 
-    this->deserialize(temp);
+    bytes += temp;
+    this->deserialize(bytes);
   }
 }
 
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::vector<uint8_t> &buffer) const {
-  std::cout << "Serializing public key" << std::endl;
   ByteString temp;
   this->serialize(temp, BIN_COMPRESSED);
   buffer.resize(temp.size());
@@ -161,7 +172,7 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(const std::vector<uint8_t> &buffer) {
   std::copy(buffer.begin(), buffer.end(), temp.data());
   this->deserialize(temp);
 }
-
+#endif
 
 /*****************************************************************************/
 /*--------------------------- KPABE_DPVS_MASTER_KEY -------------------------*/
@@ -191,10 +202,8 @@ void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
   }
 }
 
-void KPABE_DPVS_MASTER_KEY::serialize(ByteString &result, CompressionType compress) const {
-  ByteString temp;
-
-  // std::cout << "-------------------------> Serial MASTER KEY" << std::endl;
+void KPABE_DPVS_MASTER_KEY::serialize(ByteString &output, CompressionType compress) const {
+  ByteString temp, result;
 
   result.insertFirstByte(KPABE_MASTER_KEY);
 
@@ -211,56 +220,67 @@ void KPABE_DPVS_MASTER_KEY::serialize(ByteString &result, CompressionType compre
   this->hh1.serialize(temp, compress); result.smartPack(temp);
   this->hh2.serialize(temp, compress); result.smartPack(temp);
   this->hh3.serialize(temp, compress); result.smartPack(temp);
+
+  result.serialize(output);
 }
 
 void KPABE_DPVS_MASTER_KEY::deserialize(ByteString &input) {
   ByteString temp;
   size_t index = 0;
 
-  uint8_t element_type = input.at(index); index++;
-
-  // std::cout << "-------------------------> Deserial MASTER KEY" << std::endl;
-
-  if (element_type == KPABE_MASTER_KEY) {
-    temp = input.smartUnpack(&index); this->dd1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->dd3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->ff1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->ff2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->ff3.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->gg1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->gg2.deserialize(temp);
-
-    temp = input.smartUnpack(&index); this->hh1.deserialize(temp);
-    temp = input.smartUnpack(&index); this->hh2.deserialize(temp);
-    temp = input.smartUnpack(&index); this->hh3.deserialize(temp);
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
   }
+
+  if (input.at(index++) != KPABE_MASTER_KEY) {
+    std::cerr << "Error: Invalid master key type" << std::endl;
+    return;
+  }
+
+  temp = input.smartUnpack(&index); this->dd1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->dd3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->ff1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ff2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->ff3.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->gg1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->gg2.deserialize(temp);
+
+  temp = input.smartUnpack(&index); this->hh1.deserialize(temp);
+  temp = input.smartUnpack(&index); this->hh2.deserialize(temp);
+  temp = input.smartUnpack(&index); this->hh3.deserialize(temp);
 }
 
+#if 0
 void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
-    size_t size = 0;
-
     this->serialize(temp, compress);
-    size = temp.size();
-
-    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
+    os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
   }
 }
 
 void KPABE_DPVS_MASTER_KEY::deserialize(std::istream &is) {
   if (is.good()) {
-    ByteString temp;
+    ByteString temp, bytes;
     size_t size = 0;
 
-    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!getSizeFromStream(is, &size, bytes)) {
+      std::cerr << "Error: Could not get size from stream" << std::endl;
+      return;
+    }
+
     temp.fillBuffer(0, size);
     is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
+    if (!is.good()) {
+      std::cerr << "Error: Could not read data" << std::endl;
+      return;
+    }
 
-    this->deserialize(temp);
+    bytes += temp;
+    this->deserialize(bytes);
   }
 }
 
@@ -277,6 +297,7 @@ void KPABE_DPVS_MASTER_KEY::deserialize(const std::vector<uint8_t> &buffer) {
   std::copy(buffer.begin(), buffer.end(), temp.data());
   this->deserialize(temp);
 }
+#endif
 
 size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
   size_t total_size = 0;
@@ -289,7 +310,8 @@ size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
   total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
                (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
 
-  total_size += sizeof(uint8_t); // size of key type  
+  total_size += sizeof(uint8_t); // size of key type
+  total_size += hdrLen;
 
   return total_size;
 }
@@ -414,10 +436,9 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   return true;
 }
 
-void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &result, CompressionType compress) const {
-  ByteString temp;
+void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &output, CompressionType compress) const {
+  ByteString temp, result;
 
-  // std::cout << "-------------------------> Serial DECRYPTION KEY" << std::endl;
   result.insertFirstByte(KPABE_DECRYPTION_KEY);
 
   temp.fromString(this->policy);            result.smartPack(temp);
@@ -443,19 +464,27 @@ void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &result, CompressionType co
     temp.fromString(key);            result.smartPack(temp);
     value.serialize(temp, compress); result.smartPack(temp);
   }
+
+  result.serialize(output);
 }
 
 void KPABE_DPVS_DECRYPTION_KEY::deserialize(ByteString &input) {
   ByteString temp;
   size_t index = 0;
-
   std::string key_str;
 
-  uint8_t element_type = input.at(index); index++;
+  // S'il n'y avait pas le cas 'oversized' dans custom stream, on aurait pu faire
+  // bytes.deserialize(input); // deserialize the input in bytes
+  // Et utiliser bytes (à la place de input) pour le reste du code
+  if (input.at(index++) != BYTESTRING || input.size() - input.get32bits(&index) < hdrLen) {
+    std::cerr << "Error: Invalid input" << std::endl;
+    return;
+  }
 
-  // std::cout << "-------------------------> Deserial DECRYPTION KEY" << std::endl;
-
-  if (element_type != KPABE_DECRYPTION_KEY) return;
+  if (input.at(index++) != KPABE_DECRYPTION_KEY) {
+    std::cerr << "Error: Invalid decryption key type" << std::endl;
+    return;
+  }
 
   temp = input.smartUnpack(&index);
   this->policy = temp.toString();
@@ -480,29 +509,35 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(ByteString &input) {
   }
 }
 
+#if 0
 void KPABE_DPVS_DECRYPTION_KEY::serialize(std::ostream &os) const {
  if (os.good()) {
   ByteString temp;
-  size_t size = 0;
-
   this->serialize(temp, BIN_COMPRESSED);
-  size = temp.size();
-
-  os.write(reinterpret_cast<const char*>(&size), sizeof(size));
-  os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(size));
+  os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
  }
 }
 
 void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
   if (is.good()) {
-    ByteString temp;
+    ByteString temp, bytes;
     size_t size = 0;
 
-    is.read(reinterpret_cast<char*>(&size), sizeof(size));
+    if (!getSizeFromStream(is, &size, bytes)) {
+      std::cerr << "Error: Could not get size from stream" << std::endl;
+      return;
+    }
+
     temp.fillBuffer(0, size);
     is.read(reinterpret_cast<char*>(temp.getInternalPtr()), static_cast<std::streamsize>(size));
+    if (!is.good()) {
+      std::cerr << "Error: Could not read data" << std::endl;
+      return;
+    }
+    // temp.serialize(bytes); // serialize the temp in bytes
 
-    this->deserialize(temp);
+    bytes += temp;
+    this->deserialize(bytes);
   }
 }
 
@@ -519,10 +554,11 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(const std::vector<uint8_t> &buffer) 
   std::copy(buffer.begin(), buffer.end(), temp.data());
   this->deserialize(temp);
 }
+#endif
 
 size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
 {
-  size_t total_size = 0;
+  size_t total_size = hdrLen;
 
   size_t spol = this->policy.size();
   size_t skr  = this->key_root.getSizeInBytes(compress);
@@ -535,7 +571,7 @@ size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
   for (const auto& [bl, _] : this->key_bl) s_bl += bl.size() + smart_sizeof(bl.size());
   for (const auto& [att, _] : this->key_att) s_att += att.size() + smart_sizeof(att.size());
 
-  total_size = (spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr) + 1) +
+  total_size +=(spol + smart_sizeof(spol)) + (skr + smart_sizeof(skr) + 1) +
                (skwl + smart_sizeof(skwl) + 1) * this->key_wl.size()  + s_wl +
                (skbl + smart_sizeof(skbl) + 1) * this->key_bl.size()  + s_bl +
                (skatt+ smart_sizeof(skatt)+ 1) * this->key_att.size() + s_att +
@@ -546,8 +582,24 @@ size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
 
 bool KPABE_DPVS_DECRYPTION_KEY::operator==(const KPABE_DPVS_DECRYPTION_KEY &other) const
 {
-  return this->key_root == other.key_root &&
+  return this->policy == other.policy &&
+         this->key_root == other.key_root &&
          map_compare(this->key_wl, other.key_wl) &&
          map_compare(this->key_bl, other.key_bl) &&
          map_compare(this->key_att, other.key_att);
+}
+
+
+bool getSizeFromStream(std::istream &is, size_t *size, ByteString &size_buf) {
+  size_buf.fillBuffer(0, hdrLen);
+  is.read(reinterpret_cast<char *>(size_buf.getInternalPtr()), static_cast<std::streamsize>(hdrLen));
+  if (!is.good()) {
+    std::cerr << "Error: Could not read pack size" << std::endl;
+    return false;
+  }
+
+  size_t index = 1;
+  *size = size_buf.get32bits(&index);
+
+  return true;
 }

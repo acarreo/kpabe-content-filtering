@@ -4,20 +4,28 @@ project(KPABE_CF)
 set(CMAKE_C_COMPILER cc)
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
+set(CXXFLAGS "-Wall -Wextra -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
 
-# Specify RELIC and LSSS include directories
-# include_directories(
-#     /usr/local/include/relic
-#     /usr/local/include/lsss
+
+# file(
+#     GLOB_RECURSE
+#     SOURCE_FILES
+#     dpvs/*
+#     serializer/serializer.cpp
+#     keys/*
+#     kpabe/*
+#     utils.c
+#     utils.h
 # )
 
-
-file(
-    GLOB_RECURSE
-    SOURCE_FILES
-    dpvs/*
-    keys/*
-    kpabe/*
+set(SOURCE_FILES
+    dpvs/matrix.c
+    dpvs/dpvs.c
+    dpvs/vector_ec.cpp
+    keys/keys.cpp
+    kpabe/kpabe.cpp
+    serializer/serializer.cpp
     utils.c
     utils.h
 )
@@ -51,16 +59,6 @@ target_link_libraries(new_examples lsss relic_s gmp)
 # target_link_libraries(example_out relic_s lsss gmp)
 target_link_libraries(new_bench lsss relic_s gmp)
 
-function(set_compiler_options target)
-    target_compile_options(${target}
-        PRIVATE
-            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wno-unused-parameter>
-    )
-endfunction()
-
-set_compiler_options(new_bench)
-set_compiler_options(kpabe_out)
-set_compiler_options(new_examples)
 
 add_custom_target(example
     # COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out

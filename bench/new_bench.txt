@@ -26,3 +26,42 @@
 |            | 0        | Serialization   | iostream   |  186      | 10899    |
 |            |          | Deserialization | iostream   |  615      |          |
 -------------------------------------------------------------------------------
+
+
+sortie avec 10 000 rounds
+-------------------------------------------------------------------------------
+| Key Type   | Compress | Operation       | Method     | Time (us) | Size (B) |
+|------------|----------|-----------------|------------|-----------|----------|
+| Public Key | 1        | Serialization   | ByteString |   67      |  2832    |
+|            |          | Deserialization | ByteString | 1533      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | ByteString |  105      |  5528    |
+|            |          | Deserialization | ByteString |  248      |          |
+|-----------------------------------------------------------------------------|
+| Master Key | 1        | Serialization   | ByteString |  112      |  5528    |
+|            |          | Deserialization | ByteString | 3879      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | ByteString |  188      | 10904    |
+|            |          | Deserialization | ByteString |  464      |          |
+|-----------------------------------------------------------------------------|
+| Public Key | 1        | Serialization   | iostream   |   67      |  2832    |
+|            |          | Deserialization | iostream   | 1559      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | iostream   |  106      |  5528    |
+|            |          | Deserialization | iostream   |  330      |          |
+|-----------------------------------------------------------------------------|
+| Master Key | 1        | Serialization   | iostream   |  111      |  5528    |
+|            |          | Deserialization | iostream   | 3861      |          |
+|            |----------|-----------------|------------|-----------|----------|
+|            | 0        | Serialization   | iostream   |  191      | 10904    |
+|            |          | Deserialization | iostream   |  625      |          |
+-------------------------------------------------------------------------------
+
+
+----------------> START : bench_serialization_dec_key
+Benchmarking serialization of decryption key
+
+Size of decryption key (from ByteString): 9336 bytes
+Serialization of decryption key: 457 us
+Deserialization of decryption key: 6430 us
+Size of decryption key: 9336 bytes

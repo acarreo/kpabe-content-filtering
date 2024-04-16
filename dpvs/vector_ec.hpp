@@ -92,7 +92,7 @@ private:
   bool isDimSet;
 
 public:
-  G2_VECTOR() : std::vector<G2>() {}
+  G2_VECTOR() : std::vector<G2>(), isDimSet(false) {}
   G2_VECTOR(size_t dim) : std::vector<G2>(dim), dim(dim), isDimSet(true) {}
   G2_VECTOR(std::initializer_list<G2> init_list) : std::vector<G2>(init_list), isDimSet(false) {}
   G2_VECTOR(const G2_VECTOR &other) : std::vector<G2>(other), dim(other.dim), isDimSet(other.isDimSet) {}
