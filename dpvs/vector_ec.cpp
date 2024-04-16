@@ -30,13 +30,13 @@ void G1_VECTOR::insertElement(const G1 & element, size_t index) {
   }
 }
 
-size_t G1_VECTOR::getSizeInBytes(CompressionType compress) const {
+size_t G1_VECTOR::getSizeInBytes() const {
   size_t buff_size = 0, total_size = 0;
 
   if (this->size() == 0) return 0;
 
   // size of G1_VECTOR in bytes
-  buff_size = (compress == BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
+  buff_size = (BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
   buff_size *= this->getDim();
 
   // ADD : type of vector group, size of dim and compression type
@@ -66,22 +66,22 @@ g1_vector_ptr G1_VECTOR::getG1Vector() const {
   return g1_vector;
 }
 
-void G1_VECTOR::serialize(OpenABEByteString &result, CompressionType compress) const {
+void G1_VECTOR::serialize(OpenABEByteString &result) const {
   OpenABEByteString temp;
   uint8_t dim = this->getDim();
 
   size_t index = 0, g1_size = 0;
-  g1_size = (compress == BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
+  g1_size = (BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
   temp.fillBuffer(0, g1_size * dim);
   for (size_t i = 0; i < dim; i++) {
-    g1_write_bin(temp.getInternalPtr() + index, g1_size, this->at(i).m_G1, compress);
+    g1_write_bin(temp.getInternalPtr() + index, g1_size, this->at(i).m_G1, (int)BIN_COMPRESSED);
     index += g1_size;
   }
 
   result.clear();
   result.insertFirstByte(VECTOR_G1_ELEMENT);
   result.pack8bits(dim);
-  result.pack8bits(compress);
+  result.pack8bits(BIN_COMPRESSED);
   result.smartPack(temp);
 }
 
@@ -92,8 +92,8 @@ void G1_VECTOR::deserialize(OpenABEByteString &input) {
   if (element_type == VECTOR_G1_ELEMENT) {
     uint8_t dim = input.at(index); index++;
 
-    uint8_t compress = input.at(index); index++;
-    g1_size = (compress == BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
+    bool compression = (bool)input.at(index++);
+    g1_size = (compression ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
 
     temp = input.smartUnpack(&index);
 
@@ -189,13 +189,13 @@ void G2_VECTOR::insertElement(const G2 & element, size_t index) {
   }
 }
 
-size_t G2_VECTOR::getSizeInBytes(CompressionType compress) const {
+size_t G2_VECTOR::getSizeInBytes() const {
   size_t buff_size = 0, total_size = 0;
 
   if (this->size() == 0) return 0;
 
   // size of G2_VECTOR in bytes
-  buff_size = (compress == BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
+  buff_size = (BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
   buff_size *= this->getDim();
 
   // ADD : type of vector group, size of dim and compression type
@@ -225,34 +225,34 @@ g2_vector_ptr G2_VECTOR::getG2Vector() const {
   return g2_vector;
 }
 
-void G2_VECTOR::serialize(OpenABEByteString &result, CompressionType compress) const {
+void G2_VECTOR::serialize(OpenABEByteString &result) const {
   OpenABEByteString temp;
   uint8_t dim = this->getDim();
 
   size_t index = 0, g2_size = 0;
-  g2_size = (compress == BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
+  g2_size = (BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
   temp.fillBuffer(0, g2_size * dim);
   for (size_t i = 0; i < dim; i++) {
-    g2_write_bin(temp.getInternalPtr() + index, g2_size, this->at(i).m_G2, compress);
+    g2_write_bin(temp.getInternalPtr() + index, g2_size, this->at(i).m_G2, (int)BIN_COMPRESSED);
     index += g2_size;
   }
 
   result.clear();
   result.insertFirstByte(VECTOR_G2_ELEMENT);
   result.pack8bits(dim);
-  result.pack8bits(compress);
+  result.pack8bits(BIN_COMPRESSED);
   result.smartPack(temp);
 }
 
 void G2_VECTOR::deserialize(OpenABEByteString &input) {
   OpenABEByteString temp;
   size_t index = 0, g2_size = 0;
-  uint8_t element_type = input.at(index); index++;
+  uint8_t element_type = input.at(index++);
   if (element_type == VECTOR_G2_ELEMENT) {
-    uint8_t dim = input.at(index); index++;
+    uint8_t dim = input.at(index++);
 
-    uint8_t compress = input.at(index); index++;
-    g2_size = (compress == BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
+    bool compression = (bool)input.at(index++);
+    g2_size = (compression ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
 
     temp = input.smartUnpack(&index);
 

@@ -7,17 +7,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CXXFLAGS "-Wall -Wextra -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
 
-
-# file(
-#     GLOB_RECURSE
-#     SOURCE_FILES
-#     dpvs/*
-#     serializer/serializer.cpp
-#     keys/*
-#     kpabe/*
-#     utils.c
-#     utils.h
-# )
+# Enable or disable compression by defining _COMPRESSION_ to true or false
+# ADD_DEFINITIONS(-D_COMPRESSION_=false)
 
 set(SOURCE_FILES
     dpvs/matrix.c
@@ -36,12 +27,6 @@ add_executable(
     main.cpp
 )
 
-# add_executable(
-#     example_out
-#     ${SOURCE_FILES}
-#     examples/examples.cpp
-# )
-
 add_executable(
     new_examples
     ${SOURCE_FILES}
@@ -56,12 +41,10 @@ add_executable(
 
 target_link_libraries(kpabe_out lsss relic_s gmp)
 target_link_libraries(new_examples lsss relic_s gmp)
-# target_link_libraries(example_out relic_s lsss gmp)
 target_link_libraries(new_bench lsss relic_s gmp)
 
 
 add_custom_target(example
-    # COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target example_out
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_examples
     COMMENT "Building example_out executable"
 )

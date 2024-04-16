@@ -10,27 +10,17 @@ extern "C" {
 
 #define smart_sizeof(x)   ((((x) > UINT16_MAX) ? sizeof(uint32_t) : (((x) > UINT8_MAX) ? sizeof(uint16_t) : sizeof(uint8_t))))
 
+// Can be defined in the CMakelists.txt
+#ifndef _COMPRESSION_
+#define _COMPRESSION_     true
+#endif
+
+#define BIN_COMPRESSED    _COMPRESSION_
+
 typedef enum ElementType {
   VECTOR_G1_ELEMENT = 0xF1,
   VECTOR_G2_ELEMENT = 0xF2,
 } ElementType;
-
-typedef enum CompressionType {
-  BIN_UNCOMPRESSED = 0x00,
-  BIN_COMPRESSED = 0x01,
-} CompressionType;
-
-
-// typedef struct {
-//   uint8_t dim;
-//   g1_t *elements;
-// } g1_vector_t, *g1_vector_ptr;
-
-// typedef struct {
-//   uint8_t dim;
-//   g2_t *elements;
-// } g2_vector_t, *g2_vector_ptr;
-
 
 using ByteString = OpenABEByteString;
 
@@ -56,7 +46,7 @@ public:
 
   size_t getDim() const { return this->isDimSet ? this->dim : this->size(); }
 
-  size_t getSizeInBytes(CompressionType compress) const;
+  size_t getSizeInBytes() const;
 
   g1_vector_ptr getG1Vector() const;
 
@@ -65,7 +55,7 @@ public:
   void addElement(const G1 &element);
   void insertElement(const G1 &element, size_t index);
 
-  void serialize(ByteString &result, CompressionType compress) const;
+  void serialize(ByteString &result) const;
   void deserialize(ByteString &input);
 
   bool operator==(const G1_VECTOR &x) const;
@@ -112,7 +102,7 @@ public:
     return this->isDimSet ? this->dim : this->size();
   }
 
-  size_t getSizeInBytes(CompressionType compress) const;
+  size_t getSizeInBytes() const;
 
   g2_vector_ptr getG2Vector() const;
 
@@ -121,7 +111,7 @@ public:
   void addElement(const G2 &element);
   void insertElement(const G2 &element, size_t index);
 
-  void serialize(ByteString &result, CompressionType compress) const;
+  void serialize(ByteString &result) const;
   void deserialize(ByteString &input);
 
   bool operator==(const G2_VECTOR &x) const;
