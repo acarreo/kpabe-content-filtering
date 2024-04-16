@@ -9,31 +9,16 @@ using namespace std;
 
 bn_t Fq;
 
-const vector<string> white_list({
-  "wl_00", "wl_01", "wl_02", "wl_03", "wl_04", "wl_05", "wl_06", "wl_07", "wl_08", "wl_09",
-  "wl_10", "wl_11", "wl_12", "wl_13", "wl_14", "wl_15", "wl_16", "wl_17", "wl_18", "wl_19",
-  "wl_20", "wl_21", "wl_22", "wl_23", "wl_24", "wl_25", "wl_26", "wl_27", "wl_28", "wl_29",
-  "wl_30", "wl_31", "wl_32", "wl_33", "wl_34", "wl_35", "wl_36", "wl_37", "wl_38", "wl_39",
-  "wl_40", "wl_41", "wl_42", "wl_43", "wl_44", "wl_45", "wl_46", "wl_47", "wl_48", "wl_49",
-  "wl_50", "wl_51", "wl_52", "wl_53", "wl_54", "wl_55", "wl_56", "wl_57", "wl_58", "wl_59",
-  "wl_60", "wl_61", "wl_62", "wl_63", "wl_64", "wl_65", "wl_66", "wl_67", "wl_68", "wl_69",
-  "wl_70", "wl_71", "wl_72", "wl_73", "wl_74", "wl_75", "wl_76", "wl_77", "wl_78", "wl_79",
-  "wl_80", "wl_81", "wl_82", "wl_83", "wl_84", "wl_85", "wl_86", "wl_87", "wl_88", "wl_89",
-  "wl_90", "wl_91", "wl_92", "wl_93", "wl_94", "wl_95", "wl_96", "wl_97", "wl_98", "wl_99",
-});
+vector<string> white_list;
+vector<string> black_list;
 
-const vector<string> black_list({
-  "bl_00", "bl_01", "bl_02", "bl_03", "bl_04", "bl_05", "bl_06", "bl_07", "bl_08", "bl_09",
-  "bl_10", "bl_11", "bl_12", "bl_13", "bl_14", "bl_15", "bl_16", "bl_17", "bl_18", "bl_19",
-  "bl_20", "bl_21", "bl_22", "bl_23", "bl_24", "bl_25", "bl_26", "bl_27", "bl_28", "bl_29",
-  "bl_30", "bl_31", "bl_32", "bl_33", "bl_34", "bl_35", "bl_36", "bl_37", "bl_38", "bl_39",
-  "bl_40", "bl_41", "bl_42", "bl_43", "bl_44", "bl_45", "bl_46", "bl_47", "bl_48", "bl_49",
-  "bl_50", "bl_51", "bl_52", "bl_53", "bl_54", "bl_55", "bl_56", "bl_57", "bl_58", "bl_59",
-  "bl_60", "bl_61", "bl_62", "bl_63", "bl_64", "bl_65", "bl_66", "bl_67", "bl_68", "bl_69",
-  "bl_70", "bl_71", "bl_72", "bl_73", "bl_74", "bl_75", "bl_76", "bl_77", "bl_78", "bl_79",
-  "bl_80", "bl_81", "bl_82", "bl_83", "bl_84", "bl_85", "bl_86", "bl_87", "bl_88", "bl_89",
-  "bl_90", "bl_91", "bl_92", "bl_93", "bl_94", "bl_95", "bl_96", "bl_97", "bl_98", "bl_99",
-});
+vector<string> generateAttributesList(string prefix, int n) {
+  vector<string> list;
+  for (int i = 0; i < n; i++) {
+    list.push_back(prefix + to_string(i));
+  }
+  return list;
+}
 
 vector<string> wl({"A:www.facebook.com", "www.twitter.com", "www.instagram.com", "www.youtube.com", "www.tiktok.com"});
 vector<string> bl({"www.example.com", "www.google.com", "www.amazon.com", "www.nytimes.com", "www.wikipedia.org"});
@@ -55,6 +40,9 @@ using namespace std::chrono;
 int main(int argc, char **argv) {
 
   if (!init_libraries()) return 2;
+
+  white_list = generateAttributesList("WL_url_", 10);
+  black_list = generateAttributesList("BL_url_", 10);
 
   test_serialization_keys();
 
