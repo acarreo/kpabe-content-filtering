@@ -24,8 +24,6 @@ int main(int argc, char **argv)
 
   bench_serialization_params();
   bench_serialization_params_iostream();
-  bench_serialization_params(BENCH_ROUNDS, BIN_UNCOMPRESSED);
-  bench_serialization_params_iostream(BENCH_ROUNDS, BIN_UNCOMPRESSED);
   bench_serialization_dec_key(2);
   // bench_encryption();
   // bench_decryption();
@@ -35,10 +33,10 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void bench_serialization_params(int rounds, CompressionType compress)
+void bench_serialization_params(int rounds)
 {
   cout << "\n----------------> START : " << __func__ << endl;
-  cout << "Benchmarking serialization of public and master keys -- Compression = " << compress << "\n" << endl;
+  cout << "Benchmarking serialization of public and master keys -- Compression = " << BIN_COMPRESSED << "\n" << endl;
 
   KPABE_DPVS kpabe;
   if (!kpabe.setup()) {
@@ -66,7 +64,7 @@ void bench_serialization_params(int rounds, CompressionType compress)
     KPABE_DPVS_MASTER_KEY master_key2;
 
     t1 = high_resolution_clock::now();
-    public_key.serialize(public_key_bytes, compress);
+    public_key.serialize(public_key_bytes);
     t2 = high_resolution_clock::now();
     public_key2.deserialize(public_key_bytes);
     t3 = high_resolution_clock::now();
@@ -75,7 +73,7 @@ void bench_serialization_params(int rounds, CompressionType compress)
     des_pk_duration += duration_cast<microseconds>( t3 - t2 );
   
     t1 = high_resolution_clock::now();
-    master_key.serialize(master_key_bytes, compress);
+    master_key.serialize(master_key_bytes);
     t2 = high_resolution_clock::now();
     master_key2.deserialize(master_key_bytes);
     t3 = high_resolution_clock::now();
@@ -84,8 +82,8 @@ void bench_serialization_params(int rounds, CompressionType compress)
     des_mk_duration += duration_cast<microseconds>( t3 - t2 );
 
     if (public_key != public_key2 || master_key != master_key2 ||
-        public_key.getSizeInBytes(compress) != public_key_bytes.size() ||
-        master_key.getSizeInBytes(compress) != master_key_bytes.size()) {
+        public_key.getSizeInBytes() != public_key_bytes.size() ||
+        master_key.getSizeInBytes() != master_key_bytes.size()) {
       std::cerr << "Error: Public keys or master keys are not equal, or does not have the same length" << std::endl;
       return;
     }
@@ -96,15 +94,15 @@ void bench_serialization_params(int rounds, CompressionType compress)
   cout << "Deserialization of public key <-- ByteString: " << (int) des_pk_duration.count() / rounds << " us" << endl;
   cout << "Deserialization of master key <-- ByteString: " << (int) des_mk_duration.count() / rounds << " us" << endl;
 
-  cout << "Size of public key: " << public_key.getSizeInBytes(compress) << " bytes" << endl;
-  cout << "Size of master key: " << master_key.getSizeInBytes(compress) << " bytes" << endl;
+  cout << "Size of public key: " << public_key.getSizeInBytes() << " bytes" << endl;
+  cout << "Size of master key: " << master_key.getSizeInBytes() << " bytes" << endl;
 }
 
 
-void bench_serialization_params_iostream(int rounds, CompressionType compress)
+void bench_serialization_params_iostream(int rounds)
 {
   cout << "\n----------------> START : " << __func__ << endl;
-  cout << "Benchmarking serialization of public and master keys -- Compression = " << compress << "\n" << endl;
+  cout << "Benchmarking serialization of public and master keys -- Compression = " << BIN_COMPRESSED << "\n" << endl;
 
   KPABE_DPVS kpabe;
   if (!kpabe.setup()) {
@@ -129,7 +127,7 @@ void bench_serialization_params_iostream(int rounds, CompressionType compress)
     KPABE_DPVS_MASTER_KEY master_key2;
 
     t1 = high_resolution_clock::now();
-    public_key.serialize(ss_public_key, compress);
+    public_key.serialize(ss_public_key);
     t2 = high_resolution_clock::now();
     public_key2.deserialize(ss_public_key);
     t3 = high_resolution_clock::now();
@@ -138,7 +136,7 @@ void bench_serialization_params_iostream(int rounds, CompressionType compress)
     des_pk_duration += duration_cast<microseconds>( t3 - t2 );
 
     t1 = high_resolution_clock::now();
-    master_key.serialize(ss_master_key, compress);
+    master_key.serialize(ss_master_key);
     t2 = high_resolution_clock::now();
     master_key2.deserialize(ss_master_key);
     t3 = high_resolution_clock::now();
@@ -147,8 +145,8 @@ void bench_serialization_params_iostream(int rounds, CompressionType compress)
     des_mk_duration += duration_cast<microseconds>( t3 - t2 );
 
     if (public_key != public_key2 || master_key != master_key2 ||
-        public_key.getSizeInBytes(compress) != ss_public_key.str().size() ||
-        master_key.getSizeInBytes(compress) != ss_master_key.str().size()) {
+        public_key.getSizeInBytes() != ss_public_key.str().size() ||
+        master_key.getSizeInBytes() != ss_master_key.str().size()) {
       std::cerr << "Error: Public keys or master keys are not equal, or does not have the same length" << std::endl;
       return;
     }
@@ -159,8 +157,8 @@ void bench_serialization_params_iostream(int rounds, CompressionType compress)
   cout << "Deserialization of public key <-- iostream: " << (int) des_pk_duration.count() / rounds << " us" << endl;
   cout << "Deserialization of master key <-- iostream: " << (int) des_mk_duration.count() / rounds << " us" << endl;
 
-  cout << "Size of public key: " << public_key.getSizeInBytes(compress) << " bytes" << endl;
-  cout << "Size of master key: " << master_key.getSizeInBytes(compress) << " bytes" << endl;
+  cout << "Size of public key: " << public_key.getSizeInBytes() << " bytes" << endl;
+  cout << "Size of master key: " << master_key.getSizeInBytes() << " bytes" << endl;
 }
 
 void bench_serialization_dec_key(int rounds)

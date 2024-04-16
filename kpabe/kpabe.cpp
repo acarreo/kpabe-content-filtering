@@ -164,21 +164,21 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
   return true;
 }
 
-void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& output, CompressionType compress) const {
+void KPABE_DPVS_CIPHERTEXT::serialize(ByteString& output) const {
   ByteString temp, result;
 
   result.insertFirstByte(KPABE_CIPHERTEXT_TYPE);
 
-  temp.fromString(this->url);               result.smartPack(temp);
-  this->ctx_root.serialize(temp, compress); result.smartPack(temp);
-  this->ctx_wl.serialize(temp, compress);   result.smartPack(temp);
-  this->ctx_bl.serialize(temp, compress);   result.smartPack(temp);
+  temp.fromString(this->url);     result.smartPack(temp);
+  this->ctx_root.serialize(temp); result.smartPack(temp);
+  this->ctx_wl.serialize(temp);   result.smartPack(temp);
+  this->ctx_bl.serialize(temp);   result.smartPack(temp);
 
   uint16_t ctx_att_size = this->ctx_att.size();
   result.pack16bits(ctx_att_size);
   for (const auto& [att, ctx] : this->ctx_att) {
-    temp.fromString(att);          result.smartPack(temp);
-    ctx.serialize(temp, compress); result.smartPack(temp);
+    temp.fromString(att); result.smartPack(temp);
+    ctx.serialize(temp);  result.smartPack(temp);
   }
 
   result.serialize(output);
@@ -376,13 +376,13 @@ void KPABE_DPVS_CIPHERTEXT::remove_scalar(const ZP &k)
   }
 }
 
-size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes(CompressionType compress) const
+size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes() const
 {
   size_t surl = this->url.size();
-  size_t sroot= this->ctx_root.getSizeInBytes(compress);
-  size_t swl  = this->ctx_wl.getSizeInBytes(compress);
-  size_t sbl  = this->ctx_bl.getSizeInBytes(compress);
-  size_t satt = this->ctx_att.begin()->second.getSizeInBytes(compress);
+  size_t sroot= this->ctx_root.getSizeInBytes();
+  size_t swl  = this->ctx_wl.getSizeInBytes();
+  size_t sbl  = this->ctx_bl.getSizeInBytes();
+  size_t satt = this->ctx_att.begin()->second.getSizeInBytes();
 
   size_t total_size = sizeof(uint16_t) // ctx_att size
                     + sizeof(uint8_t); // element type (see serialize method)

@@ -87,8 +87,9 @@ void test_serialization_keys() {
     return;
   }
 
-  KPABE_DPVS_PUBLIC_KEY public_key = kpabe.get_public_key();
-  KPABE_DPVS_MASTER_KEY master_key = kpabe.get_master_key();
+  auto public_key = kpabe.get_public_key();
+  auto master_key = kpabe.get_master_key();
+  auto dec_key = kpabe.keygen("A5 and ((A1 and A2) or (A3 and A4))");
 
   KPABE_DPVS_PUBLIC_KEY public_key2;
   KPABE_DPVS_MASTER_KEY master_key2;
@@ -97,13 +98,9 @@ void test_serialization_keys() {
   // Test serialization of public and master keys
 
   ByteString public_key_bytes, master_key_bytes;
-  CompressionType compress = BIN_COMPRESSED;
 
-  public_key.serialize(public_key_bytes, compress);
-  master_key.serialize(master_key_bytes, compress);
-
-  // auto start = high_resolution_clock::now();
-  // auto stop = high_resolution_clock::now();
+  public_key.serialize(public_key_bytes);
+  master_key.serialize(master_key_bytes);
 
   public_key2.deserialize(public_key_bytes);
   master_key2.deserialize(master_key_bytes);
@@ -118,11 +115,10 @@ void test_serialization_keys() {
   // cout << "Time ----------> " << duration_cast<microseconds>(stop - start).count() << " us" << endl;
   // Test serialization of decryption key
 
-  auto dec_key = kpabe.keygen("A5 and ((A1 and A2) or (A3 and A4))");
   KPABE_DPVS_DECRYPTION_KEY dec_key2;
 
   ByteString dec_key_bytes;
-  dec_key->serialize(dec_key_bytes, compress);
+  dec_key->serialize(dec_key_bytes);
   dec_key2.deserialize(dec_key_bytes);
 
   if (*dec_key == dec_key2) {
@@ -131,11 +127,11 @@ void test_serialization_keys() {
     std::cerr << "Error: Decryption keys are not equal" << std::endl;
   }
 
-  cout << "\nSizeof PK function ------> " << public_key.getSizeInBytes(compress) << endl;
+  cout << "\nSizeof PK function ------> " << public_key.getSizeInBytes() << endl;
   cout << "Public key size ---------> " << public_key_bytes.size() << endl;
-  cout << "\nSizeof MK function ------> " << master_key.getSizeInBytes(compress) << endl;
+  cout << "\nSizeof MK function ------> " << master_key.getSizeInBytes() << endl;
   cout << "Master key size ---------> " << master_key_bytes.size() << endl;
-  cout << "\nSizeof DK function ------> " << dec_key->getSizeInBytes(compress) << endl;
+  cout << "\nSizeof DK function ------> " << dec_key->getSizeInBytes() << endl;
   cout << "Decryption key size -----> " << dec_key_bytes.size() << endl;
 }
 
@@ -172,10 +168,9 @@ void test_encryption() {
   }
 
   ByteString cipher_bytes;
-  CompressionType compress = BIN_COMPRESSED;
-  cipher.serialize(cipher_bytes, compress);
+  cipher.serialize(cipher_bytes);
 
-  cout << "\nSizeof CT function ------> " << cipher.getSizeInBytes(compress) << endl;
+  cout << "\nSizeof CT function ------> " << cipher.getSizeInBytes() << endl;
   cout << "Ciphertext size ---------> " << cipher_bytes.size() << endl;
 
 

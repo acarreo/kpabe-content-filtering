@@ -68,13 +68,13 @@ class KPABE_DPVS_CIPHERTEXT : public Serializer<KPABE_DPVS_CIPHERTEXT> {
     // Remove k from the ciphertext : this = this * inverse(k)
     void remove_scalar(const ZP& k);
 
-    size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
+    size_t getSizeInBytes() const;
 
-    void serialize(ByteString &result, CompressionType compress) const;
+    void serialize(ByteString &result) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
-      this->serializeToStream(os, compress);
+    void serialize(std::ostream& os) const {
+      this->serializeToStream(os);
     }
     void deserialize(std::istream& is) {
       this->deserializeFromStream(is);

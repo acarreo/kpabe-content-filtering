@@ -73,11 +73,11 @@ class KPABE_DPVS_PUBLIC_KEY : public Serializer<KPABE_DPVS_PUBLIC_KEY> {
     G1_VECTOR get_h2() const { return this->h2; }
     G1_VECTOR get_h3() const { return this->h3; }
 
-    void serialize(ByteString &result, CompressionType compress) const;
+    void serialize(ByteString &result) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
-      this->serializeToStream(os, compress);
+    void serialize(std::ostream& os) const {
+      this->serializeToStream(os);
     }
     void deserialize(std::istream& is) {
       this->deserializeFromStream(is);
@@ -90,7 +90,7 @@ class KPABE_DPVS_PUBLIC_KEY : public Serializer<KPABE_DPVS_PUBLIC_KEY> {
       this->deserializeFromBuffer(buffer);
     }
 
-    size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
+    size_t getSizeInBytes() const;
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
@@ -155,11 +155,11 @@ class KPABE_DPVS_MASTER_KEY : public Serializer<KPABE_DPVS_MASTER_KEY> {
     G2_VECTOR get_hh2() const { return this->hh2; }
     G2_VECTOR get_hh3() const { return this->hh3; }
 
-    void serialize(ByteString &result, CompressionType compress) const;
+    void serialize(ByteString &result) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
-      this->serializeToStream(os, compress);
+    void serialize(std::ostream& os) const {
+      this->serializeToStream(os);
     }
     void deserialize(std::istream& is) {
       this->deserializeFromStream(is);
@@ -172,7 +172,7 @@ class KPABE_DPVS_MASTER_KEY : public Serializer<KPABE_DPVS_MASTER_KEY> {
       this->deserializeFromBuffer(buffer);
     }
 
-    size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
+    size_t getSizeInBytes() const;
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);
@@ -265,11 +265,11 @@ class KPABE_DPVS_DECRYPTION_KEY : public Serializer<KPABE_DPVS_DECRYPTION_KEY> {
       return this->key_bl.end();
     }
 
-    void serialize(ByteString &result, CompressionType compress) const;
+    void serialize(ByteString &result) const;
     void deserialize(ByteString &input);
 
-    void serialize(std::ostream& os, CompressionType compress = BIN_COMPRESSED) const {
-      this->serializeToStream(os, compress);
+    void serialize(std::ostream& os) const {
+      this->serializeToStream(os);
     }
     void deserialize(std::istream& is) {
       this->deserializeFromStream(is);
@@ -282,7 +282,7 @@ class KPABE_DPVS_DECRYPTION_KEY : public Serializer<KPABE_DPVS_DECRYPTION_KEY> {
       this->deserializeFromBuffer(buffer);
     }
 
-    size_t getSizeInBytes(CompressionType compress = BIN_COMPRESSED) const;
+    size_t getSizeInBytes() const;
 
     void saveToFile(const std::string& filename) const {
       std::ofstream ofs(filename, std::ios::binary);

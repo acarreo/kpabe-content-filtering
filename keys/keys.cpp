@@ -60,24 +60,24 @@ bool KPABE_DPVS_PUBLIC_KEY::validate_derived_key(const KPABE_DPVS_PUBLIC_KEY &ot
           this->h1 * k == other.h1 && this->h2 * k == other.h2 && this->h3 * k == other.h3);
 }
 
-void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &output, CompressionType compress) const {
+void KPABE_DPVS_PUBLIC_KEY::serialize(ByteString &output) const {
   ByteString temp, result;
 
   result.insertFirstByte(KPABE_PUBLIC_KEY);
 
-  this->d1.serialize(temp, compress); result.smartPack(temp);
-  this->d3.serialize(temp, compress); result.smartPack(temp);
+  this->d1.serialize(temp); result.smartPack(temp);
+  this->d3.serialize(temp); result.smartPack(temp);
 
-  this->f1.serialize(temp, compress); result.smartPack(temp);
-  this->f2.serialize(temp, compress); result.smartPack(temp);
-  this->f3.serialize(temp, compress); result.smartPack(temp);
+  this->f1.serialize(temp); result.smartPack(temp);
+  this->f2.serialize(temp); result.smartPack(temp);
+  this->f3.serialize(temp); result.smartPack(temp);
 
-  this->g1.serialize(temp, compress); result.smartPack(temp);
-  this->g2.serialize(temp, compress); result.smartPack(temp);
+  this->g1.serialize(temp); result.smartPack(temp);
+  this->g2.serialize(temp); result.smartPack(temp);
 
-  this->h1.serialize(temp, compress); result.smartPack(temp);
-  this->h2.serialize(temp, compress); result.smartPack(temp);
-  this->h3.serialize(temp, compress); result.smartPack(temp);
+  this->h1.serialize(temp); result.smartPack(temp);
+  this->h2.serialize(temp); result.smartPack(temp);
+  this->h3.serialize(temp); result.smartPack(temp);
 
   // output.smartPack(result);
   result.serialize(output);
@@ -112,13 +112,13 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(ByteString &input) {
   temp = input.smartUnpack(&index); this->h3.deserialize(temp);
 }
 
-size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
+size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes() const {
   size_t total_size = hdrLen;
 
-  size_t sd1 = this->d1.getSizeInBytes(compress);
-  size_t sf1 = this->f1.getSizeInBytes(compress);
-  size_t sg1 = this->g1.getSizeInBytes(compress);
-  size_t sh1 = this->h1.getSizeInBytes(compress);
+  size_t sd1 = this->d1.getSizeInBytes();
+  size_t sf1 = this->f1.getSizeInBytes();
+  size_t sg1 = this->g1.getSizeInBytes();
+  size_t sh1 = this->h1.getSizeInBytes();
 
   total_size +=(sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
                (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
@@ -129,10 +129,10 @@ size_t KPABE_DPVS_PUBLIC_KEY::getSizeInBytes(CompressionType compress) const {
 }
 
 #if 0
-void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os, CompressionType compress) const {
+void KPABE_DPVS_PUBLIC_KEY::serialize(std::ostream &os) const {
   if (os.good()) {
     ByteString temp;
-    this->serialize(temp, compress);
+    this->serialize(temp);
     os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
   }
 }
@@ -161,7 +161,7 @@ void KPABE_DPVS_PUBLIC_KEY::deserialize(std::istream &is) {
 
 void KPABE_DPVS_PUBLIC_KEY::serialize(std::vector<uint8_t> &buffer) const {
   ByteString temp;
-  this->serialize(temp, BIN_COMPRESSED);
+  this->serialize(temp);
   buffer.resize(temp.size());
   std::copy(temp.data(), temp.data() + temp.size(), buffer.begin());
 }
@@ -202,24 +202,24 @@ void KPABE_DPVS_MASTER_KEY::set_bases(const G2_VS_BASE base_DD,
   }
 }
 
-void KPABE_DPVS_MASTER_KEY::serialize(ByteString &output, CompressionType compress) const {
+void KPABE_DPVS_MASTER_KEY::serialize(ByteString &output) const {
   ByteString temp, result;
 
   result.insertFirstByte(KPABE_MASTER_KEY);
 
-  this->dd1.serialize(temp, compress); result.smartPack(temp);
-  this->dd3.serialize(temp, compress); result.smartPack(temp);
+  this->dd1.serialize(temp); result.smartPack(temp);
+  this->dd3.serialize(temp); result.smartPack(temp);
 
-  this->ff1.serialize(temp, compress); result.smartPack(temp);
-  this->ff2.serialize(temp, compress); result.smartPack(temp);
-  this->ff3.serialize(temp, compress); result.smartPack(temp);
+  this->ff1.serialize(temp); result.smartPack(temp);
+  this->ff2.serialize(temp); result.smartPack(temp);
+  this->ff3.serialize(temp); result.smartPack(temp);
 
-  this->gg1.serialize(temp, compress); result.smartPack(temp);
-  this->gg2.serialize(temp, compress); result.smartPack(temp);
+  this->gg1.serialize(temp); result.smartPack(temp);
+  this->gg2.serialize(temp); result.smartPack(temp);
 
-  this->hh1.serialize(temp, compress); result.smartPack(temp);
-  this->hh2.serialize(temp, compress); result.smartPack(temp);
-  this->hh3.serialize(temp, compress); result.smartPack(temp);
+  this->hh1.serialize(temp); result.smartPack(temp);
+  this->hh2.serialize(temp); result.smartPack(temp);
+  this->hh3.serialize(temp); result.smartPack(temp);
 
   result.serialize(output);
 }
@@ -257,7 +257,7 @@ void KPABE_DPVS_MASTER_KEY::deserialize(ByteString &input) {
 void KPABE_DPVS_MASTER_KEY::serialize(std::ostream &os, CompressionType compress) const {
   if (os.good()) {
     ByteString temp;
-    this->serialize(temp, compress);
+    this->serialize(temp);
     os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
   }
 }
@@ -286,7 +286,7 @@ void KPABE_DPVS_MASTER_KEY::deserialize(std::istream &is) {
 
 void KPABE_DPVS_MASTER_KEY::serialize(std::vector<uint8_t> &buffer) const {
   ByteString temp;
-  this->serialize(temp, BIN_COMPRESSED);
+  this->serialize(temp);
   buffer.resize(temp.size());
   std::copy(temp.data(), temp.data() + temp.size(), buffer.begin());
 }
@@ -299,13 +299,13 @@ void KPABE_DPVS_MASTER_KEY::deserialize(const std::vector<uint8_t> &buffer) {
 }
 #endif
 
-size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes(CompressionType compress) const {
+size_t KPABE_DPVS_MASTER_KEY::getSizeInBytes() const {
   size_t total_size = 0;
 
-  size_t sd1 = this->dd1.getSizeInBytes(compress);
-  size_t sf1 = this->ff1.getSizeInBytes(compress);
-  size_t sg1 = this->gg1.getSizeInBytes(compress);
-  size_t sh1 = this->hh1.getSizeInBytes(compress);
+  size_t sd1 = this->dd1.getSizeInBytes();
+  size_t sf1 = this->ff1.getSizeInBytes();
+  size_t sg1 = this->gg1.getSizeInBytes();
+  size_t sh1 = this->hh1.getSizeInBytes();
 
   total_size = (sd1 + smart_sizeof(sd1)) * 2 + (sf1 + smart_sizeof(sf1)) * 3 +
                (sg1 + smart_sizeof(sg1)) * 2 + (sh1 + smart_sizeof(sh1)) * 3;
@@ -436,33 +436,33 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   return true;
 }
 
-void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &output, CompressionType compress) const {
+void KPABE_DPVS_DECRYPTION_KEY::serialize(ByteString &output) const {
   ByteString temp, result;
 
   result.insertFirstByte(KPABE_DECRYPTION_KEY);
 
-  temp.fromString(this->policy);            result.smartPack(temp);
-  this->key_root.serialize(temp, compress); result.smartPack(temp);
+  temp.fromString(this->policy);  result.smartPack(temp);
+  this->key_root.serialize(temp); result.smartPack(temp);
 
   uint16_t key_wl_size = this->key_wl.size();
   result.pack16bits(key_wl_size);
   for (const auto& [key, value] : this->key_wl) {
-    temp.fromString(key);            result.smartPack(temp);
-    value.serialize(temp, compress); result.smartPack(temp);
+    temp.fromString(key);  result.smartPack(temp);
+    value.serialize(temp); result.smartPack(temp);
   }
 
   uint16_t key_bl_size = this->key_bl.size();
   result.pack16bits(key_bl_size);
   for (const auto& [key, value] : this->key_bl) {
-    temp.fromString(key);            result.smartPack(temp);
-    value.serialize(temp, compress); result.smartPack(temp);
+    temp.fromString(key);  result.smartPack(temp);
+    value.serialize(temp); result.smartPack(temp);
   }
 
   uint16_t key_att_size = this->key_att.size();
   result.pack16bits(key_att_size);
   for (const auto& [key, value] : this->key_att) {
-    temp.fromString(key);            result.smartPack(temp);
-    value.serialize(temp, compress); result.smartPack(temp);
+    temp.fromString(key);  result.smartPack(temp);
+    value.serialize(temp); result.smartPack(temp);
   }
 
   result.serialize(output);
@@ -513,7 +513,7 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(ByteString &input) {
 void KPABE_DPVS_DECRYPTION_KEY::serialize(std::ostream &os) const {
  if (os.good()) {
   ByteString temp;
-  this->serialize(temp, BIN_COMPRESSED);
+  this->serialize(temp);
   os.write(reinterpret_cast<const char*>(temp.data()), static_cast<std::streamsize>(temp.size()));
  }
 }
@@ -543,7 +543,7 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(std::istream &is) {
 
 void KPABE_DPVS_DECRYPTION_KEY::serialize(std::vector<uint8_t> &buffer) const {
   ByteString temp;
-  this->serialize(temp, BIN_COMPRESSED);
+  this->serialize(temp);
   buffer.resize(temp.size());
   std::copy(temp.data(), temp.data() + temp.size(), buffer.begin());
 }
@@ -556,15 +556,15 @@ void KPABE_DPVS_DECRYPTION_KEY::deserialize(const std::vector<uint8_t> &buffer) 
 }
 #endif
 
-size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes(CompressionType compress) const
+size_t KPABE_DPVS_DECRYPTION_KEY::getSizeInBytes() const
 {
   size_t total_size = hdrLen;
 
   size_t spol = this->policy.size();
-  size_t skr  = this->key_root.getSizeInBytes(compress);
-  size_t skwl = this->key_wl.begin()->second.getSizeInBytes(compress);
-  size_t skbl = this->key_bl.begin()->second.getSizeInBytes(compress);
-  size_t skatt= this->key_att.begin()->second.getSizeInBytes(compress);
+  size_t skr  = this->key_root.getSizeInBytes();
+  size_t skwl = this->key_wl.begin()->second.getSizeInBytes();
+  size_t skbl = this->key_bl.begin()->second.getSizeInBytes();
+  size_t skatt= this->key_att.begin()->second.getSizeInBytes();
 
   size_t s_wl = 0, s_bl = 0, s_att = 0;
   for (const auto& [wl, _] : this->key_wl) s_wl += wl.size() + smart_sizeof(wl.size());
