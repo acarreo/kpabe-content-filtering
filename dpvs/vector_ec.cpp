@@ -39,8 +39,8 @@ size_t G1_VECTOR::getSizeInBytes() const {
   buff_size = (BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
   buff_size *= this->getDim();
 
-  // ADD : type of vector group, size of dim and compression type
-  total_size = 3 * sizeof(uint8_t);
+  // ADD : type of vector group and size of dim
+  total_size = 2 * sizeof(uint8_t);
 
   // ADD : size of G1_VECTOR in bytes
   total_size += sizeof(uint8_t) + smart_sizeof(buff_size);
@@ -70,41 +70,29 @@ void G1_VECTOR::serialize(OpenABEByteString &result) const {
   OpenABEByteString temp;
   uint8_t dim = this->getDim();
 
-  size_t index = 0, g1_size = 0;
-  g1_size = (BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
-  temp.fillBuffer(0, g1_size * dim);
-  for (size_t i = 0; i < dim; i++) {
-    g1_write_bin(temp.getInternalPtr() + index, g1_size, this->at(i).m_G1, (int)BIN_COMPRESSED);
-    index += g1_size;
+  int g1_size = 0;
+  for (auto &g1 : *this) {
+    uint8_t *g1_bin = g1.getBytes(&g1_size);
+    temp.appendArray(g1_bin, g1_size);
   }
 
   result.clear();
   result.insertFirstByte(VECTOR_G1_ELEMENT);
   result.pack8bits(dim);
-  result.pack8bits(BIN_COMPRESSED);
   result.smartPack(temp);
 }
 
 void G1_VECTOR::deserialize(OpenABEByteString &input) {
   OpenABEByteString temp;
-  size_t index = 0, g1_size = 0;
-  uint8_t element_type = input.at(index); index++;
-  if (element_type == VECTOR_G1_ELEMENT) {
-    uint8_t dim = input.at(index); index++;
+  size_t index = 0, g1_size = G1_SIZE;
 
-    bool compression = (bool)input.at(index++);
-    g1_size = (compression ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
-
+  if (input.at(index++) == VECTOR_G1_ELEMENT) {
+    uint8_t dim = input.at(index++);
     temp = input.smartUnpack(&index);
 
-    G1 g1;
     this->clear();
-    size_t pos = 0;
-    uint8_t *temp_buffer = temp.getInternalPtr();
     for (size_t i = 0; i < (size_t)dim; i++) {
-      g1_read_bin(g1.m_G1, temp_buffer + pos, g1_size);
-      this->push_back(g1);
-      pos += g1_size;
+      this->push_back(G1(temp.getInternalPtr() + g1_size*i, g1_size));
     }
     this->setDim(dim);
   }
@@ -195,11 +183,11 @@ size_t G2_VECTOR::getSizeInBytes() const {
   if (this->size() == 0) return 0;
 
   // size of G2_VECTOR in bytes
-  buff_size = (BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
+  buff_size = G2_SIZE;
   buff_size *= this->getDim();
 
-  // ADD : type of vector group, size of dim and compression type
-  total_size = 3 * sizeof(uint8_t);
+  // ADD : type of vector group and size of dim
+  total_size = 2 * sizeof(uint8_t);
 
   // ADD : size of G2_VECTOR in bytes
   total_size += sizeof(uint8_t) + smart_sizeof(buff_size);
@@ -229,41 +217,29 @@ void G2_VECTOR::serialize(OpenABEByteString &result) const {
   OpenABEByteString temp;
   uint8_t dim = this->getDim();
 
-  size_t index = 0, g2_size = 0;
-  g2_size = (BIN_COMPRESSED ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
-  temp.fillBuffer(0, g2_size * dim);
-  for (size_t i = 0; i < dim; i++) {
-    g2_write_bin(temp.getInternalPtr() + index, g2_size, this->at(i).m_G2, (int)BIN_COMPRESSED);
-    index += g2_size;
+  int g2_size = 0;
+  for (auto &g2 : *this) {
+    uint8_t *g2_bin = g2.getBytes(&g2_size);
+    temp.appendArray(g2_bin, g2_size);
   }
 
   result.clear();
   result.insertFirstByte(VECTOR_G2_ELEMENT);
   result.pack8bits(dim);
-  result.pack8bits(BIN_COMPRESSED);
   result.smartPack(temp);
 }
 
 void G2_VECTOR::deserialize(OpenABEByteString &input) {
   OpenABEByteString temp;
-  size_t index = 0, g2_size = 0;
-  uint8_t element_type = input.at(index++);
-  if (element_type == VECTOR_G2_ELEMENT) {
+  size_t index = 0, g2_size = G2_SIZE;
+
+  if (input.at(index++) == VECTOR_G2_ELEMENT) {
     uint8_t dim = input.at(index++);
-
-    bool compression = (bool)input.at(index++);
-    g2_size = (compression ? G2_SIZE_BIN_COMPRESSED : G2_SIZE_BIN);
-
     temp = input.smartUnpack(&index);
 
-    G2 g2;
     this->clear();
-    size_t pos = 0;
-    uint8_t *temp_buffer = temp.getInternalPtr();
     for (size_t i = 0; i < (size_t)dim; i++) {
-      g2_read_bin(g2.m_G2, temp_buffer + pos, g2_size);
-      this->push_back(g2);
-      pos += g2_size;
+      this->push_back(G2(temp.getInternalPtr() + g2_size*i, g2_size));
     }
     this->setDim(dim);
   }
