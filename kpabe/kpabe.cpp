@@ -158,7 +158,10 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
   G2 g2;  g2.setGenerator();
 
   GT gt = pairing(g1, g2).exp(phi);  // Ephemeral key : gt = e(g1, g2)^phi
-  gt_md_map(session_key, gt.m_GT);
+  // gt_md_map(session_key, gt.m_GT);
+  size_t len;
+  uint8_t* ss_key = gt.hashToBytes(&len);
+  memcpy(session_key, ss_key, len);
   // ---------------------------------> END Generate session key
 
   return true;
@@ -286,7 +289,10 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
     ip = innerProduct(this->ctx_wl, *key_wl_url);
     ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
     phi = ip * ip_root;
-    gt_md_map(session_key, phi.m_GT);
+    // gt_md_map(session_key, phi.m_GT);
+    size_t len;
+    uint8_t* ss_key = phi.hashToBytes(&len);
+    memcpy(session_key, ss_key, len);
 
     return true;
   }
@@ -350,7 +356,10 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
 
   phi = ip_lsss * ip_bl * ip_root;
-  gt_md_map(session_key, phi.m_GT);
+  // gt_md_map(session_key, phi.m_GT);
+  size_t len;
+  uint8_t* ss_key = phi.hashToBytes(&len);
+  memcpy(session_key, ss_key, len);
 
   return true;
 }
