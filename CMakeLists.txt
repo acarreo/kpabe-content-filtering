@@ -5,10 +5,18 @@ set(CMAKE_C_COMPILER cc)
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 set(CXXFLAGS "-Wall -Wextra -Wno-unused-parameter")
-set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
 
-# Enable or disable compression by defining _COMPRESSION_ to true or false
-# ADD_DEFINITIONS(-D_COMPRESSION_=false)
+# By default, compression is enabled
+option(COMPRESSION_ENABLED "Enable compression" ON)
+
+if(COMPRESSION_ENABLED)
+    set(_COMPRESSION_ true)
+else()
+    set(_COMPRESSION_ false)
+endif()
+
+# set value of _COMPRESSION_ in CXXFLAGS
+set(CMAKE_CXX_FLAGS "${CXXFLAGS} -D_COMPRESSION_=${_COMPRESSION_}")
 
 set(SOURCE_FILES
     dpvs/matrix.c
@@ -18,7 +26,6 @@ set(SOURCE_FILES
     kpabe/kpabe.cpp
     serializer/serializer.cpp
     utils.c
-    utils.h
 )
 
 add_executable(
@@ -56,11 +63,11 @@ add_custom_target(bench
 
 # Install dependencies
 add_custom_target(install_dependencies_local
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts local
+    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts COMPRESSION=${_COMPRESSION_} local
     COMMENT "Installing dependencies locally"
 )
 
 add_custom_target(install_dependencies_docker
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts docker
+    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts COMPRESSION=${_COMPRESSION_} docker
     COMMENT "Installing dependencies in Docker"
 )
