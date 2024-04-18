@@ -387,24 +387,24 @@ void KPABE_DPVS_CIPHERTEXT::remove_scalar(const ZP &k)
 
 size_t KPABE_DPVS_CIPHERTEXT::getSizeInBytes() const
 {
+  size_t total_size = hdrLen;
+
   size_t surl = this->url.size();
   size_t sroot= this->ctx_root.getSizeInBytes();
   size_t swl  = this->ctx_wl.getSizeInBytes();
   size_t sbl  = this->ctx_bl.getSizeInBytes();
   size_t satt = this->ctx_att.begin()->second.getSizeInBytes();
 
-  size_t total_size = sizeof(uint16_t) // ctx_att size
-                    + sizeof(uint8_t); // element type (see serialize method)
+  total_size += sizeof(uint16_t) // ctx_att size
+             +  sizeof(uint8_t); // element type (see serialize method)
 
   for (const auto& [ctx_att, _] : this->ctx_att) {
     total_size += ctx_att.size() + smart_sizeof(ctx_att.size());
   }
 
-  total_size += (surl + smart_sizeof(surl)) + (sroot + smart_sizeof(sroot)) +
+  total_size += (surl + smart_sizeof(surl) + 1) + (sroot + smart_sizeof(sroot)) +
                 (swl + smart_sizeof(swl)) + (sbl + smart_sizeof(sbl)) +
                 (satt + smart_sizeof(satt) + 1) * this->ctx_att.size();
-
-  total_size +=1; // I don't know why should I add 1 to get the correct size
 
   return total_size;
 }
