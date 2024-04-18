@@ -329,7 +329,7 @@ void example_serialization() {
 
   // Copy the serialized ciphertext to the buffer
   if (sizeof_cipher != cipher_bytes.size()) {
-    std::cerr << "Error: Size of Ciphertext mismatch" << std::endl;
+    std::cerr << "Error: Size of Ciphertext mismatch : " << cipher_bytes.size() << std::endl;
     return;
   }
   memcpy(buffer_cipher, cipher_bytes.data(), sizeof_cipher);
@@ -376,35 +376,15 @@ void example_serialization_zp () {
   ByteString bytes;
   zp.serialize(bytes);
 
-  /**************************** with ALLOCATION ****************************/
-  char *zp_char_alloc = (char*)malloc(bytes.size() * sizeof(char));
-  if (zp_char_alloc == nullptr) {
-    cerr << "Failed to allocate memory" << endl;
-    return;
-  }
-  memcpy(zp_char_alloc, bytes.data(), bytes.size());
+  unsigned char* zp_char = bytes.data();
+  size_t len = bytes.size();
 
-  // Deserialize the ZP from the char array :zp_char_alloc
-  ZP zp_deserialized_1;
-  vector<uint8_t> vec_from_char_alloc(zp_char_alloc, zp_char_alloc + bytes.size());
-  zp_deserialized_1.deserialize(vec_from_char_alloc);
+  ZP zp_deserialized;
+  ByteString raw_data;
+  raw_data.assign(zp_char, zp_char + len);
+  zp_deserialized.deserialize(raw_data);
 
-  if (zp == zp_deserialized_1) {
-    cout << "ZP serialization/deserialization successful" << endl;
-  } else {
-    cerr << "ZP serialization/deserialization failed" << endl;
-  }
-
-
-  /*************************** without ALLOCATION ***************************/
-  char* zp_char = reinterpret_cast<char*>(bytes.data());
-
-  // Deserialize the ZP from the char array : zp_char
-  ZP zp_deserialized_2;
-  vector<uint8_t> vec_bytes(zp_char, zp_char + bytes.size());
-  zp_deserialized_2.deserialize(bytes);
-
-  if (zp == zp_deserialized_2) {
+  if (zp == zp_deserialized) {
     cout << "ZP serialization/deserialization successful" << endl;
   } else {
     cerr << "ZP serialization/deserialization failed" << endl;
@@ -426,7 +406,8 @@ void example_serialization_randomized_public_key() {
   auto pk_rand = public_key.randomize();
 
   // Serialization
-  vector<uint8_t> pk_bytes, zp_bytes;
+  vector<uint8_t> pk_bytes;
+  ByteString zp_bytes;
 
   pk_rand.first.serialize(pk_bytes);
   pk_rand.second.serialize(zp_bytes);
