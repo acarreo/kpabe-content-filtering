@@ -16,7 +16,6 @@ void test_serialization_public_key(KPABE_DPVS_PUBLIC_KEY &pub_key);
 void test_serialization_master_key(KPABE_DPVS_MASTER_KEY &master_key);
 void test_serialization_decryption_key(KPABE_DPVS_DECRYPTION_KEY &dec_key);
 
-bn_t Fq;
 int main() {
     if (!init_libraries()) {
         std::cerr << "unable to initialize the KP-ABE library" << std::endl;

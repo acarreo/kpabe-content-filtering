@@ -7,7 +7,6 @@
 
 using namespace std;
 
-bn_t Fq;
 
 vector<string> white_list;
 vector<string> black_list;

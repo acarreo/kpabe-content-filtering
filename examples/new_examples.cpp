@@ -19,7 +19,6 @@ uint8_t session_key_00[RLC_MD_LEN]; // RLC_MD_LEN = 32 bytes ~ 256 bits
 uint8_t session_key_01[RLC_MD_LEN];
 uint8_t session_key_02[RLC_MD_LEN];
 
-bn_t Fq;
 
 int main()
 {

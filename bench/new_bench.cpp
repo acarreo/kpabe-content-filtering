@@ -16,7 +16,6 @@
 using namespace std;
 using namespace std::chrono;
 
-bn_t Fq;
 
 int main(int argc, char **argv)
 {
