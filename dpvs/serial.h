@@ -6,6 +6,7 @@
  * 
  */
 
+#if 0
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
@@ -37,3 +38,4 @@ int sizeof_g1_vector(const G1_VS_VECT vect, int *size);
 int sizeof_g2_vector(const G2_VS_VECT vect, int *size);
 
 #endif // __SERIAL_H__
+#endif
