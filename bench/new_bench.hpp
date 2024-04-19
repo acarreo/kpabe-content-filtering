@@ -13,11 +13,5 @@
 
 #define BENCH_ROUNDS 1000
 
-void bench_serialization_params(int rounds = BENCH_ROUNDS);
-void bench_serialization_params_iostream(int rounds = BENCH_ROUNDS);
-void bench_serialization_dec_key(int rounds = BENCH_ROUNDS);
-void bench_encryption(int rounds = BENCH_ROUNDS);
-void bench_decryption(int rounds = BENCH_ROUNDS);
-
 
 #endif // __NEW_BENCH_HPP__

@@ -7,6 +7,8 @@
 #include <vector>
 
 
+using ByteString = OpenABEByteString;
+
 bool getSizeFromStream(std::istream &is, size_t *size, ByteString &size_buf);
 
 template <class T>
