@@ -366,6 +366,59 @@ void bench_encryption(int n_wl, int n_bl, int n_att, int rounds)
 }
 
 
+void bench_time_generation_keys(int nb_wl, int nb_bl, int rounds)
+{
+  cout << "\n----------------> START : " << __func__ << endl;
+  cout << "Benchmarking generation of decryption key -- Compression = " << BIN_COMPRESSED << endl << endl;
+
+  KPABE_DPVS kpabe;
+  if (!kpabe.setup()) {
+    cerr << "Error: Could not setup keys" << endl;
+    return;
+  }
+
+  vector<string> wl = generateAttributesList("WL_url_", nb_wl);
+  vector<string> bl = generateAttributesList("BL_url_", nb_bl);
+
+  string policy = "Attr_1 and ((Attr_7 or Attr_5) and (Attr_4 or Attr_8))";
+  // string policy = "(Attr_1 and Attr_10) or ((Attr_7 or Attr_5) and (Attr_4 or Attr_8) and (Attr_2 or Attr_3) and (Attr_6 or Attr_9))";
+
+  // duration<double, std::micro> params_duration(0);
+  duration<double, std::micro> deckey_duration(0);
+  chrono::time_point<chrono::high_resolution_clock> t1, t2;
+
+  for (int i = 0; i < rounds; i++) {
+    t1 = high_resolution_clock::now();
+    auto dec_key = kpabe.keygen(policy, wl, bl);
+    t2 = high_resolution_clock::now();
+
+    deckey_duration += duration_cast<microseconds>( t2 - t1 );
+
+    if (!dec_key) {
+      cerr << "Error: Could not generate keys" << endl;
+      return;
+    }
+
+    if (i == 0) {
+      ByteString dec_key_bytes;
+      dec_key->serialize(dec_key_bytes);
+      if (dec_key_bytes.size() != dec_key->getSizeInBytes()) {
+        cerr << "Error: Decryption key serialization failed" << endl;
+        return;
+      }
+      cout << "Decryption key size -- ByteString -----> " << dec_key->getSizeInBytes() << " bytes" << endl;
+    }
+  }
+
+  cout << "Number of attributes in White list ---> " << wl.size() << endl;
+  cout << "Number of attributes in Black list ---> " << bl.size() << endl;
+  cout << "Number of attributes in Policy -------> " << get_number_of_attributes_in_policy(policy) << endl;
+  cout << "-----------------------------------------------------------------------" << endl;
+  // cout << "Setup time -------------------------> " << (int) params_duration.count() / rounds << " us" << endl;
+  cout << "Decryption key generation time -----> " << (int) deckey_duration.count() / rounds << " us" << endl;
+}
+
+
 int Nb_rounds = 100;
 int n_wl  = 10;
 int n_bl  = 10;
@@ -395,7 +448,9 @@ int main(int argc, char **argv)
   // bench_serialization_dec_key(n_wl, n_bl, Nb_rounds);
 
   // Il faut au moins 5 =: nb_att attributs dans le chiffré pour que le test passe correctement
-  bench_encryption(n_wl, n_bl, n_att, Nb_rounds);
+  // bench_encryption(n_wl, n_bl, n_att, Nb_rounds);
+
+  bench_time_generation_keys(n_wl, n_bl, Nb_rounds);
 
   clean_libraries();
   return 0;
