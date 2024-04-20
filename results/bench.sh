@@ -2,6 +2,29 @@
 echo "Running benchmarks... for 100 iterations"
 
 echo
+echo "Running bench-keys-5"
+time ./bench-keys-5 10 10 1     &>> bench-keys.txt
+time ./bench-keys-5 10 100 1    &>> bench-keys.txt
+time ./bench-keys-5 100 10 1    &>> bench-keys.txt
+time ./bench-keys-5 100 100 1   &>> bench-keys.txt
+time ./bench-keys-5 100 1000 1  &>> bench-keys.txt
+time ./bench-keys-5 1000 100 1  &>> bench-keys.txt
+time ./bench-keys-5 1000 1000 1 &>> bench-keys.txt
+
+
+echo
+echo "Running bench-keys-10"
+time ./bench-keys-10 10 10 1     &>> bench-keys.txt
+time ./bench-keys-10 10 100 1    &>> bench-keys.txt
+time ./bench-keys-10 100 10 1    &>> bench-keys.txt
+time ./bench-keys-10 100 100 1   &>> bench-keys.txt
+time ./bench-keys-10 100 1000 1  &>> bench-keys.txt
+time ./bench-keys-10 1000 100 1  &>> bench-keys.txt
+time ./bench-keys-10 1000 1000 1 &>> bench-keys.txt
+
+
+if false; then
+echo
 echo "Running bench-params"
 time ./bench-params &>> bench-params.txt
 time ./bench-params-compress &>> bench-params-compress.txt
@@ -70,7 +93,7 @@ time ./bench-enc-compress 1000 1000 100  &>> bench-enc-large-compress.txt
 time ./bench-enc-compress 1000 100 1000  &>> bench-enc-large-compress.txt
 time ./bench-enc-compress 100 1000 1000  &>> bench-enc-large-compress.txt
 time ./bench-enc-compress 1000 1000 1000 &>> bench-enc-large-compress.txt
-
+fi
 
 echo
 echo "Benchmarks done!"
