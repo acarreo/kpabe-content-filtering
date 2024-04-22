@@ -169,7 +169,7 @@ Four cases can be distinguished:
   - The case where the attributes in the ciphertext satisfy the policy: the
     decryption time is linear with respect to the size of the Blacklist. However,
     the number of attributes in the ciphertext also has a small impact. For
-    example, for 100 attributes in the encrypted data and 100 attributes in the
+    example, for 100 attributes in the ciphertext and 100 attributes in the
     Blacklist, the decryption time is around 40 milliseconds. For 1000 attributes
     in the ciphertext and 100 attributes in the Blacklist, the decryption time
     is around 65 milliseconds. However, for 100 attributes in the ciphertext and
