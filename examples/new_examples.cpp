@@ -19,6 +19,7 @@ uint8_t session_key_00[RLC_MD_LEN]; // RLC_MD_LEN = 32 bytes ~ 256 bits
 uint8_t session_key_01[RLC_MD_LEN];
 uint8_t session_key_02[RLC_MD_LEN];
 
+void example_byteString();
 
 int main()
 {
@@ -33,10 +34,33 @@ int main()
   example_serialization_zp();
   example_serialization_randomized_public_key();
 
+  example_byteString();
+
   clean_libraries();
   return 0;
 }
 
+void example_byteString() {
+  std::cout << "\n----------------> START : " << __func__ << std::endl;
+
+  ByteString bytes;
+  stringstream ss;
+
+  bytes.fillBuffer(0, 32);
+  rand_bytes(bytes.getInternalPtr(), bytes.size());
+
+  // byteString to stringstream
+  ss << bytes;
+
+  // byteString from stringstream
+  ByteString bytes_from_ss;
+  bytes_from_ss.fromString(ss.str());
+
+  cout << "ByteString :" << endl;
+  cout << bytes.toHex() << endl;
+  cout << "ByteString from stringstream :" << endl;
+  cout << bytes_from_ss.toHex() << endl;
+}
 
 void example_generate_params() {
   std::cout << "\n----------------> START : " << __func__ << std::endl;
