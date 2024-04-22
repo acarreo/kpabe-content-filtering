@@ -285,7 +285,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   auto key_wl_url = dec_key.get_key_wl(url);
   if (key_wl_url) {
-    std::cout << "URL is in WHITE_LIST: " << url << std::endl;
+    // std::cout << "URL is in WHITE_LIST: " << url << std::endl;
     ip = innerProduct(this->ctx_wl, *key_wl_url);
     ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
     phi = ip * ip_root;
@@ -298,7 +298,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   }
 
   if (dec_key.is_in_black_list(url)) {
-    std::cout << "URL is blacklisted: " << url << std::endl;
+    // std::cout << "URL is blacklisted: " << url << std::endl;
     return false;
   }
 
@@ -317,10 +317,10 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   OpenABELSSS lsss;
   if (!lsss.recoverCoefficients(policy.get(), attributes_list.get())) {
-    std::cout << "Policy not satisfied, could not recover LSSS coefficients." << std::endl;
+    // std::cout << "Policy not satisfied, could not recover LSSS coefficients." << std::endl;
     return false;
   }
-  std::cout << "Policy satisfied, LSSS coefficients recovered successfully." << std::endl;
+  // std::cout << "Policy satisfied, LSSS coefficients recovered successfully." << std::endl;
 
   auto recover_coeff = lsss.getRows();
 
