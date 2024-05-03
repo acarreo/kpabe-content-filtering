@@ -3,10 +3,10 @@
 This project implements the KP-ABE (Key-Policy Attribute-Based Encryption) using the DPVS (Dual Pairing Vector Spaces) scheme for the Content Filtering Use Case.
 
 ## Prerequisites
-The project utilizes the [RELIC](https://github.com/relic-toolkit/relic) library
-for cryptographic operations, the GMP library for arbitrary precision
-arithmetic, and the LSSS (Linear Secret Sharing Schemes) library, which is
-a part of the [OpenABE](https://github.com/zeutro/openabe) project.
+The project utilizes the [RELIC](https://github.com/relic-toolkit/relic)
+library for cryptographic operations, the GMP library for arbitrary
+precision arithmetic, and the ABE-LSSS library, which is a part of the
+[OpenABE](https://github.com/zeutro/openabe) project.
 
 ## Installation
 

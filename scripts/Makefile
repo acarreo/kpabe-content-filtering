@@ -1,7 +1,7 @@
 .PHONY: local docker
 
 local:
-	make -C ../abe-lsss
-
+	./install-dependencies.sh
 docker:
-	docker build --no-cache -t presto-content-filtering-use-case:relic-0.6.0--lsss-1.0 .
+	@echo "Victime des mise à jour de la librairie abe-lsss"
+#	docker build --no-cache -t presto-content-filtering-use-case:relic-0.6.0--lsss-1.0 .
