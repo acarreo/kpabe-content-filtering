@@ -2,7 +2,7 @@
 #define __VECTOR_EC_H__
 
 #include <vector>
-#include <lsss/zlsss.h>
+#include <lsss_abe/lsss_abe.h>
 
 extern "C" {
   #include "dpvs.h"
