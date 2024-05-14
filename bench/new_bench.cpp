@@ -434,21 +434,21 @@ int main(int argc, char **argv)
     n_att = atoi(argv[3]);
   }
 
-  // cout << "\n----------------> START : " << __func__ << endl;
-  // cout << "Benchmarking KP-ABE with DPVS" << endl;
-  // cout << "Number of rounds: " << Nb_rounds << endl;
+  cout << "\n----------------> START : " << __func__ << endl;
+  cout << "Benchmarking KP-ABE with DPVS" << endl;
+  cout << "Number of rounds: " << Nb_rounds << endl;
 
-  // cout << "Number of attributes in White list: " << n_wl << endl;
-  // cout << "Number of attributes in Black list: " << n_bl << endl;
-  // cout << "Number of attributes in ciphertext: " << n_att << endl << endl;
+  cout << "Number of attributes in White list: " << n_wl << endl;
+  cout << "Number of attributes in Black list: " << n_bl << endl;
+  cout << "Number of attributes in ciphertext: " << n_att << endl << endl;
 
-  // bench_serialization_params_iostream(Nb_rounds);
-  // bench_serialization_params(Nb_rounds);
+  bench_serialization_params_iostream(Nb_rounds);
+  bench_serialization_params(Nb_rounds);
 
-  // bench_serialization_dec_key(n_wl, n_bl, Nb_rounds);
+  bench_serialization_dec_key(n_wl, n_bl, Nb_rounds);
 
   // Il faut au moins 5 =: nb_att attributs dans le chiffré pour que le test passe correctement
-  // bench_encryption(n_wl, n_bl, n_att, Nb_rounds);
+  bench_encryption(n_wl, n_bl, n_att, Nb_rounds);
 
   bench_time_generation_keys(n_wl, n_bl, Nb_rounds);
 
