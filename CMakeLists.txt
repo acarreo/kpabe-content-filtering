@@ -18,6 +18,12 @@ endif()
 # set value of _COMPRESSION_ in CXXFLAGS
 set(CMAKE_CXX_FLAGS "${CXXFLAGS} -D_COMPRESSION_=${_COMPRESSION_}")
 
+# Include directories
+include_directories(
+    /usr/local/include
+    /usr/local/include/lsss_abe
+)
+
 set(SOURCE_FILES
     dpvs/matrix.c
     dpvs/dpvs.c

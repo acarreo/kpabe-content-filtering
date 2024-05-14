@@ -16,4 +16,5 @@ echo "Installing ABE-LSSS library..."
 cd ../
 mkdir -p build && cd build
 cmake ..
-make && make install
+make
+sudo make install
