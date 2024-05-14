@@ -18,6 +18,12 @@ endif()
 # set value of _COMPRESSION_ in CXXFLAGS
 set(CMAKE_CXX_FLAGS "${CXXFLAGS} -D_COMPRESSION_=${_COMPRESSION_}")
 
+# Include directories
+include_directories(
+    /usr/local/include
+    /usr/local/include/lsss_abe
+)
+
 set(SOURCE_FILES
     dpvs/matrix.c
     dpvs/dpvs.c
@@ -46,10 +52,12 @@ add_executable(
     bench/new_bench.cpp
 )
 
-target_link_libraries(kpabe_out lsss relic_s gmp)
-target_link_libraries(new_examples lsss relic_s gmp)
-target_link_libraries(new_bench lsss relic_s gmp)
+find_package(OpenSSL REQUIRED)
+find_package(relic REQUIRED)
 
+target_link_libraries(kpabe_out OpenSSL::SSL lsss_abe relic gmp)
+target_link_libraries(new_examples OpenSSL::SSL lsss_abe relic gmp)
+target_link_libraries(new_bench OpenSSL::SSL lsss_abe relic gmp)
 
 add_custom_target(example
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_examples

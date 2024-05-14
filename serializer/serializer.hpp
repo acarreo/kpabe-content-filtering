@@ -1,7 +1,7 @@
 #ifndef __SERIALIZER_HPP__
 #define __SERIALIZER_HPP__
 
-#include <lsss/zlsss.h>
+#include <lsss_abe/lsss_abe.h>
 #include <iostream>
 #include <fstream>
 #include <vector>

@@ -96,7 +96,7 @@ void bench_serialization_params(int rounds)
     ser_mk_duration += duration_cast<microseconds>( t2 - t1 );
     des_mk_duration += duration_cast<microseconds>( t3 - t2 );
 
-    if (public_key != public_key2 || master_key != master_key2 ||
+    if (!(public_key == public_key2) || !(master_key == master_key2) ||
         public_key.getSizeInBytes() != public_key_bytes.size() ||
         master_key.getSizeInBytes() != master_key_bytes.size()) {
       std::cerr << "Error: Public keys or master keys are not equal, or does not have the same length" << std::endl;
@@ -159,7 +159,7 @@ void bench_serialization_params_iostream(int rounds)
     ser_mk_duration += duration_cast<microseconds>( t2 - t1 );
     des_mk_duration += duration_cast<microseconds>( t3 - t2 );
 
-    if (public_key != public_key2 || master_key != master_key2 ||
+    if (!(public_key == public_key2) || !(master_key == master_key2) ||
         public_key.getSizeInBytes() != ss_public_key.str().size() ||
         master_key.getSizeInBytes() != ss_master_key.str().size()) {
       std::cerr << "Error: Public keys or master keys are not equal, or does not have the same length" << std::endl;
@@ -211,7 +211,7 @@ void bench_serialization_dec_key(int nb_wl, int nb_bl, int rounds)
     ser_dk_duration += duration_cast<microseconds>( t2 - t1 );
     des_dk_duration += duration_cast<microseconds>( t3 - t2 );
 
-    if (*dec_key != dec_key2 || dec_key2.getSizeInBytes() != dec_key_bytes.size() ) {
+    if (!(*dec_key == dec_key2) || dec_key2.getSizeInBytes() != dec_key_bytes.size() ) {
       std::cerr << "Error: Decryption keys are not equal or does not have the same length" << std::endl;
       return;
     }
@@ -434,21 +434,21 @@ int main(int argc, char **argv)
     n_att = atoi(argv[3]);
   }
 
-  // cout << "\n----------------> START : " << __func__ << endl;
-  // cout << "Benchmarking KP-ABE with DPVS" << endl;
-  // cout << "Number of rounds: " << Nb_rounds << endl;
+  cout << "\n----------------> START : " << __func__ << endl;
+  cout << "Benchmarking KP-ABE with DPVS" << endl;
+  cout << "Number of rounds: " << Nb_rounds << endl;
 
-  // cout << "Number of attributes in White list: " << n_wl << endl;
-  // cout << "Number of attributes in Black list: " << n_bl << endl;
-  // cout << "Number of attributes in ciphertext: " << n_att << endl << endl;
+  cout << "Number of attributes in White list: " << n_wl << endl;
+  cout << "Number of attributes in Black list: " << n_bl << endl;
+  cout << "Number of attributes in ciphertext: " << n_att << endl << endl;
 
-  // bench_serialization_params_iostream(Nb_rounds);
-  // bench_serialization_params(Nb_rounds);
+  bench_serialization_params_iostream(Nb_rounds);
+  bench_serialization_params(Nb_rounds);
 
-  // bench_serialization_dec_key(n_wl, n_bl, Nb_rounds);
+  bench_serialization_dec_key(n_wl, n_bl, Nb_rounds);
 
   // Il faut au moins 5 =: nb_att attributs dans le chiffré pour que le test passe correctement
-  // bench_encryption(n_wl, n_bl, n_att, Nb_rounds);
+  bench_encryption(n_wl, n_bl, n_att, Nb_rounds);
 
   bench_time_generation_keys(n_wl, n_bl, Nb_rounds);
 

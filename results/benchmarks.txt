@@ -8,47 +8,46 @@ RAM: 32GB
 ## Master Parameters Benchmarking Results --- Serialization
 
 ------------------------------------------------------------------------------
-| Params     | Size (bytes) | Serialization | Deserialization | Setup Params |
-|            |              |   Time (us)   |    Time (us)    |   Time (us)  |
-|------------|--------------|---------------|-----------------|--------------|
-| Public Key |    5,518     |      34       |       272       |              |
-| Master Key |   10,894     |      47       |       502       |              |
-|------------|------------------------------------------------|              |
-|            |              ENABLING COMPRESSION              |    26,509    |
-|------------|------------------------------------------------|              |
-| Public Key |    2,822     |      32       |      1,540      |              |
-| Master Key |    5,518     |      38       |      3,948      |              |
-------------------------------------------------------------------------------
+| Params     | Size (bytes) | Serialization |  Deserialization  | Setup Params |
+|            |              |   Time (us)   | Time (us) | Ratio |   Time (us)  |
+|------------|--------------|---------------|-----------|-------|--------------|
+| Public Key |    5,518     |      34       |       272 | 1     |              |
+| Master Key |   10,894     |      47       |       502 | 1     |              |
+|------------|--------------------------------------------------|              |
+|            |               ENABLING COMPRESSION               |    26,509    |
+|------------|--------------------------------------------------|              |
+| Public Key |    2,822     |      32       |     1,540 | 5.66  |              |
+| Master Key |    5,518     |      38       |     3,948 | 7.86  |              |
+--------------------------------------------------------------------------------
 
 Setup Parameters : Generation of Public Key and Master Key
-
 
 
 ## Decryption Key Benchmarking Results --- Serialization
 Number of Attributes in the Policy: 5
 
-----------------------------------------------------------------------------
-| Nb Attr WL | Nb Attr BL | Size (bytes) | Serialization | Deserialization |
-|            |            |              |   Time (us)   |    Time (us)    |
-|------------|------------|--------------|---------------|-----------------|
-|         10 |         10 |       28,078 |           782 |           1,244 |
-|         10 |        100 |       99,269 |         2,783 |           4,472 |
-|        100 |         10 |      134,009 |         3,709 |           5,913 |
-|        100 |        100 |      205,200 |         5,717 |           9,124 |
-|        100 |       1000 |      918,001 |        26,094 |          42,107 |
-|       1000 |        100 |    1,265,401 |        35,145 |          55,898 |
-|       1000 |       1000 |    1,978,202 |        55,344 |          88,666 |
-|------------|-------------------------------------------|-----------------|
-|                           ENABLING COMPRESSION                           |
-|------------|-------------------------------------------|-----------------|
-|         10 |         10 |       14,350 |           764 |           9,635 |
-|         10 |        100 |       50,981 |         2,719 |          34,145 |
-|        100 |         10 |       68,441 |         3,618 |          46,230 |
-|        100 |        100 |      105,072 |         5,615 |          70,367 |
-|        100 |       1000 |      472,273 |        25,231 |         314,519 |
-|       1000 |        100 |      646,873 |        34,465 |         436,773 |
-|       1000 |       1000 |    1,014,074 |        53,901 |         677,010 |
-----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+| Nb Attr WL | Nb Attr BL | Size (bytes) | Serialization ||  Deserialization  ||
+|            |            |              |   Time (us)   || Time (us) | Ratio ||
+|------------|------------|--------------|---------------||-----------|-------||
+|         10 |         10 |       28,078 |           782 ||     1,244 | 1     ||
+|         10 |        100 |       99,269 |         2,783 ||     4,472 | 1     ||
+|        100 |         10 |      134,009 |         3,709 ||     5,913 | 1     ||
+|        100 |        100 |      205,200 |         5,717 ||     9,124 | 1     ||
+|        100 |       1000 |      918,001 |        26,094 ||    42,107 | 1     ||
+|       1000 |        100 |    1,265,401 |        35,145 ||    55,898 | 1     ||
+|       1000 |       1000 |    1,978,202 |        55,344 ||    88,666 | 1     ||
+|-----------------------------------------------------------------------------||
+|                             ENABLING COMPRESSION                            ||
+|-----------------------------------------------------------------------------||
+|         10 |         10 |       14,350 |           764 ||     9,635 | 7.74  ||
+|         10 |        100 |       50,981 |         2,719 ||    34,145 | 7.63  ||
+|        100 |         10 |       68,441 |         3,618 ||    46,230 | 7.81  ||
+|        100 |        100 |      105,072 |         5,615 ||    70,367 | 7.71  ||
+|        100 |       1000 |      472,273 |        25,231 ||   314,519 | 7.47  ||
+|       1000 |        100 |      646,873 |        34,465 ||   436,773 | 7.81  ||
+|       1000 |       1000 |    1,014,074 |        53,901 ||   677,010 | 7.63  ||
+--------------------------------------------------------------------------------
 
 
 ## Decryption Key Benchmarking Results --- Key Generation
@@ -77,46 +76,46 @@ Number of Attributes in the Policy: 5
 
 ## Ciphertext Benchmarking Results --- Serialization
 
-----------------------------------------------------------------
-| Nb Attr Ctx | Size (bytes) | Serialization | Deserialization |
-|             |              |   Time (us)   |    Time (us)    |
-|-------------|--------------|---------------|-----------------|
-|         10  |        9,224 |           255 |             415 |
-|        100  |       80,595 |         2,185 |           3,607 |
-|       1000  |      795,197 |        21,428 |          35,627 |
-|-------------|------------------------------|-----------------|
-|                     ENABLING COMPRESSION                     |
-|-------------|------------------------------|-----------------|
-|         10  |        4,756 |           254 |           2,493 |
-|        100  |       41,567 |         2,163 |          21,666 |
-|       1000  |      410,569 |        21,436 |         214,350 |
-----------------------------------------------------------------
+--------------------------------------------------------------------
+| Nb Attr Ctx | Size (bytes) | Serialization ||  Deserialization  ||
+|             |              |   Time (us)   || Time (us) | Ratio ||
+|-------------|--------------|---------------||-----------|-------||
+|         10  |        9,224 |           255 ||       415 | 1     ||
+|        100  |       80,595 |         2,185 ||     3,607 | 1     ||
+|       1000  |      795,197 |        21,428 ||    35,627 | 1     ||
+|-------------|---------------------------------------------------||
+|                     ENABLING COMPRESSION                        ||
+|-------------|---------------------------------------------------||
+|         10  |        4,756 |           254 ||     2,493 | 6.00  ||
+|        100  |       41,567 |         2,163 ||    21,666 | 6.00  ||
+|       1000  |      410,569 |        21,436 ||   214,350 | 6.01  ||
+--------------------------------------------------------------------
 
 
 
 ## Encryption -- Decryption Benchmarking Results
 
 ---------------------------------------------------------------------------------------------------------
-| Nb Attr Ctx | Nb Attr WL | Nb Attr BL | Encryption ||             Decryption Time (us)               ||
-|             |            |            |  Time (us) || url in BL | url in WL | Pol Not Sat | Pol Sat  ||
-|-------------|------------|------------|------------||-----------|-----------|-------------|----------||
-|         10  |        10  |        10  |    20,674  ||         0 |     2,703 |          86 |    5,782 ||
-|         10  |        10  |       100  |    20,700  ||         1 |     2,699 |          93 |   39,943 ||
-|         10  |       100  |        10  |    20,633  ||         1 |     2,705 |          87 |    5,781 ||
-|         10  |       100  |       100  |    20,639  ||         1 |     2,695 |          91 |   39,834 ||
-|        100  |        10  |        10  |   163,345  ||         1 |     2,707 |       1,400 |    6,131 ||
-|        100  |        10  |       100  |   163,375  ||         1 |     2,708 |       1,411 |   40,213 ||
-|        100  |       100  |        10  |   163,211  ||         1 |     2,698 |       1,394 |    6,122 ||
-|        100  |       100  |       100  |   163,015  ||         2 |     2,696 |       1,408 |   40,196 ||
-|---- --------|------------|------------|------------||-----------|-----------|-------------|----------||
-|        100  |       100  |      1000  |   163,196  ||         8 |     2,703 |       1,471 |  380,287 ||
-|        100  |      1000  |       100  |   163,156  ||         2 |     2,702 |       1,404 |   40,180 ||
-|        100  |      1000  |      1000  |   163,162  ||         8 |     2,716 |       1,470 |  380,628 ||
-|       1000  |       100  |       100  | 1,674,072  ||         2 |     2,716 |     100,682 |   64,989 ||
-|       1000  |       100  |      1000  | 1,673,900  ||         8 |     2,710 |     100,714 |  404,995 ||
-|       1000  |      1000  |       100  | 1,681,374  ||         2 |     2,709 |     100,690 |   65,022 ||
-|       1000  |      1000  |      1000  | 1,674,047  ||         8 |     2,713 |     100,629 |  405,199 ||
-|       1000  |      1000  |      1000  | 1,674,007  ||         8 |     2,713 |     100,675 |  405,911 ||
+| Nb Attr Ctx | Encryption || Nb Attr WL | Nb Attr BL |             Decryption Time (us)               ||
+|             |  Time (us) ||            |            | url in BL | url in WL | Pol Not Sat | Pol Sat  ||
+|-------------|------------||------------|------------|-----------|-----------|-------------|----------||
+|         10  |    20,674  ||        10  |        10  |         0 |     2,703 |          86 |    5,782 ||
+|         10  |    20,700  ||        10  |       100  |         1 |     2,699 |          93 |   39,943 ||
+|         10  |    20,633  ||       100  |        10  |         1 |     2,705 |          87 |    5,781 ||
+|         10  |    20,639  ||       100  |       100  |         1 |     2,695 |          91 |   39,834 ||
+|        100  |   163,345  ||        10  |        10  |         1 |     2,707 |       1,400 |    6,131 ||
+|        100  |   163,375  ||        10  |       100  |         1 |     2,708 |       1,411 |   40,213 ||
+|        100  |   163,211  ||       100  |        10  |         1 |     2,698 |       1,394 |    6,122 ||
+|        100  |   163,015  ||       100  |       100  |         2 |     2,696 |       1,408 |   40,196 ||
+|-------------|------------||------------|------------|-----------|-----------|-------------|----------||
+|        100  |   163,196  ||       100  |      1000  |         8 |     2,703 |       1,471 |  380,287 ||
+|        100  |   163,156  ||      1000  |       100  |         2 |     2,702 |       1,404 |   40,180 ||
+|        100  |   163,162  ||      1000  |      1000  |         8 |     2,716 |       1,470 |  380,628 ||
+|       1000  | 1,674,072  ||       100  |       100  |         2 |     2,716 |     100,682 |   64,989 ||
+|       1000  | 1,673,900  ||       100  |      1000  |         8 |     2,710 |     100,714 |  404,995 ||
+|       1000  | 1,681,374  ||      1000  |       100  |         2 |     2,709 |     100,690 |   65,022 ||
+|       1000  | 1,674,047  ||      1000  |      1000  |         8 |     2,713 |     100,629 |  405,199 ||
+|       1000  | 1,674,007  ||      1000  |      1000  |         8 |     2,713 |     100,675 |  405,911 ||
 ---------------------------------------------------------------------------------------------------------
 
 
@@ -129,5 +128,49 @@ Number of Attributes in the Policy: 5
     - Pol Sat: Attributes in the ciphertext satisfy the Policy
     - url in BL: The request URL is in the Blacklist
     - url in WL: The request URL is in the Whitelist
-    - Compression: 0 - No Compression, 1 - Compression Enabled
+    - Ratio: The ratio of the time taken for deserialization with compression
+             to that without compression
 
+
+
+# Analysis of Benchmarking Results
+
+## Serialization
+According to the benchmarking results, enabling compression reduces the data
+size by half, which can be beneficial for data storage and transmission.
+However, it significantly increases deserialization time, which can impact
+performance if deserialization is a frequent operation. For instance, there's a
+factor of 6 for the ciphertext, and a factor of 7.50 for decryption keys.
+Therefore, it's important to consider these trade-offs when deciding whether or
+not to enable compression. Note that serialization occurs in constant time,
+meaning the ratio (size in bytes / time of serialization) is constant.
+
+
+## Encryption and Decryption
+
+### Encryption
+The encryption time is approximately linear with respect to the number of
+attributes in the ciphertext. For example, for 100 attributes in the ciphertext,
+the encryption time is around 163 milliseconds. For 1000 attributes in the
+ciphertext, the encryption time is around 1,670 milliseconds.
+
+### Decryption
+Four cases can be distinguished:
+  - The case where the requested URL is in the Blacklist: no calculation is
+    performed (presence test in the Blacklist) and the time depends only on the
+    size of the Blacklist, varying between 0 and 8 microseconds.
+  - The case where the requested URL is in the Whitelist: the decryption time is
+    constant and independent of the number of attributes in the ciphertext,
+    in the Whitelist or Blacklist. It is around 2.7 milliseconds.
+  - The case where the attributes in the ciphertext do not satisfy the policy:
+    cryptographic operations are performed. Their cost is linear with respect to
+    the number of attributes in the ciphertext. For example, for 100 attributes
+    in the ciphertext, the decryption time is around 1.4 milliseconds.
+  - The case where the attributes in the ciphertext satisfy the policy: the
+    decryption time is linear with respect to the size of the Blacklist. However,
+    the number of attributes in the ciphertext also has a small impact. For
+    example, for 100 attributes in the ciphertext and 100 attributes in the
+    Blacklist, the decryption time is around 40 milliseconds. For 1000 attributes
+    in the ciphertext and 100 attributes in the Blacklist, the decryption time
+    is around 65 milliseconds. However, for 100 attributes in the ciphertext and
+    1000 attributes in the Blacklist, the decryption time is around 380 milliseconds.
