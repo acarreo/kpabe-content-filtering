@@ -53,11 +53,15 @@ add_executable(
 )
 
 find_package(OpenSSL REQUIRED)
-find_package(relic REQUIRED)
+find_library(RLC_LIBRARY NAMES relic)
 
-target_link_libraries(kpabe_out OpenSSL::SSL lsss_abe relic gmp)
-target_link_libraries(new_examples OpenSSL::SSL lsss_abe relic gmp)
-target_link_libraries(new_bench OpenSSL::SSL lsss_abe relic gmp)
+set(LIBRARIES
+    OpenSSL::SSL lsss_abe ${RLC_LIBRARY} gmp
+)
+
+target_link_libraries(kpabe_out ${LIBRARIES})
+target_link_libraries(new_examples ${LIBRARIES})
+target_link_libraries(new_bench ${LIBRARIES})
 
 add_custom_target(example
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_examples
