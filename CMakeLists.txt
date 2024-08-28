@@ -11,12 +11,24 @@ option(COMPRESSION_ENABLED "Enable compression" ON)
 
 if(COMPRESSION_ENABLED)
     set(_COMPRESSION_ true)
+    set(LSSS_LIBRARY "lsss_abe_compression")
 else()
     set(_COMPRESSION_ false)
+    set(LSSS_LIBRARY "lsss_abe_no_compression")
 endif()
 
 # set value of _COMPRESSION_ in CXXFLAGS
 set(CMAKE_CXX_FLAGS "${CXXFLAGS} -D_COMPRESSION_=${_COMPRESSION_}")
+
+find_package(OpenSSL REQUIRED)
+find_library(RLC_LIBRARY NAMES relic)
+
+set(LIBRARIES
+    OpenSSL::SSL
+    ${LSSS_LIBRARY}
+    ${RLC_LIBRARY}
+    gmp
+)
 
 # Include directories
 include_directories(
@@ -52,12 +64,9 @@ add_executable(
     bench/new_bench.cpp
 )
 
-find_package(OpenSSL REQUIRED)
-find_package(relic REQUIRED)
-
-target_link_libraries(kpabe_out OpenSSL::SSL lsss_abe relic gmp)
-target_link_libraries(new_examples OpenSSL::SSL lsss_abe relic gmp)
-target_link_libraries(new_bench OpenSSL::SSL lsss_abe relic gmp)
+target_link_libraries(kpabe_out ${LIBRARIES})
+target_link_libraries(new_examples ${LIBRARIES})
+target_link_libraries(new_bench ${LIBRARIES})
 
 add_custom_target(example
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_examples
