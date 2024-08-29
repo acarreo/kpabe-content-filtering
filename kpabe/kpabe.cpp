@@ -148,7 +148,8 @@ bool KPABE_DPVS_CIPHERTEXT::encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLI
     ZP att_zp = hashToZP(att, group.order);
     sigma.setRandom(group.order); // sigma_att
 
-    this->ctx_att[att] = public_key.get_h1() * sigma +
+    std::string attr_key = OpenABEHashKey(att);
+    this->ctx_att[attr_key] = public_key.get_h1() * sigma +
                          public_key.get_h2() * (sigma * att_zp) +
                          h3_times_omega;
   }
@@ -325,12 +326,13 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   auto recover_coeff = lsss.getRows();
 
   ip_lsss.setIdentity();
-  for (const auto& [_, coeff] : recover_coeff) {
-    ZP cj = coeff.element();
-    std::string att = coeff.label();
+  for (auto it = recover_coeff.begin(); it != recover_coeff.end(); it++) {
+    ZP cj = it->second.element();
+    std::string attr_key = OpenABEHashKey(it->second.label());
+    std::string attr_deckey = OpenABEHashKey(it->first);
 
-    auto ctx_att__ = this->get_ctx_att(att);
-    auto key_att__ = dec_key.get_key_att(att);
+    auto ctx_att__ = this->get_ctx_att(attr_key);
+    auto key_att__ = dec_key.get_key_att(attr_deckey);
 
     if (!ctx_att__ || !key_att__) {
       std::cerr << "Error: Could not get ctx_att or key_att" << std::endl;
