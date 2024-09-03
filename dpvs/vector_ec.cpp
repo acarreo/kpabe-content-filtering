@@ -298,7 +298,7 @@ GT innerProduct(const G1_VECTOR &x, const G2_VECTOR &y) {
   g2_vector_ptr vy = y.getG2Vector();
 
   if (vx != nullptr && vy != nullptr) {
-    pp_map_sim_k12(result.m_GT, vx->elements, vy->elements, vx->dim);
+    pc_map_sim(result.m_GT, vx->elements, vy->elements, vx->dim);
   }
 
   clear_g1_vector(vx);

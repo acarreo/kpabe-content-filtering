@@ -24,16 +24,16 @@ typedef enum ElementType {
 
 using ByteString = OpenABEByteString;
 
-class G1_VECTOR : public std::vector<G1> {
+class G1_VECTOR : public std::vector<G1>, public ZObject {
 private:
   size_t dim;
   bool isDimSet;
 
 public:
-  G1_VECTOR() : std::vector<G1>(), isDimSet(false) {}
-  G1_VECTOR(size_t dim) : std::vector<G1>(dim), dim(dim), isDimSet(true) {}
-  G1_VECTOR(std::initializer_list<G1> init_list) : std::vector<G1>(init_list), isDimSet(false) {}
-  G1_VECTOR(const G1_VECTOR &other) : std::vector<G1>(other), dim(other.dim), isDimSet(other.isDimSet) {}
+  G1_VECTOR() : std::vector<G1>(), ZObject(), isDimSet(false) {}
+  G1_VECTOR(size_t dim) : std::vector<G1>(dim), ZObject(), dim(dim), isDimSet(true) {}
+  G1_VECTOR(std::initializer_list<G1> init_list) : std::vector<G1>(init_list), ZObject(), isDimSet(false) {}
+  G1_VECTOR(const G1_VECTOR &other) : std::vector<G1>(other), ZObject(), dim(other.dim), isDimSet(other.isDimSet) {}
   G1_VECTOR(const g1_vector_ptr &g1_vector);
 
   ~G1_VECTOR() { this->clear(); this->dim = 0; this->isDimSet = false; }

@@ -58,9 +58,10 @@ g2_vector_ptr dpvs_create_g2_vect(uint8_t dim) {
 
 G1_VS_BASE dpvs_create_g1_base(uint8_t dim)
 {
-  G1_VS_BASE vect = NULL;
+  if (dim == 0) return NULL;
 
-  if ((vect = (G1_VS_BASE) malloc(dim * sizeof(g1_vector_ptr)))) {
+  G1_VS_BASE vect = (G1_VS_BASE) malloc(dim * sizeof(g1_vector_ptr));
+  if (vect != NULL) {
     for (uint8_t i = 0; i < dim; i++) {
       if ((vect[i] = dpvs_create_g1_vect(dim)) == NULL) {
         for (; i > 0; i--) free(vect[i-1]);
@@ -76,9 +77,10 @@ G1_VS_BASE dpvs_create_g1_base(uint8_t dim)
 
 G2_VS_BASE dpvs_create_g2_base(uint8_t dim)
 {
-  G2_VS_BASE vect = NULL;
+  if (dim == 0) return NULL;
 
-  if ((vect = (G2_VS_BASE) malloc(dim * sizeof(g2_vector_ptr)))) {
+  G2_VS_BASE vect = (G2_VS_BASE) malloc(dim * sizeof(g2_vector_ptr));
+  if (vect != NULL) {
     for (uint8_t i = 0; i < dim; i++) {
       if ((vect[i] = dpvs_create_g2_vect(dim)) == NULL) {
         for (; i > 0; i--) free(vect[i-1]);
@@ -94,21 +96,22 @@ G2_VS_BASE dpvs_create_g2_base(uint8_t dim)
 
 dpvs_t* dpvs_create_bases(uint8_t dim)
 {
-  dpvs_t* dpvs = NULL;
+  if (dim == 0) return NULL;
 
-  if ((dpvs = (dpvs_t*) malloc(sizeof(dpvs_t)))) {
-    if ((dpvs->base = dpvs_create_g1_base(dim)) == NULL) {
-      free(dpvs);
-      _error_alloc_fail_();
-    }
-    else if ((dpvs->dual_base = dpvs_create_g2_base(dim)) == NULL) {
-      free(dpvs->base);
-      free(dpvs);
-      _error_alloc_fail_();
-    }
-    else {
-      dpvs->dim = dim;
-    }
+  dpvs_t* dpvs = (dpvs_t*) malloc(sizeof(dpvs_t));
+  if (dpvs == NULL) return NULL;
+  dpvs->dim = dim;
+
+  dpvs->base = dpvs_create_g1_base(dim);
+  if (dpvs->base == NULL) {
+    free(dpvs);
+    return NULL;
+  }
+
+  dpvs->dual_base = dpvs_create_g2_base(dim);
+  if (dpvs->dual_base == NULL) {
+    free(dpvs->base); free(dpvs);
+    return NULL;
   }
 
   return dpvs;
