@@ -363,10 +363,10 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   ZP r;
   std::vector<ZP> ri;
 
-  if (this->policy.empty() || this->white_list.empty() || this->black_list.empty()) {
-    std::cerr << "Error: Policy, white list or black list is empty" << std::endl;
-    return false;
-  }
+  // if (this->policy.empty() || this->white_list.empty() || this->black_list.empty()) {
+  //   std::cerr << "Error: Policy, white list or black list is empty" << std::endl;
+  //   return false;
+  // }
 
   // Create policy tree
   auto policy_tree = createPolicyTree(this->policy);
