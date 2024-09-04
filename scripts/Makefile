@@ -4,7 +4,7 @@
 RELIC_TAG = 0.6.0
 ELLIPTIC_CURVE ?= bls12-381
 LSSS_IMAGE_VERSION ?= 0.1.0
-ENABLE_COMPRESSION ?= OFF
+ENABLE_COMPRESSION ?= ON
 
 # Path to the Docker directory from abe-lsss repository
 DOCKER_DIR = ../abe-lsss/docker
