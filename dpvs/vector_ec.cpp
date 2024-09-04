@@ -36,8 +36,7 @@ size_t G1_VECTOR::getSizeInBytes() const {
   if (this->size() == 0) return 0;
 
   // size of G1_VECTOR in bytes
-  buff_size = (BIN_COMPRESSED ? G1_SIZE_BIN_COMPRESSED : G1_SIZE_BIN);
-  buff_size *= this->getDim();
+  buff_size = G1::getDefaultSize() * this->getDim();
 
   // ADD : type of vector group and size of dim
   total_size = 2 * sizeof(uint8_t);
@@ -84,7 +83,7 @@ void G1_VECTOR::serialize(OpenABEByteString &result) const {
 
 void G1_VECTOR::deserialize(OpenABEByteString &input) {
   OpenABEByteString temp;
-  size_t index = 0, g1_size = G1_SIZE;
+  size_t index = 0, g1_size = G1::getDefaultSize();
 
   if (input.at(index++) == VECTOR_G1_ELEMENT) {
     uint8_t dim = input.at(index++);
@@ -183,8 +182,7 @@ size_t G2_VECTOR::getSizeInBytes() const {
   if (this->size() == 0) return 0;
 
   // size of G2_VECTOR in bytes
-  buff_size = G2_SIZE;
-  buff_size *= this->getDim();
+  buff_size = G2::getDefaultSize() * this->getDim();
 
   // ADD : type of vector group and size of dim
   total_size = 2 * sizeof(uint8_t);
@@ -231,7 +229,7 @@ void G2_VECTOR::serialize(OpenABEByteString &result) const {
 
 void G2_VECTOR::deserialize(OpenABEByteString &input) {
   OpenABEByteString temp;
-  size_t index = 0, g2_size = G2_SIZE;
+  size_t index = 0, g2_size = G2::getDefaultSize();
 
   if (input.at(index++) == VECTOR_G2_ELEMENT) {
     uint8_t dim = input.at(index++);
@@ -300,7 +298,7 @@ GT innerProduct(const G1_VECTOR &x, const G2_VECTOR &y) {
   g2_vector_ptr vy = y.getG2Vector();
 
   if (vx != nullptr && vy != nullptr) {
-    pp_map_sim_k12(result.m_GT, vx->elements, vy->elements, vx->dim);
+    pc_map_sim(result.m_GT, vx->elements, vy->elements, vx->dim);
   }
 
   clear_g1_vector(vx);

@@ -363,10 +363,10 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
   ZP r;
   std::vector<ZP> ri;
 
-  if (this->policy.empty() || this->white_list.empty() || this->black_list.empty()) {
-    std::cerr << "Error: Policy, white list or black list is empty" << std::endl;
-    return false;
-  }
+  // if (this->policy.empty() || this->white_list.empty() || this->black_list.empty()) {
+  //   std::cerr << "Error: Policy, white list or black list is empty" << std::endl;
+  //   return false;
+  // }
 
   // Create policy tree
   auto policy_tree = createPolicyTree(this->policy);
@@ -421,14 +421,15 @@ bool KPABE_DPVS_DECRYPTION_KEY::generate(const KPABE_DPVS_MASTER_KEY &master_key
 
   /* set key_att : for all secret in secret_shares,
    * msk->hh1 * (att_j * theta_j) + msk->hh2 * (-theta_j) + msk->hh3 * aj */
-  for (const auto& [_, secret] : secret_shares) {
-    aj = secret.element(); aj.setOrder(group.order);
-    std::string att = secret.label();
+  for (auto it = secret_shares.begin(); it != secret_shares.end(); ++it) {
+    aj = it->second.element();
+    aj.setOrder(group.order);
 
-    att_j = hashToZP(att, group.order);
+    att_j = hashToZP(it->second.label(), group.order);
     theta_j.setRandom(group.order);
 
-    this->key_att[att] = master_key.get_hh1() * (att_j * theta_j) +
+    std::string attr_key = OpenABEHashKey(it->first);
+    this->key_att[attr_key] = master_key.get_hh1() * (att_j * theta_j) +
                          master_key.get_hh2() * (-theta_j) +
                          master_key.get_hh3() * aj;
   }

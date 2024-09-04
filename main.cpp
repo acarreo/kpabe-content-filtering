@@ -33,6 +33,7 @@ const vector<string> list_policies({
 
 void test_serialization_keys();
 void test_encryption();
+void test_complex_policies();
 
 using namespace std::chrono;
 
@@ -46,6 +47,8 @@ int main(int argc, char **argv) {
   test_serialization_keys();
 
   test_encryption();
+
+  test_complex_policies();
 
 
 #if 0
@@ -176,5 +179,62 @@ void test_encryption() {
     std::cout << "Session keys are equal" << std::endl;
   } else {
     std::cerr << "Error: Session keys are not equal" << std::endl;
+  }
+}
+
+void test_complex_policies() {
+  string attributs="pegi3|no-in-game-purchase|no-gambling|no-violence|no-discrimination|no-horror|no-bad-language|no-sex|no-drugs";
+  string policy_1 ="((pegi3) and no-in-game-purchase) or (pegi16 and no-in-game-purchase)";
+  string policy_2 ="((pegi3) and no-in-game-purchase) or (pegi16 and no-sex)";
+
+  KPABE_DPVS kpabe;
+
+  if (!kpabe.setup()) {
+    std::cerr << "Error: Could not setup keys" << std::endl;
+    return;
+  }
+
+  auto pk = kpabe.get_public_key();
+
+  auto dk1 = kpabe.keygen(policy_1);
+  auto dk2 = kpabe.keygen(policy_2);
+
+  if (!dk1 || !dk2) {
+    std::cerr << "Error: Could not generate decryption keys" << std::endl;
+    return;
+  }
+
+  uint8_t key[RLC_MD_LEN];
+  uint8_t key1_rec[RLC_MD_LEN];
+  uint8_t key2_rec[RLC_MD_LEN];
+
+  KPABE_DPVS_CIPHERTEXT cipher(attributs, "url");
+
+  bool success = cipher.encrypt(key, pk);
+  if (!success) {
+    std::cerr << "Error: Could not encrypt" << std::endl;
+    return;
+  }
+
+  success = cipher.decrypt(key1_rec, *dk1);
+  if (!success) {
+    std::cerr << "Error: Could not decrypt with policy 1" << std::endl;
+    return;
+  }
+  if (memcmp(key, key1_rec, RLC_MD_LEN) == 0) {
+    std::cout << "Session keys are equal for policy 1" << std::endl;
+  } else {
+    std::cerr << "Error: Session keys are not equal for policy 1" << std::endl;
+  }
+
+  success = cipher.decrypt(key2_rec, *dk2);
+  if (!success) {
+    std::cerr << "Error: Could not decrypt with policy 2" << std::endl;
+    return;
+  }
+  if (memcmp(key, key2_rec, RLC_MD_LEN) == 0) {
+    std::cout << "Session keys are equal for policy 2" << std::endl;
+  } else {
+    std::cerr << "Error: Session keys are not equal for policy 2" << std::endl;
   }
 }
