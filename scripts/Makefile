@@ -18,7 +18,7 @@ local:
 docker:
 	@echo "Building Docker image..."
 	@if [ -d "$(DOCKER_DIR)" ]; then \
-		cd $(DOCKER_DIR) && $(MAKE) build_abe_lsss RELIC_TAG=$(RELIC_TAG) CURVE=$(ELLIPTIC_CURVE) ENABLE_COMPRESSION=$(ENABLE_COMPRESSION) ABE_LSSS_VERSION=$(LSSS_IMAGE_VERSION) || { echo 'Failed to build Docker image'; exit 1; } \
+		$(MAKE) -C $(DOCKER_DIR) build_abe_lsss RELIC_TAG=$(RELIC_TAG) CURVE=$(ELLIPTIC_CURVE) ENABLE_COMPRESSION=$(ENABLE_COMPRESSION) ABE_LSSS_VERSION=$(LSSS_IMAGE_VERSION) || { echo 'Failed to build Docker image'; exit 1; } \
 	else \
 		echo "Docker directory not found"; \
 		exit 1; \
