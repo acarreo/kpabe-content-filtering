@@ -6,19 +6,23 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 20)
 set(CXXFLAGS "-Wall -Wextra -Wno-unused-parameter")
 
-# By default, compression is enabled
-option(COMPRESSION_ENABLED "Enable compression" ON)
+# Default parameters
+set(CURVE "bls12-381" CACHE STRING "Elliptic curve to use")
+set(RELIC_TAG "0.6.0" CACHE STRING "Relic tag to use")
+set(LSSS_IMAGE_VERSION "0.1.0" CACHE STRING "LSSS image version to use")
+set(COMPRESSION ON CACHE BOOL "Enable compression")
 
-if(COMPRESSION_ENABLED)
-    set(_COMPRESSION_ true)
+# Print the options
+message(STATUS "Elliptic Curve: ${CURVE}")
+message(STATUS "Relic Tag: ${RELIC_TAG}")
+message(STATUS "LSSS Image Version: ${LSSS_IMAGE_VERSION}")
+message(STATUS "Enable compression: ${COMPRESSION}")
+
+if(COMPRESSION)
     set(LSSS_LIBRARY "lsss_abe_compression")
 else()
-    set(_COMPRESSION_ false)
     set(LSSS_LIBRARY "lsss_abe_no_compression")
 endif()
-
-# set value of _COMPRESSION_ in CXXFLAGS
-set(CMAKE_CXX_FLAGS "${CXXFLAGS} -D_COMPRESSION_=${_COMPRESSION_}")
 
 find_package(OpenSSL REQUIRED)
 find_library(RLC_LIBRARY NAMES relic)
@@ -80,11 +84,11 @@ add_custom_target(bench
 
 # Install dependencies
 add_custom_target(install_dependencies_local
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts COMPRESSION=${_COMPRESSION_} local
+    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts ENABLE_COMPRESSION=${COMPRESSION} ELLIPTIC_CURVE=${CURVE} local
     COMMENT "Installing dependencies locally"
 )
 
 add_custom_target(install_dependencies_docker
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts COMPRESSION=${_COMPRESSION_} docker
+    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts RELIC_TAG=${RELIC_TAG} ELLIPTIC_CURVE=${CURVE} LSSS_IMAGE_VERSION=${LSSS_IMAGE_VERSION} ENABLE_COMPRESSION=${COMPRESSION} docker
     COMMENT "Installing dependencies in Docker"
 )
