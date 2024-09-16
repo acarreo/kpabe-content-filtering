@@ -12,7 +12,7 @@ find_library(RLC_LIBRARY NAMES relic)
 set(LIBRARIES
     benchmark::benchmark
     OpenSSL::SSL
-    /usr/local/lib/liblsss_abe_no_compression.so
+    /usr/local/lib/liblsss_abe_compression.so
     ${RLC_LIBRARY}
     gmp
 )
@@ -32,23 +32,31 @@ set(SOURCE_FILES
 )
 
 add_executable(
-  bench_serialization
+  bench_setup_efficiency
   ${SOURCE_FILES}
-  bench-serialization.cpp
+  bench--setup--efficiency.cpp
 )
 
 add_executable(
-  bench_efficiency_primitives
+  bench_setup_serialization
   ${SOURCE_FILES}
-  bench-efficiency-primitives.cpp
+  bench--setup--serialization.cpp
 )
 
 add_executable(
-  bench_efficiency_dpvs
+  bench_keygen_efficiency
   ${SOURCE_FILES}
-  bench-efficiency-dpvs.cpp
+  bench--keygen--efficiency.cpp
 )
 
-target_link_libraries(bench_serialization ${LIBRARIES})
-target_link_libraries(bench_efficiency_primitives ${LIBRARIES})
-target_link_libraries(bench_efficiency_dpvs ${LIBRARIES})
+add_executable(
+  bench_keygen_serialization
+  ${SOURCE_FILES}
+  bench--keygen--serialization.cpp
+)
+
+
+target_link_libraries(bench_setup_efficiency ${LIBRARIES})
+target_link_libraries(bench_setup_serialization ${LIBRARIES})
+target_link_libraries(bench_keygen_efficiency ${LIBRARIES})
+target_link_libraries(bench_keygen_serialization ${LIBRARIES})

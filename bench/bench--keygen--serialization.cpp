@@ -1,6 +1,10 @@
 #include <benchmark/benchmark.h>
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <cstdio>
+#include <cstring>
 
 #include "bench.hpp"
 
@@ -26,6 +30,17 @@ static void BM_KPABE_DPVS_SerializeDecryptionKey(benchmark::State& state, policy
     OpenABEByteString dec_key_bytes;
     dec_key->serialize(dec_key_bytes);
   }
+
+  // Serialize the decryption key once to get the size
+  OpenABEByteString dec_key_bytes;
+  dec_key->serialize(dec_key_bytes);
+
+  // std::cout << "---------> Size: " << dec_key_bytes.size() << std::endl;
+
+  // Set the custom value for size
+  state.counters["Size"] = dec_key_bytes.size();
+  state.counters["Nb_WL"] = params.nwl;
+  state.counters["Nb_BL"] = params.nbl;
 }
 
 static void BM_KPABE_DPVS_DeserializeDecryptionKey(benchmark::State& state, policy_params params) {
@@ -56,6 +71,11 @@ static void BM_KPABE_DPVS_DeserializeDecryptionKey(benchmark::State& state, poli
     //   exit(1);
     // }
   }
+
+  // Set the custom value for size
+  state.counters["Size"] = dec_key_bytes.size();
+  state.counters["Nb_WL"] = params.nwl;
+  state.counters["Nb_BL"] = params.nbl;
 }
 
 
@@ -73,7 +93,7 @@ string policy_4 = "(Attr_5 and (Attr_1 or Attr_2)) and ((Attr_3 and Attr_4) or (
 class CSVReporter : public benchmark::ConsoleReporter {
   public:
     CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
-      file << "Nb_WL,Nb_BL,RealTime\n";
+      file << "Nb_WL,Nb_BL,RealTime,Size\n";
     }
 
     ~CSVReporter() {
@@ -84,21 +104,15 @@ class CSVReporter : public benchmark::ConsoleReporter {
       for (const auto& run : report) {
         // Extract WL and BL from the benchmark name
         std::string name = run.benchmark_name();
-        int nwl = extract_value(name, "WL_");
-        int nbl = extract_value(name, "BL_");
-        file << nwl << "," << nbl << "," << run.GetAdjustedRealTime() << "\n";
+        size_t real_time = run.GetAdjustedRealTime();
+        size_t nb_wl = run.counters.at("Nb_WL");
+        size_t nb_bl = run.counters.at("Nb_BL");
+        file << nb_wl << "," << nb_bl << "," << real_time << "," << run.counters.at("Size") << "\n";
       }
     }
 
   private:
     std::ofstream file;
-
-    int extract_value(const std::string& name, const std::string& prefix) {
-      size_t start = name.find(prefix) + prefix.size();
-      size_t end = name.find("__", start);
-      return std::stoi(name.substr(start, end - start));
-    }
-
 };
 
 int main(int argc, char** argv) {
@@ -106,8 +120,12 @@ int main(int argc, char** argv) {
   // InitializeOpenABE();
   if (!init_libraries()) return 1;
 
+  // Print the curve and the security level
+  relic_print_params();
+
   int __nwl = 10, __nbl = 10;
-  std::string filename = "benchmark--decryption-key--serialize.csv";
+  std::string filename = "benchmark--keygen--";
+  std::string __serial;
 
   if (argc == 3) {
     __nwl = std::stoi(argv[1]);
@@ -116,42 +134,42 @@ int main(int argc, char** argv) {
     if (std::string(argv[2]) == "serialize") {
       for (int nwl = 0; nwl <= __nwl; nwl += 10) {
         for (int nbl = 0; nbl <= __nwl; nbl += 10) {
-          std::string name = "WL_" + std::to_string(nwl) + "__BL_" + std::to_string(nbl) + "__POLICY_10";
           policy_params params = {nwl, nbl, policy_4};
-          benchmark::RegisterBenchmark(name.c_str(), [params](benchmark::State& state) {
+          benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializeDecryptionKey", [params](benchmark::State& state) {
             BM_KPABE_DPVS_SerializeDecryptionKey(state, params);
-          })->Unit(benchmark::kMicrosecond);
+          })->Unit(benchmark::kMillisecond);
         }
       }
+      __serial = "serialization";
     }
     else if (std::string(argv[2]) == "deserialize") {
       for (int nwl = 0; nwl <= __nwl; nwl += 10) {
         for (int nbl = 0; nbl <= __nwl; nbl += 10) {
-          std::string name = "WL_" + std::to_string(nwl) + "__BL_" + std::to_string(nbl) + "__POLICY_10";
           policy_params params = {nwl, nbl, policy_4};
-          benchmark::RegisterBenchmark(name.c_str(), [params](benchmark::State& state) {
+          benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializeDecryptionKey", [params](benchmark::State& state) {
             BM_KPABE_DPVS_DeserializeDecryptionKey(state, params);
-          })->Unit(benchmark::kMicrosecond);
+          })->Unit(benchmark::kMillisecond);
         }
       }
+      __serial = "deserialization";
     }
     else {
       std::cerr << "Usage: " << argv[0] << " [number_attributes_WL_BL] [serialize|deserialize]" << std::endl;
       return 1;
     }
-    filename = "benchmark--decryption-key--" + std::string(argv[2]) + "--" + std::to_string(__nwl) + ".csv";
   }
   else {
     std::cerr << "Usage: " << argv[0] << " [number_attributes_WL_BL] [serialize|deserialize]" << std::endl;
     return 1;
   }
 
+  filename += __serial + "--" + std::to_string(__nwl) + ".csv";
 
   // Run benchmark
   ::benchmark::Initialize(&argc, argv);
-  // CSVReporter csv_reporter(filename);
-  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
-  ::benchmark::RunSpecifiedBenchmarks();
+  CSVReporter csv_reporter(filename);
+  ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
+  // ::benchmark::RunSpecifiedBenchmarks();
 
   // ShutdownOpenABE();
   clean_libraries();
