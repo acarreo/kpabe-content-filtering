@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
           policy_params params = {nwl, nbl, policy_4};
           benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializeDecryptionKey", [params](benchmark::State& state) {
             BM_KPABE_DPVS_SerializeDecryptionKey(state, params);
-          })->Unit(benchmark::kMillisecond);
+          })->Unit(benchmark::kMicrosecond);
         }
       }
       __serial = "serialization";
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
           policy_params params = {nwl, nbl, policy_4};
           benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializeDecryptionKey", [params](benchmark::State& state) {
             BM_KPABE_DPVS_DeserializeDecryptionKey(state, params);
-          })->Unit(benchmark::kMillisecond);
+          })->Unit(benchmark::kMicrosecond);
         }
       }
       __serial = "deserialization";

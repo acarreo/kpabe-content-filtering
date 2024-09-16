@@ -122,10 +122,10 @@ static void BM_KPABE_DPVS_DeserializeMasterKey(benchmark::State& state) {
   state.counters["Size"] = mk_bytes.size();
 }
 
-BENCHMARK(BM_KPABE_DPVS_SerializePublicKey)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_SerializeMasterKey)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_DeserializePublicKey)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_DeserializeMasterKey)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_KPABE_DPVS_SerializePublicKey)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_SerializeMasterKey)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_DeserializePublicKey)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_DeserializeMasterKey)->Unit(benchmark::kMicrosecond);
 
 int main(int argc, char** argv) {
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
   __relic_print_params();
 
   ::benchmark::Initialize(&argc, argv);
-  CSVReporter csv_reporter("benchmark--params--serialization.csv");
+  CSVReporter csv_reporter("benchmark--setup--serialization.csv");
   ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
   // ::benchmark::RunSpecifiedBenchmarks();
 
