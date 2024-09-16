@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
   if (!init_libraries()) return 1;
 
   // Print the curve and the security level
-  relic_print_params();
+  __relic_print_params();
 
   int __nwl = 10, __nbl = 10;
   std::string filename = "benchmark--keygen--";

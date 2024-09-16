@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
   if (!init_libraries()) return 1;
 
-  relic_print_params();
+  __relic_print_params();
 
   ::benchmark::Initialize(&argc, argv);
   CSVReporter csv_reporter("benchmark--params--serialization.csv");

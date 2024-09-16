@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
   if (!init_libraries()) return 1;
 
-  relic_print_params();
+  __relic_print_params();
 
   for (int nwl = 0; nwl <= 100; nwl += 10) {
     policy_params params = {nwl, 0, policy};
