@@ -43,9 +43,9 @@ static void BM_KPABE_DPVS_ValidateDerivedPublicKey(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_KPABE_DPVS_Setup)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_KPABE_DPVS_Setup)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey)->Unit(benchmark::kMicrosecond);
 
 int main(int argc, char** argv) {
 

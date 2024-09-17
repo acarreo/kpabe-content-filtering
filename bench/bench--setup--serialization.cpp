@@ -70,10 +70,10 @@ static void BM_KPABE_DPVS_DeserializePublicKey(benchmark::State& state) {
     pk_deserialized.deserialize(pk_bytes);
 
     // Check if deserialized public key is correct
-    if (!(pk_deserialized == kpabe.get_public_key())) {
-      cerr << "Error: Deserialized public key is incorrect" << endl;
-      exit(1);
-    }
+    // if (!(pk_deserialized == kpabe.get_public_key())) {
+    //   cerr << "Error: Deserialized public key is incorrect" << endl;
+    //   exit(1);
+    // }
   }
 
   state.counters["Size"] = pk_bytes.size();
@@ -113,10 +113,10 @@ static void BM_KPABE_DPVS_DeserializeMasterKey(benchmark::State& state) {
     mk_deserialized.deserialize(mk_bytes);
 
     // Check if deserialized master key is correct
-    if (!(mk_deserialized == kpabe.get_master_key())) {
-      cerr << "Error: Deserialized master key is incorrect" << endl;
-      exit(1);
-    }
+    // if (!(mk_deserialized == kpabe.get_master_key())) {
+    //   cerr << "Error: Deserialized master key is incorrect" << endl;
+    //   exit(1);
+    // }
   }
 
   state.counters["Size"] = mk_bytes.size();

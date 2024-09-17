@@ -35,8 +35,6 @@ static void BM_KPABE_DPVS_SerializeDecryptionKey(benchmark::State& state, policy
   OpenABEByteString dec_key_bytes;
   dec_key->serialize(dec_key_bytes);
 
-  // std::cout << "---------> Size: " << dec_key_bytes.size() << std::endl;
-
   // Set the custom value for size
   state.counters["Size"] = dec_key_bytes.size();
   state.counters["Nb_WL"] = params.nwl;
@@ -128,12 +126,15 @@ int main(int argc, char** argv) {
   std::string __serial;
 
   if (argc == 3) {
+    int pas_1 = 10, pas_2 = 10;
     __nwl = std::stoi(argv[1]);
     __nbl = __nwl;
 
     if (std::string(argv[2]) == "serialize") {
-      for (int nwl = 0; nwl <= __nwl; nwl += 10) {
-        for (int nbl = 0; nbl <= __nwl; nbl += 10) {
+      for (int nwl = 0; nwl <= __nwl; nwl += pas_1) {
+        if (nwl >= 100) pas_1 = 100;
+        for (int nbl = 0; nbl <= __nbl; nbl += pas_2) {
+          if (nbl >= 100) pas_2 = 100;
           policy_params params = {nwl, nbl, policy_4};
           benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializeDecryptionKey", [params](benchmark::State& state) {
             BM_KPABE_DPVS_SerializeDecryptionKey(state, params);
@@ -143,8 +144,10 @@ int main(int argc, char** argv) {
       __serial = "serialization";
     }
     else if (std::string(argv[2]) == "deserialize") {
-      for (int nwl = 0; nwl <= __nwl; nwl += 10) {
-        for (int nbl = 0; nbl <= __nwl; nbl += 10) {
+      for (int nwl = 0; nwl <= __nwl; nwl += pas_1) {
+        if (nwl >= 100) pas_1 = 100;
+        for (int nbl = 0; nbl <= __nbl; nbl += pas_2) {
+          if (nbl >= 100) pas_2 = 100;
           policy_params params = {nwl, nbl, policy_4};
           benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializeDecryptionKey", [params](benchmark::State& state) {
             BM_KPABE_DPVS_DeserializeDecryptionKey(state, params);

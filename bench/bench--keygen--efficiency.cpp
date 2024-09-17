@@ -24,14 +24,9 @@ static void BM_KPABE_DPVS_DecryptionKeyGeneration(benchmark::State& state, polic
     }
   }
 
-  OpenABEByteString dec_key_bytes;
-  auto dec_key = kpabe.keygen(params.policy, wl, bl);
-  dec_key->serialize(dec_key_bytes);
-
   // Set the custom value for size
   state.counters["Nb_WL"] = params.nwl;
   state.counters["Nb_BL"] = params.nbl;
-  state.counters["Size"] = dec_key_bytes.size();
 }
 
 
@@ -39,7 +34,7 @@ static void BM_KPABE_DPVS_DecryptionKeyGeneration(benchmark::State& state, polic
 class CSVReporter : public benchmark::ConsoleReporter {
   public:
     CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
-      file << "Nb_WL,Nb_BL,RealTime,Size\n";
+      file << "Nb_WL,Nb_BL,RealTime\n";
     }
 
     ~CSVReporter() {
@@ -53,8 +48,7 @@ class CSVReporter : public benchmark::ConsoleReporter {
         size_t real_time = run.GetAdjustedRealTime();
         size_t nb_wl = run.counters.at("Nb_WL");
         size_t nb_bl = run.counters.at("Nb_BL");
-        size_t size = run.counters.at("Size");
-        file << nb_wl << "," << nb_bl << "," << real_time << "," << size << "\n";
+        file << nb_wl << "," << nb_bl << "," << real_time << "\n";
       }
     }
 
@@ -71,23 +65,37 @@ int main(int argc, char** argv) {
 
   __relic_print_params();
 
-  for (int nwl = 0; nwl <= 100; nwl += 10) {
+  int nb_attributes = 100;
+
+  if (argc == 2) {
+    nb_attributes = atoi(argv[1]);
+  }
+
+  int pas = 10;
+  for (int nwl = 0; nwl <= nb_attributes; nwl += pas) {
+    if (nwl >= 100) pas = 100;
     policy_params params = {nwl, 0, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
-    })->Unit(benchmark::kMillisecond);
+    })->Unit(benchmark::kMicrosecond);
   }
-  for (int nbl = 10; nbl <= 100; nbl += 10) {
+
+  pas = 10;
+  for (int nbl = 10; nbl <= nb_attributes; nbl += pas) {
+    if (nbl >= 100) pas = 100;
     policy_params params = {0, nbl, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
-    })->Unit(benchmark::kMillisecond);
+    })->Unit(benchmark::kMicrosecond);
   }
-  for (int nb = 10; nb <= 100; nb += 10) {
+
+  pas = 10;
+  for (int nb = 10; nb <= nb_attributes; nb += pas) {
+    if (nb >= 100) pas = 100;
     policy_params params = {nb, nb, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
-    })->Unit(benchmark::kMillisecond);
+    })->Unit(benchmark::kMicrosecond);
   }
 
   ::benchmark::Initialize(&argc, argv);
