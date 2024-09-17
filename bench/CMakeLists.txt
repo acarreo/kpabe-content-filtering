@@ -55,8 +55,21 @@ add_executable(
   bench--keygen--serialization.cpp
 )
 
+add_executable(
+  bench_encrypt_efficiency
+  ${SOURCE_FILES}
+  bench--encrypt--efficiency.cpp
+)
+
+add_executable(
+  bench_encrypt_serialization
+  ${SOURCE_FILES}
+  bench--encrypt--serialization.cpp
+)
 
 target_link_libraries(bench_setup_efficiency ${LIBRARIES})
 target_link_libraries(bench_setup_serialization ${LIBRARIES})
 target_link_libraries(bench_keygen_efficiency ${LIBRARIES})
 target_link_libraries(bench_keygen_serialization ${LIBRARIES})
+target_link_libraries(bench_encrypt_efficiency ${LIBRARIES})
+target_link_libraries(bench_encrypt_serialization ${LIBRARIES})
