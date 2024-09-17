@@ -3,6 +3,29 @@
 
 using namespace std;
 
+// Custom reporter to save results to CSV
+class CSVReporter : public benchmark::ConsoleReporter {
+  public:
+    CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
+      file << "Benchmark,RealTime\n";
+    }
+
+    ~CSVReporter() {
+      file.close();
+    }
+
+    void ReportRuns(const std::vector<Run>& report) override {
+      for (const auto& run : report) {
+        std::string name = run.benchmark_name();
+        size_t real_time = run.GetAdjustedRealTime();
+        file << name << "," << real_time << "\n";
+      }
+    }
+
+  private:
+    std::ofstream file;
+};
+
 static void BM_KPABE_DPVS_Setup(benchmark::State& state) {
   for (auto _ : state) {
     KPABE_DPVS kpabe;
@@ -54,7 +77,8 @@ int main(int argc, char** argv) {
   __relic_print_params();
 
   ::benchmark::Initialize(&argc, argv);
-  ::benchmark::RunSpecifiedBenchmarks();
+  CSVReporter csv_reporter("benchmark--setup--efficiency.csv");
+  ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 
