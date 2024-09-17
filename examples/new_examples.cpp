@@ -288,6 +288,18 @@ void example_unlinkability_public_keys() {
     return;
   }
 
+  std::cout << "\nDecrypting with provided the randomizer..." << std::endl;
+  if (!cipher.decrypt(sym_key_rec_2, dec_key, rand)) {
+    std::cerr << "Error: Could not decrypt" << std::endl;
+    return;
+  }
+  if (memcmp(sym_key, sym_key_rec_2, RLC_MD_LEN) == 0) {
+    std::cout << "Symmetric key recovered successfully" << std::endl;
+  } else {
+    std::cerr << "Error: Symmetric key NOT recovered" << std::endl;
+    return;
+  }
+
   std::cout << "\nDecrypting AFTER REMOVING the scalar from the ciphertext..." << std::endl;
   cipher.remove_scalar(rand); // Remove the randomization from the ciphertext, before decrypting
   if (!cipher.decrypt(sym_key_rec_2, dec_key)) {
@@ -298,6 +310,7 @@ void example_unlinkability_public_keys() {
     std::cout << "Symmetric key recovered successfully" << std::endl;
   } else {
     std::cerr << "Error: Symmetric key NOT recovered" << std::endl;
+    return;
   }
 }
 
