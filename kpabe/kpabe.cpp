@@ -276,7 +276,8 @@ void KPABE_DPVS_CIPHERTEXT::deserialize(const std::vector<uint8_t>& bytes) {
  * @return true if the decryption is successful, false otherwise 
  */
 bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
-                                    const KPABE_DPVS_DECRYPTION_KEY &dec_key) const
+                                    const KPABE_DPVS_DECRYPTION_KEY &dec_key,
+                                    ZP &randomizer) const
 {
   ZP zp, zp_bl, zp_url;
   GT ip, ip_lsss, ip_bl, ip_root;
@@ -284,11 +285,28 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
 
   std::string url = this->url;
 
+  if (dec_key.is_in_black_list(url)) {
+    // std::cout << "URL is blacklisted: " << url << std::endl;
+    return false;
+  }
+
+  ZP inv_rand;
+  bool isRandomizerSet = randomizer.ismember();
+  if (isRandomizerSet) {
+    inv_rand = randomizer;
+    inv_rand.multInverse();
+  }
+
   auto key_wl_url = dec_key.get_key_wl(url);
   if (key_wl_url) {
     // std::cout << "URL is in WHITE_LIST: " << url << std::endl;
-    ip = innerProduct(this->ctx_wl, *key_wl_url);
-    ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
+    if (isRandomizerSet) {
+      ip = innerProduct(this->ctx_wl * inv_rand, *key_wl_url);
+      ip_root = innerProduct(this->ctx_root * inv_rand, dec_key.get_key_root());
+    } else {
+      ip = innerProduct(this->ctx_wl, *key_wl_url);
+      ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
+    }
     phi = ip * ip_root;
     // gt_md_map(session_key, phi.m_GT);
     size_t len;
@@ -296,11 +314,6 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
     memcpy(session_key, ss_key, len);
 
     return true;
-  }
-
-  if (dec_key.is_in_black_list(url)) {
-    // std::cout << "URL is blacklisted: " << url << std::endl;
-    return false;
   }
 
   // Here, the url is not in WHITE_LIST and not in BLACK_LIST
@@ -339,8 +352,17 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
       return false;
     }
 
-    ip = innerProduct(*ctx_att__, *key_att__ * cj);
+    if (isRandomizerSet) {
+      ip = innerProduct(*ctx_att__ * inv_rand, *key_att__ * cj);
+    } else {
+      ip = innerProduct(*ctx_att__, *key_att__ * cj);
+    }
     ip_lsss = ip_lsss * ip;
+  }
+
+  auto __ctx_bl = this->ctx_bl;
+  if (isRandomizerSet) {
+    __ctx_bl = __ctx_bl * inv_rand;
   }
 
   zp_url = hashToZP(url, group.order);
@@ -351,11 +373,15 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
     zp = zp_bl - zp_url;
     zp.multInverse();
 
-    ip = innerProduct(this->ctx_bl, it->second);
+    ip = innerProduct(__ctx_bl, it->second);
     ip_bl = ip_bl * ip.exp(zp);
   }
 
-  ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
+  if (isRandomizerSet) {
+    ip_root = innerProduct(this->ctx_root * inv_rand, dec_key.get_key_root());
+  } else {
+    ip_root = innerProduct(this->ctx_root, dec_key.get_key_root());
+  }
 
   phi = ip_lsss * ip_bl * ip_root;
   // gt_md_map(session_key, phi.m_GT);
