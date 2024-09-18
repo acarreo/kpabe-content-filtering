@@ -65,33 +65,23 @@ int main(int argc, char** argv) {
 
   __relic_print_params();
 
-  int nb_attributes = 1000;
+  std::vector<int> nb_attributes_list = {0, 1, 10, 100, 1000};
 
-  if (argc == 2) {
-    nb_attributes = atoi(argv[1]);
-  }
-
-  int pas = 10;
-  for (int nwl = 0; nwl <= nb_attributes; nwl += pas) {
-    if (nwl >= 100) pas = 100;
+  for (auto nwl : nb_attributes_list) {
     policy_params params = {nwl, 0, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
     })->Unit(benchmark::kMicrosecond);
   }
 
-  pas = 10;
-  for (int nbl = 10; nbl <= nb_attributes; nbl += pas) {
-    if (nbl >= 100) pas = 100;
+  for (auto nbl : nb_attributes_list) {
     policy_params params = {0, nbl, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
     })->Unit(benchmark::kMicrosecond);
   }
 
-  pas = 10;
-  for (int nb = 10; nb <= nb_attributes; nb += pas) {
-    if (nb >= 100) pas = 100;
+  for (auto nb : nb_attributes_list) {
     policy_params params = {nb, nb, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);

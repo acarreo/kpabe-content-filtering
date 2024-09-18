@@ -77,16 +77,6 @@ static void BM_KPABE_DPVS_DeserializeDecryptionKey(benchmark::State& state, poli
 }
 
 
-string policy_1 = "Attr_5 and ((Attr_1 and Attr_2) or (Attr_3 and Attr_4))";
-string policy_2 = "Attr_5 and ((Attr_1 and Attr_2) or (Attr_3 and Attr_4) or (Attr_6 and Attr_7))";
-string policy_3 = "(Attr_5 and (Attr_1 or Attr_2)) and ((Attr_3 and Attr_4) or (Attr_6 and Attr_7) or (Attr_8 and Attr_9))";
-string policy_4 = "(Attr_5 and (Attr_1 or Attr_2)) and ((Attr_3 and Attr_4) or (Attr_6 and Attr_7) or ((Attr_8 or Attr_9) and Attr_10))";
-
-// BENCHMARK_CAPTURE(BM_KPABE_DPVS_SerializeDecryptionKey, WL_10__BL_10__POLICY_1, {10, 10, policy_1})->Unit(benchmark::kMicrosecond);
-// BENCHMARK_CAPTURE(BM_KPABE_DPVS_SerializeDecryptionKey, WL_10__BL_10__POLICY_2, 10, 10, policy_2)->Unit(benchmark::kMicrosecond);
-// BENCHMARK_CAPTURE(BM_KPABE_DPVS_SerializeDecryptionKey, WL_10__BL_10__POLICY_3, 10, 10, policy_3)->Unit(benchmark::kMicrosecond);
-// BENCHMARK_CAPTURE(BM_KPABE_DPVS_SerializeDecryptionKey, WL_10__BL_10__POLICY_4, 10, 10, policy_4)->Unit(benchmark::kMicrosecond);
-
 // Custom reporter to save results to CSV
 class CSVReporter : public benchmark::ConsoleReporter {
   public:
@@ -113,6 +103,9 @@ class CSVReporter : public benchmark::ConsoleReporter {
     std::ofstream file;
 };
 
+
+string policy = "(Attr_5 and (Attr_1 or Attr_2)) and ((Attr_3 and Attr_4) or (Attr_6 and Attr_7) or ((Attr_8 or Attr_9) and Attr_10))";
+
 int main(int argc, char** argv) {
 
   // InitializeOpenABE();
@@ -121,48 +114,43 @@ int main(int argc, char** argv) {
   // Print the curve and the security level
   __relic_print_params();
 
-  int __nwl = 10, __nbl = 10;
   std::string filename = "benchmark--keygen--";
   std::string __serial;
 
-  if (argc == 3) {
-    int pas_1 = 10, pas_2 = 10;
-    __nwl = std::stoi(argv[1]);
-    __nbl = __nwl;
+  std::vector<std::pair<int, int>> ListSizes = {
+    {0, 0}, {0, 10}, {0, 100}, {0, 1000},
+    {10, 0}, {10, 10}, {10, 100}, {10, 1000},
+    {100, 0}, {100, 10}, {100, 100}, {100, 1000},
+    {1000, 0}, {1000, 10}, {1000, 100}, {1000, 1000}
+  };
 
+  if (argc == 2)
+  {
     if (std::string(argv[2]) == "serialize") {
-      for (int nwl = 0; nwl <= __nwl; nwl += pas_1) {
-        if (nwl >= 100) pas_1 = 100;
-        for (int nbl = 0; nbl <= __nbl; nbl += pas_2) {
-          if (nbl >= 100) pas_2 = 100;
-          policy_params params = {nwl, nbl, policy_4};
-          benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializeDecryptionKey", [params](benchmark::State& state) {
-            BM_KPABE_DPVS_SerializeDecryptionKey(state, params);
-          })->Unit(benchmark::kMicrosecond);
-        }
+      for (auto num : ListSizes) {
+        policy_params params = {num.first, num.second, policy};
+        benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializeDecryptionKey", [params](benchmark::State& state) {
+          BM_KPABE_DPVS_SerializeDecryptionKey(state, params);
+        })->Unit(benchmark::kMicrosecond);
       }
       __serial = "serialization";
     }
     else if (std::string(argv[2]) == "deserialize") {
-      for (int nwl = 0; nwl <= __nwl; nwl += pas_1) {
-        if (nwl >= 100) pas_1 = 100;
-        for (int nbl = 0; nbl <= __nbl; nbl += pas_2) {
-          if (nbl >= 100) pas_2 = 100;
-          policy_params params = {nwl, nbl, policy_4};
-          benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializeDecryptionKey", [params](benchmark::State& state) {
-            BM_KPABE_DPVS_DeserializeDecryptionKey(state, params);
-          })->Unit(benchmark::kMicrosecond);
-        }
+      for (auto num : ListSizes) {
+        policy_params params = {num.first, num.second, policy};
+        benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializeDecryptionKey", [params](benchmark::State& state) {
+          BM_KPABE_DPVS_DeserializeDecryptionKey(state, params);
+        })->Unit(benchmark::kMicrosecond);
       }
       __serial = "deserialization";
     }
     else {
-      std::cerr << "Usage: " << argv[0] << " [number_attributes_WL_BL] [serialize|deserialize]" << std::endl;
+      std::cerr << "Usage: " << argv[0] << " [serialize|deserialize]" << std::endl;
       return 1;
     }
   }
   else {
-    std::cerr << "Usage: " << argv[0] << " [number_attributes_WL_BL] [serialize|deserialize]" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " [serialize|deserialize]" << std::endl;
     return 1;
   }
 

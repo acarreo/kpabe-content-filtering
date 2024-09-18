@@ -84,42 +84,39 @@ int main(int argc, char** argv) {
 
   __relic_print_params();
 
-  int pas = 10;
-  int nb_attributes = 0;
   std::string filename = "benchmark--encrypt--";
   std::string mode;
 
-  if (argc == 3) {
-    nb_attributes = std::stoi(argv[1]);
-    if (std::string(argv[2]) == "serialize") {
+  std::vector<int> nb_attributes_list = {1, 10, 100, 1000};
+
+  if (argc = 2) {
+    if (std::string(argv[1]) == "serialize") {
       mode = "serialization";
-      for (int n_att = 10; n_att <= nb_attributes; n_att += pas) {
-        if (n_att >= 100) pas = 100;
+      for (auto n_att : nb_attributes_list) {
         benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializationCiphertext", [n_att](benchmark::State& state) {
           BM_KPABE_DPVS_SerializationCiphertext(state, n_att);
         })->Unit(benchmark::kMicrosecond);
       }
     }
-    else if (std::string(argv[2]) == "deserialize") {
+    else if (std::string(argv[1]) == "deserialize") {
       mode = "deserialization";
-      for (int n_att = 10; n_att <= nb_attributes; n_att += pas) {
-        if (n_att >= 100) pas = 100;
+      for (auto n_att : nb_attributes_list) {
         benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializationCiphertext", [n_att](benchmark::State& state) {
           BM_KPABE_DPVS_DeserializationCiphertext(state, n_att);
         })->Unit(benchmark::kMicrosecond);
       }
     }
     else {
-      std::cerr << "Usage: " << argv[0] << " <nb_attributes> <serialize|deserialize>" << std::endl;
+      std::cerr << "Usage: " << argv[0] << "<serialize|deserialize>" << std::endl;
       return 1;
     }
   }
   else {
-    std::cerr << "Usage: " << argv[0] << " <nb_attributes> <serialize|deserialize>" << std::endl;
+    std::cerr << "Usage: " << argv[0] << "<serialize|deserialize>" << std::endl;
     return 1;
   }
 
-  filename += mode + "--" + std::to_string(nb_attributes) + ".csv";
+  filename += mode + ".csv";
 
   ::benchmark::Initialize(&argc, argv);
   CSVReporter csv_reporter(filename);

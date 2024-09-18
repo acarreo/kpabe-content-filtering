@@ -60,19 +60,13 @@ int main(int argc, char** argv) {
 
   __relic_print_params();
 
-  int nb_attributes = 1000;
-  int pas = 10;
-  if (argc == 2) {
-    nb_attributes = atoi(argv[1]);
-  }
 
-  for (int n_att = 1; n_att <= nb_attributes; n_att += pas) {
+  std::vector<int> nb_attributes_list = {1, 10, 100, 1000};
+
+  for (auto n_att : nb_attributes_list) {
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_Encrypt", [n_att](benchmark::State& state) {
       BM_KPABE_DPVS_Encrypt(state, n_att);
     })->Unit(benchmark::kMicrosecond);
-
-    if (n_att == 1) n_att = 0;
-    if (n_att >= 100) pas = 100;
   }
 
   ::benchmark::Initialize(&argc, argv);
