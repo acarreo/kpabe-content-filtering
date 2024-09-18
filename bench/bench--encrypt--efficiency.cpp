@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
   __relic_print_params();
 
-  int nb_attributes = 100;
+  int nb_attributes = 1000;
   int pas = 10;
   if (argc == 2) {
     nb_attributes = atoi(argv[1]);
