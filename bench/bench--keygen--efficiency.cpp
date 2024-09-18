@@ -71,21 +71,21 @@ int main(int argc, char** argv) {
     policy_params params = {nwl, 0, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
-    })->Unit(benchmark::kMicrosecond);
+    })->Unit(benchmark::kMillisecond);
   }
 
   for (auto nbl : nb_attributes_list) {
     policy_params params = {0, nbl, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
-    })->Unit(benchmark::kMicrosecond);
+    })->Unit(benchmark::kMillisecond);
   }
 
   for (auto nb : nb_attributes_list) {
     policy_params params = {nb, nb, policy};
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_DecryptionKeyGeneration", [params](benchmark::State& state) {
       BM_KPABE_DPVS_DecryptionKeyGeneration(state, params);
-    })->Unit(benchmark::kMicrosecond);
+    })->Unit(benchmark::kMillisecond);
   }
 
   ::benchmark::Initialize(&argc, argv);

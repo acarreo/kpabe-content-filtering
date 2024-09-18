@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  filename += __serial + "--" + std::to_string(__nwl) + ".csv";
+  filename += __serial + ".csv";
 
   // Run benchmark
   ::benchmark::Initialize(&argc, argv);

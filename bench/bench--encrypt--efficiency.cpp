@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
   for (auto n_att : nb_attributes_list) {
     benchmark::RegisterBenchmark("BM_KPABE_DPVS_Encrypt", [n_att](benchmark::State& state) {
       BM_KPABE_DPVS_Encrypt(state, n_att);
-    })->Unit(benchmark::kMicrosecond);
+    })->Unit(benchmark::kMillisecond);
   }
 
   ::benchmark::Initialize(&argc, argv);
