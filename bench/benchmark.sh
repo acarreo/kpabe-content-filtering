@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Function to handle cleanup
+cleanup() {
+  echo "Cleaning up..."
+  # cd .. && rm -rf $build_dir
+}
+
+# Trap to ensure cleanup is performed on exit
+trap cleanup EXIT
+
+# Function to run CMake configuration
+run_cmake() {
+  local compression_flag=$1
+  if [ "$compression_flag" == "OFF" ]; then
+    cmake .. -DENABLE_COMPRESSION=OFF
+  else
+    cmake ..
+  fi
+}
+
 # Check if dependencies are installed: RELIC and lsss_abe
 if [ ! -d "/usr/local/include/relic" ] || [ ! -d "/usr/local/include/lsss_abe" ]; then
   echo "Dependencies not installed. Please install RELIC and lsss_abe."
@@ -18,31 +40,20 @@ build_dir="$PID--build"
 # Create build directory and navigate into it
 mkdir $build_dir && cd $build_dir
 
-# Run cmake and make, exit if any command fails
-if ! cmake ..; then
-  echo "CMake configuration failed."
-  cd .. && rm -rf $build_dir
-  exit 1
-fi
+# Run cmake and make
+run_cmake "$1"
 
-if ! make -j; then
-  echo "Make failed."
-  cd .. && rm -rf $build_dir
-  exit 1
-fi
+make -j
+
+echo -e "\n.............................. Running benchmarks ..............................\n"
+uname -a > benchmark.log
 
 # Run benchmarks and log output
-echo -e "\n\n.............................. Running benchmarks .............................\n"
-if ! make run_benchmarks &> benchmark.log; then
-  echo "Running benchmarks failed."
-  cd .. && rm -rf $build_dir
-  exit 1
-fi
+make run_benchmarks &>> benchmark.log
 
 # Check if benchmark.log exists before creating tar file
 if [ ! -f benchmark.log ]; then
   echo "Benchmark log not found."
-  cd .. && rm -rf $build_dir
   exit 1
 fi
 
@@ -54,6 +65,5 @@ mkdir -p ../results && mv $PID--results.tar.gz ../results/
 
 # Clean up
 make clean
-cd .. && rm -rf $build_dir
 
 echo -e "\n--- Benchmark completed successfully. Results are in the results directory. ---\n"

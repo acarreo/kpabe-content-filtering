@@ -9,10 +9,23 @@ find_package(benchmark REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_library(RLC_LIBRARY NAMES relic)
 
+# By default, compression is enabled
+option(ENABLE_COMPRESSION "Enable compression" ON)
+
+if(ENABLE_COMPRESSION STREQUAL "ON")
+    message(STATUS "Compression enabled")
+    set(LSSS_LIBRARY "lsss_abe_compression")
+elseif(ENABLE_COMPRESSION STREQUAL "OFF")
+    message(STATUS "Compression disabled")
+    set(LSSS_LIBRARY "lsss_abe_no_compression")
+else()
+    message(FATAL_ERROR "Invalid value for ENABLE_COMPRESSION. Please use ON or OFF")
+endif()
+
 set(LIBRARIES
     benchmark::benchmark
     OpenSSL::SSL
-    /usr/local/lib/liblsss_abe_compression.so
+    ${LSSS_LIBRARY}
     ${RLC_LIBRARY}
     gmp
 )

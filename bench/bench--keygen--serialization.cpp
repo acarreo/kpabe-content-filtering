@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
 
   if (argc == 2)
   {
-    if (std::string(argv[2]) == "serialize") {
+    if (std::string(argv[1]) == "serialize") {
       for (auto num : ListSizes) {
         policy_params params = {num.first, num.second, policy};
         benchmark::RegisterBenchmark("BM_KPABE_DPVS_SerializeDecryptionKey", [params](benchmark::State& state) {
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
       }
       __serial = "serialization";
     }
-    else if (std::string(argv[2]) == "deserialize") {
+    else if (std::string(argv[1]) == "deserialize") {
       for (auto num : ListSizes) {
         policy_params params = {num.first, num.second, policy};
         benchmark::RegisterBenchmark("BM_KPABE_DPVS_DeserializeDecryptionKey", [params](benchmark::State& state) {
