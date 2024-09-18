@@ -25,13 +25,14 @@ if ! cmake ..; then
   exit 1
 fi
 
-if ! make; then
+if ! make -j; then
   echo "Make failed."
   cd .. && rm -rf $build_dir
   exit 1
 fi
 
 # Run benchmarks and log output
+echo -e "\n\n.............................. Running benchmarks .............................\n"
 if ! make run_benchmarks &> benchmark.log; then
   echo "Running benchmarks failed."
   cd .. && rm -rf $build_dir
@@ -55,4 +56,4 @@ mkdir -p ../results && mv $PID--results.tar.gz ../results/
 make clean
 cd .. && rm -rf $build_dir
 
-echo "Benchmark completed successfully. Results are in the results directory."
+echo -e "\n--- Benchmark completed successfully. Results are in the results directory. ---\n"

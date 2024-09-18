@@ -9,6 +9,6 @@ cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_
 # or, starting with CMake 3.13, use a simpler form:
 # cmake -DCMAKE_BUILD_TYPE=Release -S . -B "build"
 # Build the library.
-cmake --build "build" --config Release
-# Install the library.
-sudo cmake --build "build" --config Release --target install
+cmake --build "build" --config Release --parallel $(nproc)
+# Build the library with parallel jobs
+sudo cmake --build "build" --config Release --target install --parallel $(nproc)
