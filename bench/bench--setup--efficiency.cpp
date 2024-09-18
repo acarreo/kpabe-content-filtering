@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+#include <iomanip>
 #include "bench.hpp"
 
 using namespace std;
@@ -17,8 +18,8 @@ class CSVReporter : public benchmark::ConsoleReporter {
     void ReportRuns(const std::vector<Run>& report) override {
       for (const auto& run : report) {
         std::string name = run.benchmark_name();
-        size_t real_time = run.GetAdjustedRealTime();
-        file << name << "," << real_time << "\n";
+        double real_time = run.GetAdjustedRealTime();
+        file << name << "," << std::fixed << std::setprecision(3) << real_time << "\n";
       }
     }
 
@@ -66,9 +67,9 @@ static void BM_KPABE_DPVS_ValidateDerivedPublicKey(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_KPABE_DPVS_Setup)->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization)->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_Setup)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey)->Unit(benchmark::kMillisecond);
 
 int main(int argc, char** argv) {
 

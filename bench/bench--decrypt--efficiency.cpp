@@ -1,6 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <string>
 #include <fstream>
+#include <iomanip>
 #include <vector>
 
 #include "bench.hpp"
@@ -102,7 +103,7 @@ class CSVReporter : public benchmark::ConsoleReporter {
         double real_time = run.GetAdjustedRealTime();
         size_t nb_att = run.counters.at("Nb_Attributes");
         size_t nb_wl_bl = run.counters.at("Nb_WL_BL");
-        file << name << "," << nb_att << "," << nb_wl_bl << "," << real_time << "\n";
+        file << name << "," << nb_att << "," << nb_wl_bl << "," << std::fixed << std::setprecision(3) << real_time << "\n";
       }
     }
 

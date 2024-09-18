@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <string>
 #include <fstream>
-
+#include <iomanip>
 #include "bench.hpp"
 
 using namespace std;
@@ -43,9 +43,9 @@ class CSVReporter : public benchmark::ConsoleReporter {
     void ReportRuns(const std::vector<Run>& report) override {
       for (const auto& run : report) {
         // Extract WL and BL from the benchmark name
-        size_t real_time = run.GetAdjustedRealTime();
+        double real_time = run.GetAdjustedRealTime();
         size_t nb_att = run.counters.at("Nb_Attributes");
-        file << nb_att << "," << real_time << "\n";
+        file << nb_att << "," << std::fixed << std::setprecision(3) << real_time << "\n";
       }
     }
 
