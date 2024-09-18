@@ -5,8 +5,10 @@ set -e
 
 # Function to handle cleanup
 cleanup() {
-  echo "Cleaning up..."
-  # cd .. && rm -rf $build_dir
+  if [ $? -eq 0 ]; then
+    echo "Cleaning up..."
+    cd .. && rm -rf $build_dir
+  fi
 }
 
 # Trap to ensure cleanup is performed on exit
