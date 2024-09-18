@@ -87,10 +87,10 @@ add_custom_target(run_benchmarks
   COMMAND bench_setup_efficiency
   COMMAND bench_setup_serialization
   COMMAND bench_keygen_efficiency
-  COMMAND bench_keygen_serialization 1000 "serialize"
-  COMMAND bench_keygen_serialization 1000 "deserialize"
+  COMMAND bench_keygen_serialization "serialize"
+  COMMAND bench_keygen_serialization "deserialize"
   COMMAND bench_encrypt_efficiency
-  COMMAND bench_encrypt_serialization 1000 "serialize"
-  COMMAND bench_encrypt_serialization 1000 "deserialize"
+  COMMAND bench_encrypt_serialization "serialize"
+  COMMAND bench_encrypt_serialization "deserialize"
   COMMAND bench_decrypt_efficiency
 )
