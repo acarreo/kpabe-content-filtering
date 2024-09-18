@@ -80,3 +80,17 @@ target_link_libraries(bench_keygen_serialization ${LIBRARIES})
 target_link_libraries(bench_encrypt_efficiency ${LIBRARIES})
 target_link_libraries(bench_encrypt_serialization ${LIBRARIES})
 target_link_libraries(bench_decrypt_efficiency ${LIBRARIES})
+
+
+# Add a target to run all benchmarks
+add_custom_target(run_benchmarks
+  COMMAND bench_setup_efficiency
+  COMMAND bench_setup_serialization
+  COMMAND bench_keygen_efficiency
+  COMMAND bench_keygen_serialization 1000 "serialize"
+  COMMAND bench_keygen_serialization 1000 "deserialize"
+  COMMAND bench_encrypt_efficiency
+  COMMAND bench_encrypt_serialization 1000 "serialize"
+  COMMAND bench_encrypt_serialization 1000 "deserialize"
+  COMMAND bench_decrypt_efficiency
+)
