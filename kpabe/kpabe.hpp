@@ -63,7 +63,12 @@ class KPABE_DPVS_CIPHERTEXT : public Serializer<KPABE_DPVS_CIPHERTEXT> {
     bool encrypt(uint8_t* session_key, const KPABE_DPVS_PUBLIC_KEY& public_key);
 
     bool decrypt(uint8_t* session_key,
-                 const KPABE_DPVS_DECRYPTION_KEY& dec_key) const;
+                 const KPABE_DPVS_DECRYPTION_KEY& dec_key, ZP &randomizer) const;
+
+    bool decrypt(uint8_t* session_key, const KPABE_DPVS_DECRYPTION_KEY& dec_key) const {
+      ZP randomizer;
+      return this->decrypt(session_key, dec_key, randomizer);
+    }
 
     // Remove k from the ciphertext : this = this * inverse(k)
     void remove_scalar(const ZP& k);

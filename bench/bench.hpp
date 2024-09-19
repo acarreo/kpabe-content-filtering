@@ -45,4 +45,9 @@ void print_number_of_attributes(const std::vector<std::string>& wl,
                                 const std::vector<std::string>& bl,
                                 const std::string& policy);
 
+static void __relic_print_params() {
+  pc_param_print();
+  printf("-- Security level: %d bits\n\n", pc_param_level());
+}
+
 #endif // __BENCH_HPP__
