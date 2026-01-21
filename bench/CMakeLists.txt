@@ -14,10 +14,10 @@ option(ENABLE_COMPRESSION "Enable compression" ON)
 
 if(ENABLE_COMPRESSION STREQUAL "ON")
     message(STATUS "Compression enabled")
-    set(LSSS_LIBRARY "lsss_abe_compression")
+    set(LSSS_LIBRARY "abe_lsss_compression")
 elseif(ENABLE_COMPRESSION STREQUAL "OFF")
     message(STATUS "Compression disabled")
-    set(LSSS_LIBRARY "lsss_abe_no_compression")
+    set(LSSS_LIBRARY "abe_lsss_no_compression")
 else()
     message(FATAL_ERROR "Invalid value for ENABLE_COMPRESSION. Please use ON or OFF")
 endif()
@@ -31,7 +31,7 @@ set(LIBRARIES
 )
 
 # Include directories
-include_directories(/usr/local/include/lsss_abe)
+include_directories(/usr/local/include/abe_lsss)
 
 set(SOURCE_FILES
   ../dpvs/matrix.c

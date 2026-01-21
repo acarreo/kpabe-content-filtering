@@ -18,7 +18,7 @@
 #include <string>
 #include <map>
 
-#include <lsss_abe/lsss_abe.h>
+#include <abe_lsss/abe_lsss.h>
 
 #include "../dpvs/vector_ec.hpp"
 #include "../serializer/serializer.hpp"

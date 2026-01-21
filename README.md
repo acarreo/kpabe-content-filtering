@@ -44,9 +44,9 @@ To install and run this project, follow these steps:
 2. **Build in a Docker Environment**
    ```bash
    cd .. # go back to the root directory
-   docker run -ti --rm -v $PWD:/content-filtering presto-content-filtering-use-case:relic-0.6.0--lsss-0.1.1
-   mkdir -p /content-filtering/target
-   cd /content-filtering/target
+   docker run -ti --rm -v $PWD:/content-filtering cryptolib/abe-lsss:relic-0.6.0--bls12-381--v0.1.0
+   mkdir -p /content-filtering/build
+   cd /content-filtering/build
    cmake ..
    make
    ```

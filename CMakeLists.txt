@@ -18,14 +18,15 @@ message(STATUS "Relic Tag: ${RELIC_TAG}")
 message(STATUS "LSSS Image Version: ${LSSS_IMAGE_VERSION}")
 message(STATUS "Enable compression: ${COMPRESSION}")
 
-if(COMPRESSION)
-    set(LSSS_LIBRARY "lsss_abe_compression")
-else()
-    set(LSSS_LIBRARY "lsss_abe_no_compression")
-endif()
+# if(COMPRESSION)
+#     set(LSSS_LIBRARY "abe_lsss_compression")
+# else()
+#     set(LSSS_LIBRARY "abe_lsss_no_compression")
+# endif()
 
 find_package(OpenSSL REQUIRED)
 find_library(RLC_LIBRARY NAMES relic)
+set(LSSS_LIBRARY "abe_lsss")
 
 set(LIBRARIES
     OpenSSL::SSL
@@ -37,7 +38,7 @@ set(LIBRARIES
 # Include directories
 include_directories(
     /usr/local/include
-    /usr/local/include/lsss_abe
+    /usr/local/include/abe_lsss
 )
 
 set(SOURCE_FILES

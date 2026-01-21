@@ -24,9 +24,9 @@ run_cmake() {
   fi
 }
 
-# Check if dependencies are installed: RELIC and lsss_abe
-if [ ! -d "/usr/local/include/relic" ] || [ ! -d "/usr/local/include/lsss_abe" ]; then
-  echo "Dependencies not installed. Please install RELIC and lsss_abe."
+# Check if dependencies are installed: RELIC and abe_lsss
+if [ ! -d "/usr/local/include/relic" ] || [ ! -d "/usr/local/include/abe_lsss" ]; then
+  echo "Dependencies not installed. Please install RELIC and abe_lsss."
   exit 1
 fi
 
