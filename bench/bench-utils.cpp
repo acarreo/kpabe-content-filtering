@@ -1,4 +1,4 @@
-#include "../kpabe/kpabe.hpp"
+#include "kpabe.hpp"
 
 using namespace std;
 

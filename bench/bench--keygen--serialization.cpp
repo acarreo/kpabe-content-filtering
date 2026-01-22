@@ -158,11 +158,10 @@ int main(int argc, char** argv) {
 
   // Run benchmark
   ::benchmark::Initialize(&argc, argv);
-  CSVReporter csv_reporter(filename);
-  ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
-  // ::benchmark::RunSpecifiedBenchmarks();
+  ::benchmark::RunSpecifiedBenchmarks();
+  // CSVReporter csv_reporter(filename);
+  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
-  // ShutdownOpenABE();
   clean_libraries();
 
   return 0;

@@ -90,8 +90,9 @@ int main(int argc, char** argv) {
   }
 
   ::benchmark::Initialize(&argc, argv);
-  CSVReporter csv_reporter("benchmark--keygen--efficiency.csv");
-  ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
+  ::benchmark::RunSpecifiedBenchmarks();
+  // CSVReporter csv_reporter("benchmark--keygen--efficiency.csv");
+  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 

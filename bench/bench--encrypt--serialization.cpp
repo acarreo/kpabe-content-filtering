@@ -119,8 +119,9 @@ int main(int argc, char** argv) {
   filename += mode + ".csv";
 
   ::benchmark::Initialize(&argc, argv);
-  CSVReporter csv_reporter(filename);
-  ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
+  ::benchmark::RunSpecifiedBenchmarks();
+  // CSVReporter csv_reporter(filename);
+  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 

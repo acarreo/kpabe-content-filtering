@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   string policy_1 ="(pegi3 and no-in-game-purchase) or (pegi16 and no-in-game-purchase)";
   string policy_2 ="(pegi3 and no-in-game-purchase) or (pegi16 and no-sex)";
 
-  string url="www.google.com";
+  string url="www.some-ressources.com";
 
   KPABE_DPVS kpabe;
 

@@ -319,6 +319,7 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   // Here, the url is not in WHITE_LIST and not in BLACK_LIST
   // std::cout << "URL is not in WHITE_LIST and not in BLACK_LIST: " << url << std::endl;
 
+  try {
 
   BPGroup group;
   auto policy = createPolicyTree(dec_key.get_policy());
@@ -388,6 +389,13 @@ bool KPABE_DPVS_CIPHERTEXT::decrypt(uint8_t *session_key,
   size_t len;
   uint8_t* ss_key = phi.hashToBytes(&len);
   memcpy(session_key, ss_key, len);
+  }
+  catch (const std::exception& e) {
+    std::cerr << "Unhandled std::exception: " << e.what() << std::endl;
+  }
+  catch (...) {
+    std::cerr << "Unhandled unknown exception" << std::endl;
+  }
 
   return true;
 }

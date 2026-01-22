@@ -78,8 +78,9 @@ int main(int argc, char** argv) {
   __relic_print_params();
 
   ::benchmark::Initialize(&argc, argv);
-  CSVReporter csv_reporter("benchmark--setup--efficiency.csv");
-  ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
+  ::benchmark::RunSpecifiedBenchmarks();
+  // CSVReporter csv_reporter("benchmark--setup--efficiency.csv");
+  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 

@@ -88,9 +88,7 @@ public:
   G2_VECTOR(const G2_VECTOR &other) : std::vector<G2>(other), dim(other.dim), isDimSet(other.isDimSet) {}
   G2_VECTOR(const g2_vector_ptr &g2_vector);
 
-  ~G2_VECTOR() {
-    this->clear(); this->dim = 0; this->isDimSet = false;
-  }
+  ~G2_VECTOR() { this->clear(); this->dim = 0; this->isDimSet = false; }
 
   void setDim(size_t dim) {
     if (!this->isDimSet) {

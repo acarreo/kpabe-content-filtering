@@ -22,7 +22,7 @@
 #include <string>
 #include <algorithm>
 
-#include "../kpabe/kpabe.hpp"
+#include "kpabe.hpp"
 
 typedef struct {
   int nwl;

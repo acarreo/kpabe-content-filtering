@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-Wall")
 
+set(CMAKE_CXX_FLAGS_DEBUG
+    "-g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer"
+)
 
 # ============================================================
 # Dependencies
@@ -65,7 +68,7 @@ target_include_directories(${LIBRARY_NAME}
 # Examples / Bench (optionnel)
 # ============================================================
 
-option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_EXAMPLES "Build examples" ON)
 
 if(BUILD_EXAMPLES)
     add_executable(kpabe_test examples/main.cpp)

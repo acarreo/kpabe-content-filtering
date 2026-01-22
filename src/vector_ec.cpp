@@ -122,6 +122,7 @@ G1_VECTOR & G1_VECTOR::operator=(const G1_VECTOR &other) {
 
 G1_VECTOR G1_VECTOR::operator+(const G1_VECTOR &other) const {
   if (this->getDim() != other.getDim()) {
+    std::cerr << "[ERROR] G1 vector size mismatch: " << this->getDim() << " vs " << other.getDim() << std::endl;
     throw std::runtime_error("Cannot add two vectors with different dimensions");
   }
 
@@ -268,6 +269,7 @@ G2_VECTOR & G2_VECTOR::operator=(const G2_VECTOR &other) {
 
 G2_VECTOR G2_VECTOR::operator+(const G2_VECTOR &other) const {
   if (this->getDim() != other.getDim()) {
+    std::cerr << "[ERROR] G2 vector size mismatch: " << this->getDim() << " vs " << other.getDim() << std::endl;
     throw std::runtime_error("Cannot add two vectors with different dimensions");
   }
 
