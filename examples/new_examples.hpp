@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../kpabe/kpabe.hpp"
+#include "kpabe.hpp"
 
 void example_generate_params();
 void example_generate_decryption_key();

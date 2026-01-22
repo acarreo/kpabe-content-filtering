@@ -7,7 +7,7 @@ LSSS_IMAGE_VERSION ?= 0.1.0
 ENABLE_COMPRESSION ?= ON
 
 # Path to the Docker directory from abe-lsss repository
-DOCKER_DIR = ../abe-lsss/docker
+DOCKER_DIR = docker
 
 # Target to install dependencies locally
 local:

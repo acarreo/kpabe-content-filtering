@@ -20,12 +20,12 @@
 
 #include <abe_lsss/abe_lsss.h>
 
-#include "../dpvs/vector_ec.hpp"
-#include "../serializer/serializer.hpp"
+#include "vector_ec.hpp"
+#include "serializer.hpp"
 
 extern "C" {
-  #include "../dpvs/dpvs.h"
-  #include "../utils.h"
+  #include "dpvs.h"
+  #include "utils.h"
 }
 
 #define ND  3

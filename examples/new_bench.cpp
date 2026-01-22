@@ -11,8 +11,7 @@
 #include <fstream>
 #include <chrono>
 
-// #include "new_bench.hpp"
-#include "../kpabe/kpabe.hpp"
+#include "kpabe.hpp"
 
 using namespace std;
 using namespace std::chrono;

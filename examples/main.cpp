@@ -2,8 +2,8 @@
 #include <fstream>
 #include <chrono>
 
-#include "kpabe/kpabe.hpp"
-#include "keys/keys.hpp"
+#include "kpabe.hpp"
+#include "keys.hpp"
 
 using namespace std;
 using namespace std::chrono;

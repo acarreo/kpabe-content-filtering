@@ -1,32 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
-project(KPABE_CF)
+project(KPABE_DPVS VERSION 1.0 LANGUAGES C CXX)
 
-set(CMAKE_C_COMPILER cc)
-set(CMAKE_CXX_COMPILER g++)
+set(LIBRARY_NAME "kpabe_dpvs")
+
 set(CMAKE_CXX_STANDARD 20)
-set(CXXFLAGS "-Wall -Wextra -Wno-unused-parameter")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "-Wall")
 
-# Default parameters
-set(CURVE "bls12-381" CACHE STRING "Elliptic curve to use")
-set(RELIC_TAG "0.6.0" CACHE STRING "Relic tag to use")
-set(LSSS_IMAGE_VERSION "0.1.0" CACHE STRING "LSSS image version to use")
-set(COMPRESSION ON CACHE BOOL "Enable compression")
 
-# Print the options
-message(STATUS "Elliptic Curve: ${CURVE}")
-message(STATUS "Relic Tag: ${RELIC_TAG}")
-message(STATUS "LSSS Image Version: ${LSSS_IMAGE_VERSION}")
-message(STATUS "Enable compression: ${COMPRESSION}")
-
-# if(COMPRESSION)
-#     set(LSSS_LIBRARY "abe_lsss_compression")
-# else()
-#     set(LSSS_LIBRARY "abe_lsss_no_compression")
-# endif()
+# ============================================================
+# Dependencies
+# ============================================================
 
 find_package(OpenSSL REQUIRED)
-find_library(RLC_LIBRARY NAMES relic)
-set(LSSS_LIBRARY "abe_lsss")
+find_library(RLC_LIBRARY NAMES relic REQUIRED)
+
+# abe_lsss is assumed to be installed system-wide
+find_library(LSSS_LIBRARY NAMES abe_lsss REQUIRED)
 
 set(LIBRARIES
     OpenSSL::SSL
@@ -35,61 +25,72 @@ set(LIBRARIES
     gmp
 )
 
-# Include directories
-include_directories(
-    /usr/local/include
-    /usr/local/include/abe_lsss
-)
+# ============================================================
+# Sources
+# ============================================================
+
+file(GLOB DPVS_SOURCES dpvs/*.c dpvs/*.cpp)
+file(GLOB KPABE_SOURCES kpabe/*.cpp)
+file(GLOB KEYS_SOURCES keys/*.cpp)
+file(GLOB SERIALIZER_SOURCES serializer/*.cpp)
 
 set(SOURCE_FILES
-    dpvs/matrix.c
-    dpvs/dpvs.c
-    dpvs/vector_ec.cpp
-    keys/keys.cpp
-    kpabe/kpabe.cpp
-    serializer/serializer.cpp
-    utils.c
+    src/dpvs.c
+    src/matrix.c
+    src/vector_ec.cpp
+    src/keys.cpp
+    src/kpabe.cpp
+    src/utils.c
 )
 
-add_executable(
-    kpabe_out
-    ${SOURCE_FILES}
-    main.cpp
+# ============================================================
+# Library
+# ============================================================
+
+add_library(${LIBRARY_NAME} SHARED ${SOURCE_FILES})
+
+target_link_libraries(${LIBRARY_NAME} PUBLIC ${LIBRARIES})
+
+target_include_directories(${LIBRARY_NAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/kpabe_dpvs>
+        # ${CMAKE_CURRENT_SOURCE_DIR}/include
+        /usr/local/include
+        /usr/local/include/abe_lsss
 )
 
-add_executable(
-    new_examples
-    ${SOURCE_FILES}
-    examples/new_examples.cpp
+
+# ============================================================
+# Examples / Bench (optionnel)
+# ============================================================
+
+option(BUILD_EXAMPLES "Build examples" OFF)
+
+if(BUILD_EXAMPLES)
+    add_executable(kpabe_test examples/main.cpp)
+    target_link_libraries(kpabe_test ${LIBRARY_NAME})
+
+    add_executable(kpabe_example examples/new_examples.cpp)
+    target_link_libraries(kpabe_example ${LIBRARY_NAME})
+
+    add_executable(kpabe_bench examples/new_bench.cpp)
+    target_link_libraries(kpabe_bench ${LIBRARY_NAME})
+endif()
+
+
+# ============================================================
+# Install
+# ============================================================
+
+install(TARGETS ${LIBRARY_NAME}
+    #DESTINATION /usr/local/lib
+    EXPORT kpabe_dpvsTargets
+    LIBRARY DESTINATION lib
 )
 
-add_executable(
-    new_bench
-    ${SOURCE_FILES}
-    bench/new_bench.cpp
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    # DESTINATION /usr/local/include/kpabe_dpvs
+    DESTINATION include/kpabe_dpvs
 )
 
-target_link_libraries(kpabe_out ${LIBRARIES})
-target_link_libraries(new_examples ${LIBRARIES})
-target_link_libraries(new_bench ${LIBRARIES})
-
-add_custom_target(example
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_examples
-    COMMENT "Building example_out executable"
-)
-
-add_custom_target(bench
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target new_bench
-    COMMENT "Building bench_out executable"
-)
-
-# Install dependencies
-add_custom_target(install_dependencies_local
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts ENABLE_COMPRESSION=${COMPRESSION} ELLIPTIC_CURVE=${CURVE} local
-    COMMENT "Installing dependencies locally"
-)
-
-add_custom_target(install_dependencies_docker
-    COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_SOURCE_DIR}/scripts RELIC_TAG=${RELIC_TAG} ELLIPTIC_CURVE=${CURVE} LSSS_IMAGE_VERSION=${LSSS_IMAGE_VERSION} ENABLE_COMPRESSION=${COMPRESSION} docker
-    COMMENT "Installing dependencies in Docker"
-)

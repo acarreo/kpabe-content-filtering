@@ -37,21 +37,24 @@ fi
 
 # Run the benchmark
 PID=$$
-build_dir="$PID--build"
+build_dir="/tmp/build--bench--$PID"
+bench_dir=$(pwd)
 
-# Create build directory and navigate into it
-mkdir $build_dir && cd $build_dir
+# Create build directory
+mkdir $build_dir
 
 # Run cmake and make
-run_cmake "$1"
+# run_cmake "$1"
+cmake -B $build_dir -S $bench_dir
 
+cd $build_dir
 make -j
 
 echo -e "\n.............................. Running benchmarks ..............................\n"
 uname -a > benchmark.log
 
 # Run benchmarks and log output
-make run_benchmarks &>> benchmark.log
+make run_benchmarks # &>> benchmark.log
 
 # Check if benchmark.log exists before creating tar file
 if [ ! -f benchmark.log ]; then
@@ -63,6 +66,7 @@ fi
 tar -czf $PID--results.tar.gz benchmark--*.csv benchmark.log
 
 # Move the tar file to the results directory
+cd $bench_dir
 mkdir -p ../results && mv $PID--results.tar.gz ../results/
 
 # Clean up

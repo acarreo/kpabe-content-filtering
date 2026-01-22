@@ -6,7 +6,10 @@
  *
  */
 
-#include "new_examples.hpp"
+#include <iostream>
+#include <fstream>
+
+#include "kpabe.hpp"
 
 using namespace std;
 
@@ -19,26 +22,6 @@ uint8_t session_key_00[RLC_MD_LEN]; // RLC_MD_LEN = 32 bytes ~ 256 bits
 uint8_t session_key_01[RLC_MD_LEN];
 uint8_t session_key_02[RLC_MD_LEN];
 
-void example_byteString();
-
-int main()
-{
-  if (!init_libraries()) return 2;
-
-  example_generate_params();
-  example_generate_decryption_key();
-  example_encrypt_decrypt_old();
-  example_encrypt_decrypt();
-  example_unlinkability_public_keys();
-  example_serialization();
-  example_serialization_zp();
-  example_serialization_randomized_public_key();
-
-  example_byteString();
-
-  clean_libraries();
-  return 0;
-}
 
 void example_byteString() {
   std::cout << "\n----------------> START : " << __func__ << std::endl;
@@ -463,3 +446,24 @@ void example_serialization_randomized_public_key() {
     std::cerr << "Error: The deserialized randomized public key is NOT valid" << std::endl;
   }
 }
+
+
+int main()
+{
+  if (!init_libraries()) return 2;
+
+  example_generate_params();
+  example_generate_decryption_key();
+  example_encrypt_decrypt_old();
+  example_encrypt_decrypt();
+  example_unlinkability_public_keys();
+  example_serialization();
+  example_serialization_zp();
+  example_serialization_randomized_public_key();
+
+  example_byteString();
+
+  clean_libraries();
+  return 0;
+}
+

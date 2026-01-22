@@ -15,7 +15,7 @@
 #include <string>
 #include <map>
 
-#include "../keys/keys.hpp"
+#include "keys.hpp"
 
 
 #define KPABE_CIPHERTEXT_TYPE   0xFF

@@ -17,13 +17,13 @@ To install and run this project, follow these steps:
    ```bash
    git clone https://github.com/acarreo/kpabe-content-filtering.git
    cd kpabe-content-filtering
-
-   # Clone ABE-LSSS submodule
-   git submodule update --init --remote abe-lsss
    ```
 
 2. **Install Dependencies:** Two ways to install dependencies __locally__ (for the host machine) or in a [Docker](https://docs.docker.com/engine/install/) environment, follow one of the following instructions:
    ```bash
+   # Clone ABE-LSSS submodule - only need if you want to compile the project on your host machine
+   git submodule update --init --remote abe-lsss
+
    cd scripts
    # Install dependencies on the host machine
    make
@@ -39,20 +39,27 @@ To install and run this project, follow these steps:
       mkdir build && cd build
       cmake ..
       make
+
+      # If you want to install the project as library, you need root privelege
+      sudo make install
       ```
 
 2. **Build in a Docker Environment**
    ```bash
    cd .. # go back to the root directory
    docker run -ti --rm -v $PWD:/content-filtering cryptolib/abe-lsss:relic-0.6.0--bls12-381--v0.1.0
-   mkdir -p /content-filtering/build
-   cd /content-filtering/build
-   cmake ..
+   mkdir -p /tmp/build-kpabe
+   cd /tmp/build-kpabe
+   cmake /content-filtering
    make
+
+   # If you want to install the project as library
+   make install
    ```
 
-- Run the `./kpabe_out` executable to perform the KP-ABE encryption and decryption.
-- Run the `./new_examples` executable to see an example of how to use the KP-ABE scheme.
+- Run the `./kpabe_test` executable to perform a simple encryption and decryption.
+- Run the `./kpabe_bench` executable to perform a simplist benchmark
+- Run the `./kpabe_example` executable to see an example of how to use the KP-ABE scheme.
 
 
 ### Troubleshooting
