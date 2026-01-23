@@ -35,9 +35,9 @@ function(add_benchmark_target target_name)
   add_custom_command(
     OUTPUT run_${target_name}
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${target_name}
-            --benchmark_out=${CMAKE_CURRENT_SOURCE_DIR}/result/${target_name}.json
+            --benchmark_out=${CMAKE_CURRENT_SOURCE_DIR}/results/${target_name}.json
             --benchmark_time_unit=ms
-            --benchmark_repetitions=5
+            # --benchmark_repetitions=5
             --benchmark_counters_tabular=true
     DEPENDS ${target_name}
     COMMENT "Running ${target_name} benchmark"
@@ -62,9 +62,9 @@ function(add_benchmark_serialization target_name mode)
     OUTPUT run_${target_name}${mode}
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${target_name}
             ${mode}
-            --benchmark_out=${CMAKE_CURRENT_SOURCE_DIR}/result/${target_name}${mode}.json
+            --benchmark_out=${CMAKE_CURRENT_SOURCE_DIR}/results/${target_name}${mode}.json
             --benchmark_time_unit=ms
-            --benchmark_repetitions=5
+            # --benchmark_repetitions=5
             --benchmark_counters_tabular=true
     DEPENDS ${target_name}
     COMMENT "Running ${target_name} benchmark (${mode})"

@@ -7,9 +7,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-Wall")
 
-set(CMAKE_CXX_FLAGS_DEBUG
-    "-g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer"
-)
 
 # ============================================================
 # Dependencies
@@ -18,7 +15,6 @@ set(CMAKE_CXX_FLAGS_DEBUG
 find_package(OpenSSL REQUIRED)
 find_library(RLC_LIBRARY NAMES relic REQUIRED)
 
-# abe_lsss is assumed to be installed system-wide
 find_library(LSSS_LIBRARY NAMES abe_lsss REQUIRED)
 
 set(LIBRARIES
@@ -31,11 +27,6 @@ set(LIBRARIES
 # ============================================================
 # Sources
 # ============================================================
-
-file(GLOB DPVS_SOURCES dpvs/*.c dpvs/*.cpp)
-file(GLOB KPABE_SOURCES kpabe/*.cpp)
-file(GLOB KEYS_SOURCES keys/*.cpp)
-file(GLOB SERIALIZER_SOURCES serializer/*.cpp)
 
 set(SOURCE_FILES
     src/dpvs.c
@@ -58,26 +49,25 @@ target_include_directories(${LIBRARY_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/kpabe_dpvs>
-        # ${CMAKE_CURRENT_SOURCE_DIR}/include
         /usr/local/include
         /usr/local/include/abe_lsss
 )
 
 
 # ============================================================
-# Examples / Bench (optionnel)
+# Some examples and a small bench (Enable by default)
 # ============================================================
 
 option(BUILD_EXAMPLES "Build examples" ON)
 
 if(BUILD_EXAMPLES)
-    add_executable(kpabe_test examples/main.cpp)
-    target_link_libraries(kpabe_test ${LIBRARY_NAME})
+    add_executable(kpabe_main examples/main.cpp)
+    target_link_libraries(kpabe_main ${LIBRARY_NAME})
 
-    add_executable(kpabe_example examples/new_examples.cpp)
+    add_executable(kpabe_example examples/example.cpp)
     target_link_libraries(kpabe_example ${LIBRARY_NAME})
 
-    add_executable(kpabe_bench examples/new_bench.cpp)
+    add_executable(kpabe_bench examples/bench.cpp)
     target_link_libraries(kpabe_bench ${LIBRARY_NAME})
 endif()
 
@@ -87,13 +77,11 @@ endif()
 # ============================================================
 
 install(TARGETS ${LIBRARY_NAME}
-    #DESTINATION /usr/local/lib
     EXPORT kpabe_dpvsTargets
     LIBRARY DESTINATION lib
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    # DESTINATION /usr/local/include/kpabe_dpvs
     DESTINATION include/kpabe_dpvs
 )
 

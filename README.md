@@ -21,14 +21,15 @@ To install and run this project, follow these steps:
 
 2. **Install Dependencies:** Two ways to install dependencies __locally__ (for the host machine) or in a [Docker](https://docs.docker.com/engine/install/) environment, follow one of the following instructions:
    ```bash
+   cd scripts
+
+   # Install dependencies in a Docker environment
+   make docker
+
+   # Or Install dependencies on the host machine
    # Clone ABE-LSSS submodule - only need if you want to compile the project on your host machine
    git submodule update --init --remote abe-lsss
-
-   cd scripts
-   # Install dependencies on the host machine
    make
-   # OR Install dependencies in a Docker environment
-   make docker
    ```
 
 ## Build and Run the Project
