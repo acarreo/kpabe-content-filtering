@@ -22,7 +22,10 @@ void G1_VECTOR::addElement(const G1 & element) {
 }
 
 void G1_VECTOR::insertElement(const G1 & element, size_t index) {
-  if (index < this->size()) {
+  if (this->isDimSet && index < this->dim) {
+    this->at(index) = element;
+  }
+  else if (index < this->size()) {
     this->at(index) = element;
   }
   else {
