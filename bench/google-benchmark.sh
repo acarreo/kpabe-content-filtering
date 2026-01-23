@@ -1,7 +1,7 @@
 # Check out the library.
-git clone https://github.com/google/benchmark.git
+git clone https://github.com/google/benchmark.git /tmp/benchmark
 # Go to the library root directory
-cd benchmark
+cd /tmp/benchmark
 # Make a build directory to place the build output.
 cmake -E make_directory "build"
 # Generate build system files with cmake, and download any dependencies.
