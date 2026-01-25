@@ -86,31 +86,6 @@ static void BM_KPABE_DPVS_Decryption(benchmark::State& state, ciphertext_params 
 }
 
 
-class CSVReporter : public benchmark::ConsoleReporter {
-  public:
-    CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
-      file << "Benchmark,Nb_AttrCtxt,Nb_Attr_WL_BL,RealTime\n";
-    }
-
-    ~CSVReporter() {
-      file.close();
-    }
-
-    void ReportRuns(const std::vector<Run>& report) override {
-      for (const auto& run : report) {
-        // Extract WL and BL from the benchmark name
-        std::string name = run.benchmark_name();
-        double real_time = run.GetAdjustedRealTime();
-        size_t nb_att = run.counters.at("Nb_Attributes");
-        size_t nb_wl_bl = run.counters.at("Nb_WL_BL");
-        file << name << "," << nb_att << "," << nb_wl_bl << "," << std::fixed << std::setprecision(3) << real_time << "\n";
-      }
-    }
-
-  private:
-    std::ofstream file;
-};
-
 int main(int argc, char** argv) {
   if (!init_libraries()) return 1;
 
@@ -138,36 +113,33 @@ int main(int argc, char** argv) {
       ciphertext_params params = {attributes_1, nb_attr_in_ciphertext, url_in_wl, taille_listes, true};
       benchmark::RegisterBenchmark("Decryption_URL_in_Whitelist", [params](benchmark::State& state) {
         BM_KPABE_DPVS_Decryption(state, params);
-      })->Unit(benchmark::kMillisecond);
+      });
     }
 
     { // attributes_1, url_in_bl
       ciphertext_params params = {attributes_1,nb_attr_in_ciphertext, url_in_bl, taille_listes, false};
       benchmark::RegisterBenchmark("Decryption_URL_in_Blacklist", [params](benchmark::State& state) {
         BM_KPABE_DPVS_Decryption(state, params);
-      })->Unit(benchmark::kMillisecond);
+      });
     }
 
     { // attributes_1, url : satisfies the policy
       ciphertext_params params = {attributes_1, nb_attr_in_ciphertext, url, taille_listes, true};
       benchmark::RegisterBenchmark("Decryption_Policy_Satisfied", [params](benchmark::State& state) {
         BM_KPABE_DPVS_Decryption(state, params);
-      })->Unit(benchmark::kMillisecond);
+      });
     }
 
     { // attributes_2, url : does not satisfy the policy
       ciphertext_params params = {attributes_2, nb_attr_in_ciphertext, url, taille_listes, false};
       benchmark::RegisterBenchmark("Decryption_Policy_NOT_Satisfied", [params](benchmark::State& state) {
         BM_KPABE_DPVS_Decryption(state, params);
-      })->Unit(benchmark::kMillisecond);
+      });
     }
   }
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
-  // CSVReporter csv_reporter("benchmark--decrypt--efficiency.csv");
-  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
-
 
   clean_libraries();
 

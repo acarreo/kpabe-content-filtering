@@ -4,28 +4,6 @@
 
 using namespace std;
 
-// Custom reporter to save results to CSV
-class CSVReporter : public benchmark::ConsoleReporter {
-  public:
-    CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
-      file << "Benchmark,RealTime\n";
-    }
-
-    ~CSVReporter() {
-      file.close();
-    }
-
-    void ReportRuns(const std::vector<Run>& report) override {
-      for (const auto& run : report) {
-        std::string name = run.benchmark_name();
-        double real_time = run.GetAdjustedRealTime();
-        file << name << "," << std::fixed << std::setprecision(3) << real_time << "\n";
-      }
-    }
-
-  private:
-    std::ofstream file;
-};
 
 static void BM_KPABE_DPVS_Setup(benchmark::State& state) {
   for (auto _ : state) {
@@ -67,9 +45,9 @@ static void BM_KPABE_DPVS_ValidateDerivedPublicKey(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_KPABE_DPVS_Setup)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_KPABE_DPVS_Setup);
+BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization);
+BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey);
 
 int main(int argc, char** argv) {
 
@@ -79,8 +57,6 @@ int main(int argc, char** argv) {
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
-  // CSVReporter csv_reporter("benchmark--setup--efficiency.csv");
-  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 

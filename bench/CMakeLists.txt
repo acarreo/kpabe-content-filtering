@@ -42,35 +42,7 @@ function(add_benchmark_target target_name)
     DEPENDS ${target_name}
     COMMENT "Running ${target_name} benchmark"
   )
-  add_custom_target(${target_name}_efficiency DEPENDS run_${target_name})
-endfunction()
-
-# Function to create a custom command for benchmarking serialization tasks
-function(add_benchmark_serialization target_name mode)
-  if(NOT mode STREQUAL "serialize" AND NOT mode STREQUAL "deserialize")
-    if(NOT mode)
-      set(mode "serialize")
-    else()
-      message(WARNING
-        "add_benchmark_serialization: invalid mode '${mode}', defaulting to 'serialize'"
-      )
-      set(mode "serialize")
-    endif()
-  endif()
-
-  add_custom_command(
-    OUTPUT run_${target_name}${mode}
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${target_name}
-            ${mode}
-            --benchmark_out=${CMAKE_CURRENT_SOURCE_DIR}/results/${target_name}${mode}.json
-            --benchmark_time_unit=ms
-            # --benchmark_repetitions=5
-            --benchmark_counters_tabular=true
-    DEPENDS ${target_name}
-    COMMENT "Running ${target_name} benchmark (${mode})"
-  )
-
-  add_custom_target(${target_name}${mode} DEPENDS run_${target_name}${mode})
+  add_custom_target(${target_name}_target DEPENDS run_${target_name})
 endfunction()
 
 
@@ -83,9 +55,9 @@ add_bench(bench_encrypt encrypt bench--encrypt--efficiency.cpp)
 add_bench(bench_decrypt decrypt bench--decrypt--efficiency.cpp)
 
 # Serialization benchmarks
-add_bench(bench_setup_ setup_ bench--setup--serialization.cpp)
-add_bench(bench_keygen_ keygen_ bench--keygen--serialization.cpp)
-add_bench(bench_encrypt_ encrypt_ bench--encrypt--serialization.cpp)
+add_bench(bench_setup_serialize setup_serialize bench--setup--serialization.cpp)
+add_bench(bench_keygen_serialize keygen_serialize bench--keygen--serialization.cpp)
+add_bench(bench_encrypt_serialize encrypt_serialize bench--encrypt--serialization.cpp)
 
 
 # Create custom commands for each benchmark
@@ -95,21 +67,18 @@ add_benchmark_target(bench_encrypt)
 add_benchmark_target(bench_decrypt)
 
 # Create custom commands for serialization benchmarks
-add_benchmark_serialization(bench_setup_ "")
-add_benchmark_serialization(bench_keygen_ "serialize")
-add_benchmark_serialization(bench_keygen_ "deserialize")
-add_benchmark_serialization(bench_encrypt_ "serialize")
-add_benchmark_serialization(bench_encrypt_ "deserialize")
+add_benchmark_target(bench_setup_serialize)
+add_benchmark_target(bench_keygen_serialize)
+add_benchmark_target(bench_encrypt_serialize)
+
 
 # Add a custom target to run all benchmarks
 add_custom_target(benchmarks
-  DEPENDS bench_setup_efficiency
-          bench_keygen_efficiency
-          bench_encrypt_efficiency
-          bench_decrypt_efficiency
-          bench_setup_efficiency
-          bench_keygen_serialize
-          bench_keygen_deserialize
-          bench_encrypt_serialize
-          bench_encrypt_deserialize
+  DEPENDS bench_setup_target
+          bench_keygen_target
+          bench_encrypt_target
+          bench_decrypt_target
+          bench_setup_serialize_target
+          bench_keygen_serialize_target
+          bench_encrypt_serialize_target
 )

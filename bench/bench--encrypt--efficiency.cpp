@@ -29,37 +29,11 @@ static void BM_KPABE_DPVS_Encrypt(benchmark::State& state, int nb_attributes) {
 }
 
 
-// Custom reporter to save results to CSV
-class CSVReporter : public benchmark::ConsoleReporter {
-  public:
-    CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
-      file << "Nb_Attributes,RealTime\n";
-    }
-
-    ~CSVReporter() {
-      file.close();
-    }
-
-    void ReportRuns(const std::vector<Run>& report) override {
-      for (const auto& run : report) {
-        // Extract WL and BL from the benchmark name
-        double real_time = run.GetAdjustedRealTime();
-        size_t nb_att = run.counters.at("Nb_Attributes");
-        file << nb_att << "," << std::fixed << std::setprecision(3) << real_time << "\n";
-      }
-    }
-
-  private:
-    std::ofstream file;
-};
-
-
 int main(int argc, char** argv) {
 
   if (!init_libraries()) return 1;
 
   __relic_print_params();
-
 
   std::vector<int> nb_attributes_list = {1, 10, 100, 1000};
 
@@ -71,8 +45,6 @@ int main(int argc, char** argv) {
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
-  // CSVReporter csv_reporter("benchmark--encrypt--efficiency.csv");
-  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 

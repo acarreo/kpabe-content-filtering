@@ -8,34 +8,6 @@
 using namespace std;
 
 
-// Custom reporter to save results to CSV
-class CSVReporter : public benchmark::ConsoleReporter {
-  public:
-    CSVReporter(const std::string& filename) : ConsoleReporter(), file(filename) {
-      file << "Benchmark,RealTime,Size\n";
-    }
-
-    ~CSVReporter() {
-      file.close();
-    }
-
-    void ReportRuns(const std::vector<Run>& report) override {
-      for (const auto& run : report) {
-        std::string name = run.benchmark_name();
-        size_t real_time = run.GetAdjustedRealTime();
-        size_t size = 0;
-        if (run.counters.find("Size") != run.counters.end()) {
-          size = run.counters.at("Size");
-        }
-        file << name << "," << real_time << "," << size << "\n";
-      }
-    }
-
-  private:
-    std::ofstream file;
-};
-
-
 static void BM_KPABE_DPVS_SerializePublicKey(benchmark::State& state) {
   KPABE_DPVS kpabe;
   if (!kpabe.setup()) {
@@ -122,10 +94,10 @@ static void BM_KPABE_DPVS_DeserializeMasterKey(benchmark::State& state) {
   state.counters["Size"] = mk_bytes.size();
 }
 
-BENCHMARK(BM_KPABE_DPVS_SerializePublicKey)->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_KPABE_DPVS_SerializeMasterKey)->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_KPABE_DPVS_DeserializePublicKey)->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_KPABE_DPVS_DeserializeMasterKey)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_KPABE_DPVS_SerializePublicKey);
+BENCHMARK(BM_KPABE_DPVS_SerializeMasterKey);
+BENCHMARK(BM_KPABE_DPVS_DeserializePublicKey);
+BENCHMARK(BM_KPABE_DPVS_DeserializeMasterKey);
 
 int main(int argc, char** argv) {
 
@@ -135,8 +107,6 @@ int main(int argc, char** argv) {
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
-  // CSVReporter csv_reporter("benchmark--setup--serialization.csv");
-  // ::benchmark::RunSpecifiedBenchmarks(&csv_reporter);
 
   clean_libraries();
 
