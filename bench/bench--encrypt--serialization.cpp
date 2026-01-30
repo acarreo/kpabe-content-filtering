@@ -54,7 +54,7 @@ static void BM_KPABE_DPVS_DeserializationCiphertext(benchmark::State& state, int
 
 int main(int argc, char** argv) {
 
-  if (!init_libraries()) return 1;
+  InitializeOpenABE();
 
   __relic_print_params();
 
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 
-  clean_libraries();
+  ShutdownOpenABE();
 
   return 0;
 }

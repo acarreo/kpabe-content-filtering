@@ -49,16 +49,16 @@ BENCHMARK(BM_KPABE_DPVS_Setup);
 BENCHMARK(BM_KPABE_DPVS_PublicKeyRandomization);
 BENCHMARK(BM_KPABE_DPVS_ValidateDerivedPublicKey);
 
-int main(int argc, char** argv) {
-
-  if (!init_libraries()) return 1;
+int main(int argc, char** argv)
+{
+  InitializeOpenABE();
 
   __relic_print_params();
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 
-  clean_libraries();
+  ShutdownOpenABE();
 
   return 0;
 }

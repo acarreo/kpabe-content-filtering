@@ -450,7 +450,7 @@ void example_serialization_randomized_public_key() {
 
 int main()
 {
-  if (!init_libraries()) return 2;
+  InitializeOpenABE();
 
   example_generate_params();
   example_generate_decryption_key();
@@ -463,7 +463,8 @@ int main()
 
   example_byteString();
 
-  clean_libraries();
+  ShutdownOpenABE();
+
   return 0;
 }
 

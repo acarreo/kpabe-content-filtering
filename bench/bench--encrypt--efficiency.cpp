@@ -29,9 +29,9 @@ static void BM_KPABE_DPVS_Encrypt(benchmark::State& state, int nb_attributes) {
 }
 
 
-int main(int argc, char** argv) {
-
-  if (!init_libraries()) return 1;
+int main(int argc, char** argv)
+{
+  InitializeOpenABE();
 
   __relic_print_params();
 
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 
-  clean_libraries();
+  ShutdownOpenABE();
 
   return 0;
 }

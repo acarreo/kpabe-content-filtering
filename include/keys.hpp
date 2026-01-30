@@ -25,7 +25,6 @@
 
 extern "C" {
   #include "dpvs.h"
-  #include "utils.h"
 }
 
 #define ND  3

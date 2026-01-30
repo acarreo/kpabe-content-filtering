@@ -28,14 +28,14 @@ BENCHMARK_CAPTURE(BM_DPVS_Generation, DPVS_Generation_100, 100)->Unit(benchmark:
 BENCHMARK_CAPTURE(BM_InnerProduct, InnerProduct_10, 10)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(BM_InnerProduct, InnerProduct_100, 100)->Unit(benchmark::kMicrosecond);
 
-int main(int argc, char** argv) {
-
-  if (!init_libraries()) return 1;
+int main(int argc, char** argv)
+{
+  InitializeOpenABE();
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 
-  clean_libraries();
+  ShutdownOpenABE();
 
   return 0;
 }

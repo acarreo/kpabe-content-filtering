@@ -17,10 +17,8 @@ int main(int argc, char **argv) {
   cout << "\n--------> Attribute-Based Encryption (ABE) scheme for Web Content Filtering - Test Application <--------" << endl;
 
   cout << "\n--------> Initializing cryptographic libraries" << endl;
-  if (!init_libraries()) {
-    std::cerr << "Error: Could not initialize cryptographic libraries" << std::endl;
-    return 1;
-  }
+
+  InitializeOpenABE();
 
   string attributes="pegi3|no-in-game-purchase|no-gambling|no-violence|no-discrimination|no-horror|no-bad-language|no-sex|no-drugs";
   string policy="(pegi3 and no-in-game-purchase) or (pegi16 and no-in-game-purchase)";
@@ -82,7 +80,8 @@ int main(int argc, char **argv) {
   }
 
   cout << "\n--------> Cleaning up cryptographic libraries\n" << endl;
-  clean_libraries();
+
+  ShutdownOpenABE();
 
   return 0;
 }
