@@ -117,5 +117,6 @@ install(TARGETS ${KPABE_LIB_NAME}
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
     DESTINATION include/kpabe_dpvs
+    PATTERN "CMakeLists.txt" EXCLUDE
 )
 
