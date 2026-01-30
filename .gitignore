@@ -8,3 +8,4 @@
 .gitignore
 build
 target
+bench/results/*.json
