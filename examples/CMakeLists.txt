@@ -1,6 +1,6 @@
 set(KPABE_MAIN kpabe_main)
 add_executable(${KPABE_MAIN} main.cpp)
-target_link_libraries(${KPABE_MAIN} ${LIBRARIES} ${KPABE_LIB_NAME})
+target_link_libraries(${KPABE_MAIN} ${LIBRARIES} ${KPABE_LIBRARY})
 target_include_directories(${KPABE_MAIN}
   PUBLIC /usr/local/include /usr/local/include/abe_lsss
   PRIVATE ${PROJECT_SOURCE_DIR}/include

@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 project(KPABE_DPVS VERSION 1.0 LANGUAGES C CXX)
 
-set(KPABE_LIB_NAME "kpabe_dpvs")
+set(KPABE_LIBRARY "kpabe_dpvs")
 
 # Project compilation options
-option(TEST "Build the tests" OFF)
+option(TEST "Build the tests" ON)
 option(POC "Build the Proof of Concept program " OFF)
 option(EXAMPLE "Build the Proof of Concept program " ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-Wall")
+set(CMAKE_CXX_FLAGS "-Wall -Wno-dev")
 
 set(SOURCE_FILES "")
 set(PUBLIC_HEADER "")
@@ -82,9 +82,9 @@ add_subdirectory(src)
 # Library
 # ============================================================
 
-add_library(${KPABE_LIB_NAME} SHARED ${SOURCE_FILES})
-target_link_libraries(${KPABE_LIB_NAME} PUBLIC ${LIBRARIES})
-target_include_directories(${KPABE_LIB_NAME}
+add_library(${KPABE_LIBRARY} SHARED ${SOURCE_FILES})
+target_link_libraries(${KPABE_LIBRARY} PUBLIC ${LIBRARIES})
+target_include_directories(${KPABE_LIBRARY}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/kpabe_dpvs>
@@ -94,9 +94,11 @@ target_include_directories(${KPABE_LIB_NAME}
         ${PROJECT_SOURCE_DIR}/include
 )
 
-# if (TEST)
-#     add_subdirectory(tests)
-# endif()
+
+if (TEST)
+    add_subdirectory(tests)
+endif()
+
 # if (POC)
 #     add_subdirectory(poc)
 # endif()
@@ -110,7 +112,7 @@ endif()
 # Install
 # ============================================================
 
-install(TARGETS ${KPABE_LIB_NAME}
+install(TARGETS ${KPABE_LIBRARY}
     EXPORT kpabe_dpvsTargets
     LIBRARY DESTINATION lib
 )
