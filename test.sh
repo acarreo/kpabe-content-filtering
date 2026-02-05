@@ -1,6 +1,14 @@
 #!/bin/bash
 
-TEST_ABE=./kpabe_main
+###############################################################################
+# Here we run tests made it by google test by default. You may comment the
+# following command to re-run the script.
+make test; exit $?
+
+###############################################################################
+
+
+TEST_ABE=./examples/kpabe_main
 
 separator () {
   echo -e "\033[90m------------------------------ next test ------------------------------\033[0m"

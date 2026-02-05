@@ -5,19 +5,20 @@ target_include_directories(${KPABE_MAIN}
   PUBLIC /usr/local/include /usr/local/include/abe_lsss
   PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
-# set_target_properties(${KPABE_MAIN} PROPERTIES
-#         # some properties that successfully get applied here
-#         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-# ============================================================
-# Some examples and a small bench (Enable by default)
-# ============================================================
+set(KPABE_EXAMPLE kpabe_example)
+add_executable(${KPABE_EXAMPLE} example.cpp)
+target_link_libraries(${KPABE_EXAMPLE} ${LIBRARIES} ${KPABE_LIBRARY})
+target_include_directories(${KPABE_EXAMPLE}
+  PUBLIC /usr/local/include /usr/local/include/abe_lsss
+  PRIVATE ${PROJECT_SOURCE_DIR}/include
+)
 
-## if(BUILD_EXAMPLES)
-##     add_executable(kpabe_example examples/example.cpp)
-##     target_link_libraries(kpabe_example ${KPABE_LIB_NAME})
-## 
-##     add_executable(kpabe_bench examples/bench.cpp)
-##     target_link_libraries(kpabe_bench ${KPABE_LIB_NAME})
-## endif()
+set(KPABE_BENCH kpabe_bench)
+add_executable(${KPABE_BENCH} bench.cpp)
+target_link_libraries(${KPABE_BENCH} ${LIBRARIES} ${KPABE_LIBRARY})
+target_include_directories(${KPABE_BENCH}
+  PUBLIC /usr/local/include /usr/local/include/abe_lsss
+  PRIVATE ${PROJECT_SOURCE_DIR}/include
+)
 
