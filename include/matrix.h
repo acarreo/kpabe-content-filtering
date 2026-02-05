@@ -14,8 +14,6 @@
 
 #define mat_print(mat)          mat_fprint(stdout, 16, mat)
 
-extern bn_t Fq; /* Declaration of the modulus */
-
 typedef struct
 {
   bn_t * entries;

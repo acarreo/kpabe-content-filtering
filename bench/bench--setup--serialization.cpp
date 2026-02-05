@@ -99,16 +99,16 @@ BENCHMARK(BM_KPABE_DPVS_SerializeMasterKey);
 BENCHMARK(BM_KPABE_DPVS_DeserializePublicKey);
 BENCHMARK(BM_KPABE_DPVS_DeserializeMasterKey);
 
-int main(int argc, char** argv) {
-
-  if (!init_libraries()) return 1;
+int main(int argc, char** argv)
+{
+  InitializeOpenABE();
 
   __relic_print_params();
 
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 
-  clean_libraries();
+  ShutdownOpenABE();
 
   return 0;
 }

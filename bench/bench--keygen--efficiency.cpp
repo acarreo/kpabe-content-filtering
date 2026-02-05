@@ -35,7 +35,7 @@ string policy = "(Attr_5 and (Attr_1 or Attr_2)) and ((Attr_3 and Attr_4) or (At
 
 int main(int argc, char** argv) {
 
-  if (!init_libraries()) return 1;
+  InitializeOpenABE();
 
   __relic_print_params();
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 
-  clean_libraries();
+  ShutdownOpenABE();
 
   return 0;
 }

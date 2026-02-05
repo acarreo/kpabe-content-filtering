@@ -1,7 +1,7 @@
 #include "matrix.h"
 
 /************************ STATIC FUNCTION PROTOTYPES ************************/
-static inline bool invert_matrix_1x1(mat_t dest, const mat_t src);
+static bool invert_matrix_1x1(mat_t dest, const mat_t src);
 static bool invert_matrix_2x2(mat_t dest, const mat_t src);
 static bool LU_invert_matrix(mat_t inv_A, const mat_t A);
 /****************************************************************************/
@@ -118,8 +118,12 @@ void mat_copy(mat_t dest, const mat_t src)
 
 void mat_rand(mat_t mat)
 {
+  bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
+
   for (int i = 0; i < mat_dim(mat) * mat_dim(mat); i++)
     bn_rand_mod(mat->entries[i], Fq);
+
+  bn_free(Fq);
 }
 
 void mat_product(mat_t dest, const mat_t A, const mat_t B)
@@ -136,6 +140,9 @@ void mat_product(mat_t dest, const mat_t A, const mat_t B)
     RLC_TRY {
       bn_new(tmp);
       bn_new(sum);
+
+      bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
+
       for (uint8_t i = 0; i < dim; i++)
       {
         for (uint8_t j = 0; j < dim; j++)
@@ -153,6 +160,7 @@ void mat_product(mat_t dest, const mat_t A, const mat_t B)
     } RLC_FINALLY {
       bn_free(tmp);
       bn_free(sum);
+      bn_free(Fq);
     }
   }
 }
@@ -175,24 +183,20 @@ bool mat_get_row(bn_vect_t row, const mat_t mat, uint8_t index)
 
 void bn_inner_product(bn_t ip, const bn_vect_t vect1, const bn_vect_t vect2)
 {
-  uint8_t dim = vect1->dim;
-
-  bn_t tmp;
-
-  bn_null(tmp);
-
-  if (dim == vect2->dim)
+  if (vect1->dim == vect2->dim)
   {
-    bn_new(tmp);
+    bn_t tmp; bn_null(tmp); bn_new(tmp);
+    bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
+
     bn_zero(ip);
-    for (uint8_t i = 0; i < dim; i++)
+    for (uint8_t i = 0; i < vect1->dim; i++)
     {
       bn_mod_mul(tmp, vect1->elements[i], vect2->elements[i], Fq);
       bn_mod_add(ip, ip, tmp, Fq);
     }
+    bn_free(tmp);
+    bn_free(Fq);
   }
-
-  bn_free(tmp);
 }
 
 bool mat_is_dual_pair(const mat_t mat, const mat_t dual_mat)
@@ -205,14 +209,8 @@ bool mat_is_dual_pair(const mat_t mat, const mat_t dual_mat)
   bn_vect_t vect[dim];
   bn_vect_t dual_vect[dim];
 
-  bn_t ip, one;
-
-  bn_null(ip);
-  bn_null(one);
-
-  bn_new(ip);
-  bn_new(one);
-  bn_set_dig(one, 1);
+  bn_t ip; bn_null(ip); bn_new(ip);
+  bn_t one; bn_null(one); bn_new(one); bn_set_dig(one, 1);
 
   for (uint8_t i = 0; i < dim; i++)
   {
@@ -240,6 +238,7 @@ bool mat_is_dual_pair(const mat_t mat, const mat_t dual_mat)
     bn_vect_clear(dual_vect[i]);
   }
   bn_free(one);
+  bn_free(ip);
 
   return is_dual_pair;
 }
@@ -331,9 +330,11 @@ void bn_vect_clear(bn_vect_t vect)
 ******************************************************************************/
 
 /********************* Inverse of matrices of dim <= 2 ***********************/
-static inline bool invert_matrix_1x1(mat_t dest, const mat_t src)
+static bool invert_matrix_1x1(mat_t dest, const mat_t src)
 {
+  bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
   bn_mod_inv(GET(dest, 0, 0), GET(src, 0, 0), Fq);
+  bn_free(Fq);
   return true;
 }
 
@@ -351,6 +352,8 @@ static bool invert_matrix_2x2(mat_t dest, const mat_t src)
     bn_new(a);
     bn_new(b);
     bn_new(det);
+
+    bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
 
     bn_mod_mul(a, GET(src, 0, 0), GET(src, 1, 1), Fq);
     bn_mod_mul(b, GET(src, 0, 1), GET(src, 1, 0), Fq);
@@ -380,7 +383,8 @@ static bool invert_matrix_2x2(mat_t dest, const mat_t src)
     bn_free(det);
     bn_free(a);
     bn_free(b);
-    }
+    bn_free(Fq);
+  }
 
   return is_inversible;
 }
@@ -406,6 +410,8 @@ static bool LU_decompose(mat_t mat, uint8_t *P)
     bn_new(tmp);
     bn_new(max_A);
     bn_new(max_tmp);
+
+    bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
 
     bn_vect_init(row_norm, dim);
 
@@ -492,6 +498,7 @@ static bool LU_decompose(mat_t mat, uint8_t *P)
     fprintf(stderr, "Errors with LU decomposition\n");
   }
   RLC_FINALLY {
+    bn_free(Fq);
     bn_free(tmp);
     bn_free(max_A);
     bn_free(max_tmp);
@@ -513,6 +520,8 @@ static void LU_substitution(bn_vect_t B, const mat_t mat, const uint8_t *P)
   RLC_TRY {
     bn_new(tmp);
     bn_new(tmp2);
+
+    bn_t Fq; bn_null(Fq); bn_new(Fq); pc_get_ord(Fq);
 
     for (int i = 0; i < dim; i++)
     {
@@ -542,6 +551,7 @@ static void LU_substitution(bn_vect_t B, const mat_t mat, const uint8_t *P)
   RLC_FINALLY {
     bn_free(tmp);
     bn_free(tmp2);
+    bn_free(Fq);
   }
 }
 

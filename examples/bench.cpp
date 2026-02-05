@@ -425,7 +425,7 @@ int n_att = 10;
 
 int main(int argc, char **argv)
 {
-  if (!init_libraries()) return 2;
+  InitializeOpenABE();
 
   if (argc == 4) {
     n_wl = atoi(argv[1]);
@@ -451,6 +451,7 @@ int main(int argc, char **argv)
 
   bench_time_generation_keys(n_wl, n_bl, Nb_rounds);
 
-  clean_libraries();
+  ShutdownOpenABE();
+
   return 0;
 }
